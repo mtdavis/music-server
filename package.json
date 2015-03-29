@@ -1,0 +1,10 @@
+{
+    "name": "mtd-music-server",
+    "version": "0.0.1",
+    "dependencies": {
+        "sqlite3": "^3.0.5",
+        "musicmetadata": "^1.0.1",
+        "plist": "^1.1.0",
+        "connect": "^3.3.5"
+    }
+}
