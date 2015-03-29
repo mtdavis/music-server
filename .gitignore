@@ -1,2 +1,4 @@
 node_modules
 *.log
+db.sqlite
+lib.apple.xml
