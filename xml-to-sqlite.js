@@ -4,7 +4,7 @@ var sqlite3 = require("sqlite3");
 
 function createTable(db)
 {
-    db.run("CREATE TABLE track(" +
+    db.run("CREATE TABLE IF NOT EXISTS track(" +
         "title TEXT NOT NULL, " +
         "artist TEXT NOT NULL, " +
         "album_artist TEXT NOT NULL, " +
@@ -40,6 +40,9 @@ function insertTracks(db, tracks)
     {
         var track = tracks[key];
 
+        var location = decodeURI(track["Location"]).
+            replace(/\\/g, "/").replace(/file:\/\/localhost\/D:\/music\//, "");
+
         statement.run(track["Name"], 
             track["Artist"] || "",
             track["Album Artist"] || "",
@@ -50,7 +53,7 @@ function insertTracks(db, tracks)
             track["Year"],
             track["Play Date"],
             track["Play Count"] || 0,
-            track["Location"])
+            location);
     }
 
     statement.finalize();
