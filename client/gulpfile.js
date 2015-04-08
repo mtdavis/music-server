@@ -1,4 +1,5 @@
 var gulp = require('gulp');
+var bower = require('gulp-bower');
 var browserify = require('browserify');
 var del = require('del');
 var reactify = require('reactify');
@@ -131,7 +132,7 @@ gulp.task('index', function (done) {
 gulp.task('build', function (done) {
   return runsequence(
     'clean',
-    'copy-material',
+    ['copy-material', 'bower'],
     ['style', 'less', 'js'],
     'index',
     done
@@ -206,6 +207,11 @@ gulp.task('copy-material', function (done) {
  */
 gulp.task('develop', function () {
   return runsequence('build', ['watch', 'server']);
+});
+
+gulp.task('bower', function() {
+  return bower()
+    .pipe(gulp.dest('build/'))
 });
 
 /*

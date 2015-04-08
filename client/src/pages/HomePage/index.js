@@ -34,11 +34,34 @@ var React = require('react');
 //
 //     <SomeView flux={flux} />
 
+var GaplessPlayer = React.createClass({
+    getDefaultProps: function() {
+        return {
+            id: "player"
+        };
+    },
+
+    getInitialState: function() {
+        return {api: null};
+    },
+
+    componentDidMount: function() {
+        var api = new Gapless5(this.props.id);
+        this.setState({api: api});
+    },
+
+    render: function() {
+        return (
+            <div {...this.props}></div>
+        );
+    }
+});
+
 module.exports = React.createClass({
   render: function () {
     return (
       <div className='home-page'>
-        Mike's Music Player
+        <GaplessPlayer />
       </div>
     );
   }
