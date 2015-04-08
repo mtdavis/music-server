@@ -66,6 +66,7 @@ function startServer(db, router)
 {
     var app = connect();
     app.use("/stream", serveStatic("D:/music/"));
+    app.use("/", serveStatic("./client/build"));
     app.use(router);
     http.createServer(app).listen(80);
 }
