@@ -5,6 +5,8 @@ var FlatButton = mui.FlatButton;
 var Paper = mui.Paper;
 var Toolbar = mui.Toolbar;
 var ToolbarGroup = mui.ToolbarGroup;
+var Tabs = mui.Tabs;
+var Tab = mui.Tab;
 
 // If you are going to be using stores, be sure to first load in the `Fluxxor`
 // module.
@@ -48,16 +50,53 @@ var GaplessPlayer = React.createClass({
     },
 
     getInitialState: function() {
-        return {api: null};
+        return {
+            api: null,
+            albums: []
+        };
     },
 
     componentDidMount: function() {
         var api = new Gapless5(this.props.id);
-        api.addTrack("/stream/ACDC/ACDC - Back in Black.mp3");
         this.setState({api: api});
+
+        $.getJSON("/albums", function(albums) {
+            if(this.isMounted())
+            {
+                this.setState({albums: albums});
+            }
+        }.bind(this));
+    },
+
+    playAlbum: function(album) {
+        var query = {
+            album_artist: album.album_artist,
+            album: album.album
+        };
+
+        $.getJSON("/tracks", query, function(tracks) {
+            this.state.api.stop();
+            this.state.api.removeAllTracks();
+
+            for(var i = 0; i < tracks.length; i++)
+            {
+                this.state.api.addTrack("/stream/" + tracks[i].path);
+            }
+
+            this.state.api.play();
+        }.bind(this));
     },
 
     render: function() {
+        var albums = this.state.albums.map(function(album){
+            var playAlbum = this.playAlbum.bind(this, album);
+            var key = album.album_artist + " - " + album.album;
+
+            return (
+                <Paper onClick={playAlbum} key={key}><p>{key}</p></Paper>
+            );
+        }.bind(this));
+
         return (
             <div>
                 <Paper>
@@ -71,28 +110,30 @@ var GaplessPlayer = React.createClass({
                         <FlatButton label="Stop" onClick={this.stop} />
                     </ToolbarGroup>
                 </Toolbar>
+
+                {albums}
             </div>
         );
     },
 
     play: function() {
-        if(this.state["api"])
+        if(this.state.api)
         {
-            this.state["api"].play();
+            this.state.api.play();
         }
     },
 
     pause: function() {
-        if(this.state["api"])
+        if(this.state.api)
         {
-            this.state["api"].pause();
+            this.state.api.pause();
         }
     },
 
     stop: function() {
-        if(this.state["api"])
+        if(this.state.api)
         {
-            this.state["api"].stop();
+            this.state.api.stop();
         }
     }
 });

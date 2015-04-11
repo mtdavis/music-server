@@ -3,6 +3,7 @@ var http = require("http");
 var serveStatic = require("serve-static");
 var sqlite3 = require("sqlite3");
 var connectRoute = require("connect-route");
+var url = require("url");
 
 function initDatabase()
 {
@@ -27,12 +28,17 @@ function initRouter(db)
 
 function albumsHandler(db)
 {
+    var statement = db.prepare(
+        "SELECT album_artist, album, genre, SUM(duration) AS duration, " +
+        "COUNT(track_number) AS tracks, year, " +
+        "MIN(last_play) AS last_play, MIN(play_count) AS play_count " +
+        "FROM track " +
+        "WHERE album != '' " +
+        "GROUP BY album_artist, album");
+
     return function(req, res, next)
     {
-        db.all("SELECT album_artist, album, genre, SUM(duration) AS duration, " +
-            "COUNT(track_number) AS tracks, year, " +
-            "MIN(last_play) AS last_play, MIN(play_count) AS play_count " +
-            "FROM track WHERE album != '' GROUP BY album_artist, album", function(err, rows)
+        statement.all(function(err, rows)
         {
             if(err)
             {
@@ -47,9 +53,20 @@ function albumsHandler(db)
 
 function tracksHandler(db)
 {
+    var statement = db.prepare(
+        "SELECT * FROM track " +
+        "WHERE album_artist LIKE $album_artist " +
+        "AND album LIKE $album " +
+        "ORDER BY album_artist, album, track_number");
+
     return function(req, res, next)
     {
-        db.all("SELECT * FROM track", function(err, rows)
+        var query = url.parse(req.url, true)["query"];
+
+        statement.all({
+            $album_artist: query.album_artist || "%",
+            $album: query.album || "%"
+        }, function(err, rows)
         {
             if(err)
             {
