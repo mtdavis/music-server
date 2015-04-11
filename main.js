@@ -29,7 +29,7 @@ function initRouter(db)
 function albumsHandler(db)
 {
     var statement = db.prepare(
-        "SELECT album_artist, album, genre, SUM(duration) AS duration, " +
+        "SELECT MIN(rowid) AS id, album_artist, album, genre, SUM(duration) AS duration, " +
         "COUNT(track_number) AS tracks, year, " +
         "MIN(last_play) AS last_play, MIN(play_count) AS play_count " +
         "FROM track " +
@@ -54,7 +54,7 @@ function albumsHandler(db)
 function tracksHandler(db)
 {
     var statement = db.prepare(
-        "SELECT * FROM track " +
+        "SELECT rowid AS id, * FROM track " +
         "WHERE album_artist LIKE $album_artist " +
         "AND album LIKE $album " +
         "ORDER BY album_artist, album, track_number");

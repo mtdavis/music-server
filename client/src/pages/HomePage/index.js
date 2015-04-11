@@ -42,6 +42,60 @@ var Tab = mui.Tab;
 //
 //     <SomeView flux={flux} />
 
+var AlbumButton = React.createClass({
+    getDefaultProps: function() {
+        return {
+            album: null,
+            api: null
+        };
+    },
+
+    render: function() {
+        var label = this.props.album.album_artist + " - " + this.props.album.album;
+
+        return <Paper onClick={this.playAlbum}><p>{label}</p></Paper>;
+    },
+
+    playAlbum: function() {
+        var query = {
+            album_artist: this.props.album.album_artist,
+            album: this.props.album.album
+        };
+
+        $.getJSON("/tracks", query, function(tracks) {
+            this.props.api.stop();
+            this.props.api.removeAllTracks();
+
+            for(var i = 0; i < tracks.length; i++)
+            {
+                this.props.api.addTrack("/stream/" + tracks[i].path);
+            }
+
+            this.props.api.play();
+        }.bind(this));
+    }
+});
+
+var AlbumButtonList = React.createClass({
+    getDefaultProps: function() {
+        return {
+            albums: [],
+            api: null
+        };
+    },
+
+    render: function() {
+        return (
+            <div>
+                {
+                    this.props.albums.map(album =>
+                        <AlbumButton key={album.id} album={album} api={this.props.api} />);
+                }
+            </div>
+        );
+    }
+});
+
 var GaplessPlayer = React.createClass({
     getDefaultProps: function() {
         return {
@@ -68,35 +122,7 @@ var GaplessPlayer = React.createClass({
         }.bind(this));
     },
 
-    playAlbum: function(album) {
-        var query = {
-            album_artist: album.album_artist,
-            album: album.album
-        };
-
-        $.getJSON("/tracks", query, function(tracks) {
-            this.state.api.stop();
-            this.state.api.removeAllTracks();
-
-            for(var i = 0; i < tracks.length; i++)
-            {
-                this.state.api.addTrack("/stream/" + tracks[i].path);
-            }
-
-            this.state.api.play();
-        }.bind(this));
-    },
-
     render: function() {
-        var albums = this.state.albums.map(function(album){
-            var playAlbum = this.playAlbum.bind(this, album);
-            var key = album.album_artist + " - " + album.album;
-
-            return (
-                <Paper onClick={playAlbum} key={key}><p>{key}</p></Paper>
-            );
-        }.bind(this));
-
         return (
             <div>
                 <Paper>
@@ -111,7 +137,7 @@ var GaplessPlayer = React.createClass({
                     </ToolbarGroup>
                 </Toolbar>
 
-                {albums}
+                <AlbumButtonList albums={this.state.albums} api={this.state.api} />
             </div>
         );
     },
