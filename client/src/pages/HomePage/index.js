@@ -1,4 +1,10 @@
 var React = require('react');
+var mui = require('material-ui');
+var RaisedButton = mui.RaisedButton;
+var FlatButton = mui.FlatButton;
+var Paper = mui.Paper;
+var Toolbar = mui.Toolbar;
+var ToolbarGroup = mui.ToolbarGroup;
 
 // If you are going to be using stores, be sure to first load in the `Fluxxor`
 // module.
@@ -47,13 +53,47 @@ var GaplessPlayer = React.createClass({
 
     componentDidMount: function() {
         var api = new Gapless5(this.props.id);
+        api.addTrack("/stream/ACDC/ACDC - Back in Black.mp3");
         this.setState({api: api});
     },
 
     render: function() {
         return (
-            <div {...this.props}></div>
+            <div>
+                <Paper>
+                    <p id={this.props.id}></p>
+                </Paper>
+
+                <Toolbar>
+                    <ToolbarGroup key={0}>
+                        <FlatButton label="Play" onClick={this.play} />
+                        <FlatButton label="Pause" onClick={this.pause} />
+                        <FlatButton label="Stop" onClick={this.stop} />
+                    </ToolbarGroup>
+                </Toolbar>
+            </div>
         );
+    },
+
+    play: function() {
+        if(this.state["api"])
+        {
+            this.state["api"].play();
+        }
+    },
+
+    pause: function() {
+        if(this.state["api"])
+        {
+            this.state["api"].pause();
+        }
+    },
+
+    stop: function() {
+        if(this.state["api"])
+        {
+            this.state["api"].stop();
+        }
     }
 });
 
