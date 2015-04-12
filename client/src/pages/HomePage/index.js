@@ -1,4 +1,9 @@
 var React = require('react');
+
+var Fluxxor = require('Fluxxor');
+var FluxMixin = Fluxxor.FluxMixin(React);
+var StoreWatchMixin = Fluxxor.StoreWatchMixin;
+
 var mui = require('material-ui');
 var RaisedButton = mui.RaisedButton;
 var FlatButton = mui.FlatButton;
@@ -42,7 +47,72 @@ var Tab = mui.Tab;
 //
 //     <SomeView flux={flux} />
 
+var MusicStore = Fluxxor.createStore({
+    initialize: function() {
+        this.albums = [];
+        this.api = null;
+
+        $.getJSON("/albums", function(albums) {
+            this.albums = albums;
+            this.emit("change");
+        }.bind(this));
+
+        this.bindActions(
+            "PLAY_ALBUM", this.onPlayAlbum,
+            "INITIALIZE_PLAYER", this.onInitializePlayer
+        );
+    },
+
+    getState: function() {
+        return {
+            albums: this.albums
+        };
+    },
+
+    onPlayAlbum: function(album) {
+        var query = {
+            album_artist: album.album_artist,
+            album: album.album
+        };
+
+        $.getJSON("/tracks", query, function(tracks) {
+            this.api.stop();
+            this.api.removeAllTracks();
+
+            for(var i = 0; i < tracks.length; i++)
+            {
+                this.api.addTrack("/stream/" + tracks[i].path);
+            }
+
+            this.api.play();
+        }.bind(this));
+    },
+
+    onInitializePlayer: function(playerId) {
+        this.api = new Gapless5(playerId);
+        this.emit("change");
+    }
+});
+
+var stores = {
+    MusicStore: new MusicStore()
+};
+
+var actions = {
+    playAlbum: function(album) {
+        this.dispatch("PLAY_ALBUM", album);
+    },
+
+    initializePlayer: function(playerId) {
+        this.dispatch("INITIALIZE_PLAYER", playerId);
+    }
+};
+
+var flux = new Fluxxor.Flux(stores, actions);
+
 var AlbumButton = React.createClass({
+    mixins: [FluxMixin],
+
     getDefaultProps: function() {
         return {
             album: null,
@@ -57,72 +127,46 @@ var AlbumButton = React.createClass({
     },
 
     playAlbum: function() {
-        var query = {
-            album_artist: this.props.album.album_artist,
-            album: this.props.album.album
-        };
-
-        $.getJSON("/tracks", query, function(tracks) {
-            this.props.api.stop();
-            this.props.api.removeAllTracks();
-
-            for(var i = 0; i < tracks.length; i++)
-            {
-                this.props.api.addTrack("/stream/" + tracks[i].path);
-            }
-
-            this.props.api.play();
-        }.bind(this));
+        this.getFlux().actions.playAlbum(this.props.album);
     }
 });
 
 var AlbumButtonList = React.createClass({
-    getDefaultProps: function() {
-        return {
-            albums: [],
-            api: null
-        };
-    },
+    mixins: [FluxMixin],
 
     render: function() {
+        var musicStore = this.getFlux().store("MusicStore");
+        var albumButtons = musicStore.albums.map(album =>
+            <AlbumButton key={album.id} album={album} />);
+
         return (
             <div>
-                {
-                    this.props.albums.map(album =>
-                        <AlbumButton key={album.id} album={album} api={this.props.api} />);
-                }
+                {albumButtons}
             </div>
         );
     }
 });
 
 var GaplessPlayer = React.createClass({
+    mixins: [FluxMixin, StoreWatchMixin("MusicStore")],
+
     getDefaultProps: function() {
         return {
             id: "player"
         };
     },
 
-    getInitialState: function() {
-        return {
-            api: null,
-            albums: []
-        };
+    componentDidMount: function() {
+        this.getFlux().actions.initializePlayer(this.props.id);
     },
 
-    componentDidMount: function() {
-        var api = new Gapless5(this.props.id);
-        this.setState({api: api});
-
-        $.getJSON("/albums", function(albums) {
-            if(this.isMounted())
-            {
-                this.setState({albums: albums});
-            }
-        }.bind(this));
+    getStateFromFlux: function() {
+        return this.getFlux().store("MusicStore").getState();
     },
 
     render: function() {
+        var musicStore = this.getFlux().store("MusicStore");
+
         return (
             <div>
                 <Paper>
@@ -137,7 +181,7 @@ var GaplessPlayer = React.createClass({
                     </ToolbarGroup>
                 </Toolbar>
 
-                <AlbumButtonList albums={this.state.albums} api={this.state.api} />
+                <AlbumButtonList />
             </div>
         );
     },
@@ -168,7 +212,7 @@ module.exports = React.createClass({
   render: function () {
     return (
       <div className='home-page'>
-        <GaplessPlayer />
+        <GaplessPlayer flux={flux} />
       </div>
     );
   }
