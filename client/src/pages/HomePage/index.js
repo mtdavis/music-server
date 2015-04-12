@@ -1,4 +1,9 @@
 var React = require('react');
+
+var Fluxxor = require('Fluxxor');
+var FluxMixin = Fluxxor.FluxMixin(React);
+var StoreWatchMixin = Fluxxor.StoreWatchMixin;
+
 var mui = require('material-ui');
 var RaisedButton = mui.RaisedButton;
 var FlatButton = mui.FlatButton;
@@ -42,11 +47,216 @@ var Tab = mui.Tab;
 //
 //     <SomeView flux={flux} />
 
-var AlbumButton = React.createClass({
+var PlayerState = {
+    STOPPED: "STOPPED",
+    PLAYING: "PLAYING",
+    PAUSED: "PAUSED"
+}
+
+var MusicStore = Fluxxor.createStore({
+    initialize: function() {
+        this.albums = [];
+        this.api = null;
+        this.playerState = PlayerState.STOPPED;
+        this.playlist = [];
+        this.nowPlaying = 0;
+
+        $.getJSON("/albums", function(albums) {
+            this.albums = albums;
+            this.emit("change");
+        }.bind(this));
+
+        this.bindActions(
+            "PLAY_ALBUM", this.onPlayAlbum,
+            "INITIALIZE_PLAYER", this.onInitializePlayer,
+            "PLAY_OR_PAUSE_PLAYBACK", this.onPlayOrPausePlayback,
+            "STOP_PLAYBACK", this.onStopPlayback
+        );
+    },
+
+    getState: function() {
+        return {
+            albums: this.albums,
+            playerState: this.playerState,
+            playlist: this.playList,
+            nowPlaying: this.nowPlaying
+        };
+    },
+
+    onPlayAlbum: function(album) {
+        var query = {
+            album_artist: album.album_artist,
+            album: album.album
+        };
+
+        $.getJSON("/tracks", query, function(tracks) {
+            this.onStopPlayback();
+            this.setPlaylist(tracks);
+            this.onPlayOrPausePlayback();
+            this.emit("change");
+        }.bind(this));
+    },
+
+    onInitializePlayer: function(playerId) {
+        this.api = new Gapless5(playerId);
+
+        this.api.onplay = function() {
+            console.log("gapless5 onplay");
+            this.playerState = PlayerState.PLAYING;
+            this.emit("change");
+        }.bind(this);
+
+        this.api.onpause = function() {
+            console.log("gapless5 onpause");
+            this.playerState = PlayerState.PAUSED;
+            this.emit("change");
+        }.bind(this);
+
+        this.api.onstop = function() {
+            console.log("gapless5 onstop");
+            this.playerState = PlayerState.STOPPED;
+            this.emit("change");
+        }.bind(this);
+
+        this.api.onfinishedtrack = function() {
+            console.log("gapless5 onfinishedtrack");
+            //this.nowPlaying += 1;
+            this.emit("change");
+        }.bind(this);
+
+        this.api.onfinishedall = function() {
+            console.log("gapless5 onfinishedall");
+            this.playerState = PlayerState.STOPPED;
+            this.emit("change");
+        }.bind(this);
+
+        this.api.onprev = function() {
+            console.log("gapless5 onprev");
+            this.nowPlaying -= 1;
+            this.emit("change");
+        }.bind(this);
+
+        this.api.onnext = function() {
+            console.log("gapless5 onnext");
+            this.nowPlaying += 1;
+            this.emit("change");
+        }.bind(this);
+
+        this.emit("change");
+    },
+
+    onPlayOrPausePlayback: function() {
+        if(this.api)
+        {
+            if(this.playerState === PlayerState.PLAYING)
+            {
+                this.api.pause();
+            }
+            else
+            {
+                this.api.play();
+            }
+
+            this.emit("change");
+        }
+    },
+
+    onStopPlayback: function() {
+        if(this.api)
+        {
+            this.api.stop();
+            this.emit("change");
+        }
+    },
+
+    clearPlaylist: function(tracks)
+    {
+        this.nowPlaying = 0;
+        this.playlist = [];
+        this.api.removeAllTracks();
+        this.emit("change");
+    },
+
+    setPlaylist: function(tracks) {
+        if(this.api)
+        {
+            this.clearPlaylist();
+
+            for(var i = 0; i < tracks.length; i++)
+            {
+                this.playlist.push(tracks[i]);
+                this.api.addTrack("/stream/" + tracks[i].path);
+            }
+
+            this.emit("change");
+        }
+    }
+});
+
+var stores = {
+    MusicStore: new MusicStore()
+};
+
+var actions = {
+    playAlbum: function(album) {
+        this.dispatch("PLAY_ALBUM", album);
+    },
+
+    initializePlayer: function(playerId) {
+        this.dispatch("INITIALIZE_PLAYER", playerId);
+    },
+
+    playOrPause: function() {
+        this.dispatch("PLAY_OR_PAUSE_PLAYBACK");
+    },
+
+    stop: function() {
+        this.dispatch("STOP_PLAYBACK");
+    }
+};
+
+var flux = new Fluxxor.Flux(stores, actions);
+
+var PlaylistItem = React.createClass({
+    mixins: [FluxMixin],
+
     getDefaultProps: function() {
         return {
-            album: null,
-            api: null
+            track: null
+        };
+    },
+
+    render: function() {
+        var musicStore = this.getFlux().store("MusicStore");
+        var nowPlaying = this.props.track === musicStore.playlist[musicStore.nowPlaying] ? "> " : "";
+        return (
+            <li>{nowPlaying}{this.props.track.artist} - {this.props.track.title}</li>
+        );
+    }
+})
+
+var Playlist = React.createClass({
+    mixins: [FluxMixin],
+
+    render: function() {
+        var musicStore = this.getFlux().store("MusicStore");
+        var playlistItems = musicStore.playlist.map(track =>
+            <PlaylistItem key={track.id} track={track} />);
+
+        return (
+            <ol>
+                {playlistItems}
+            </ol>
+        );
+    }
+})
+
+var AlbumButton = React.createClass({
+    mixins: [FluxMixin],
+
+    getDefaultProps: function() {
+        return {
+            album: null
         };
     },
 
@@ -57,72 +267,47 @@ var AlbumButton = React.createClass({
     },
 
     playAlbum: function() {
-        var query = {
-            album_artist: this.props.album.album_artist,
-            album: this.props.album.album
-        };
-
-        $.getJSON("/tracks", query, function(tracks) {
-            this.props.api.stop();
-            this.props.api.removeAllTracks();
-
-            for(var i = 0; i < tracks.length; i++)
-            {
-                this.props.api.addTrack("/stream/" + tracks[i].path);
-            }
-
-            this.props.api.play();
-        }.bind(this));
+        this.getFlux().actions.playAlbum(this.props.album);
     }
 });
 
 var AlbumButtonList = React.createClass({
-    getDefaultProps: function() {
-        return {
-            albums: [],
-            api: null
-        };
-    },
+    mixins: [FluxMixin],
 
     render: function() {
+        var musicStore = this.getFlux().store("MusicStore");
+        var albumButtons = musicStore.albums.map(album =>
+            <AlbumButton key={album.id} album={album} />);
+
         return (
             <div>
-                {
-                    this.props.albums.map(album =>
-                        <AlbumButton key={album.id} album={album} api={this.props.api} />);
-                }
+                {albumButtons}
             </div>
         );
     }
 });
 
 var GaplessPlayer = React.createClass({
+    mixins: [FluxMixin, StoreWatchMixin("MusicStore")],
+
     getDefaultProps: function() {
         return {
             id: "player"
         };
     },
 
-    getInitialState: function() {
-        return {
-            api: null,
-            albums: []
-        };
+    componentDidMount: function() {
+        this.getFlux().actions.initializePlayer(this.props.id);
     },
 
-    componentDidMount: function() {
-        var api = new Gapless5(this.props.id);
-        this.setState({api: api});
-
-        $.getJSON("/albums", function(albums) {
-            if(this.isMounted())
-            {
-                this.setState({albums: albums});
-            }
-        }.bind(this));
+    getStateFromFlux: function() {
+        return this.getFlux().store("MusicStore").getState();
     },
 
     render: function() {
+        var musicStore = this.getFlux().store("MusicStore");
+        var playOrPause = musicStore.playerState === PlayerState.PLAYING ? "Pause" : "Play"
+
         return (
             <div>
                 <Paper>
@@ -131,44 +316,24 @@ var GaplessPlayer = React.createClass({
 
                 <Toolbar>
                     <ToolbarGroup key={0}>
-                        <FlatButton label="Play" onClick={this.play} />
-                        <FlatButton label="Pause" onClick={this.pause} />
-                        <FlatButton label="Stop" onClick={this.stop} />
+                        <FlatButton label={playOrPause} onClick={this.getFlux().actions.playOrPause} />
+                        <FlatButton label="Stop" onClick={this.getFlux().actions.stop} />
                     </ToolbarGroup>
                 </Toolbar>
 
-                <AlbumButtonList albums={this.state.albums} api={this.state.api} />
+                <Playlist />
+
+                <AlbumButtonList />
             </div>
         );
     },
-
-    play: function() {
-        if(this.state.api)
-        {
-            this.state.api.play();
-        }
-    },
-
-    pause: function() {
-        if(this.state.api)
-        {
-            this.state.api.pause();
-        }
-    },
-
-    stop: function() {
-        if(this.state.api)
-        {
-            this.state.api.stop();
-        }
-    }
 });
 
 module.exports = React.createClass({
   render: function () {
     return (
       <div className='home-page'>
-        <GaplessPlayer />
+        <GaplessPlayer flux={flux} />
       </div>
     );
   }
