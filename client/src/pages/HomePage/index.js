@@ -51,6 +51,7 @@ var MusicStore = Fluxxor.createStore({
     initialize: function() {
         this.albums = [];
         this.api = null;
+        this.playing = false;
 
         $.getJSON("/albums", function(albums) {
             this.albums = albums;
@@ -59,7 +60,9 @@ var MusicStore = Fluxxor.createStore({
 
         this.bindActions(
             "PLAY_ALBUM", this.onPlayAlbum,
-            "INITIALIZE_PLAYER", this.onInitializePlayer
+            "INITIALIZE_PLAYER", this.onInitializePlayer,
+            "PLAY_OR_PAUSE_PLAYBACK", this.onPlayOrPausePlayback,
+            "STOP_PLAYBACK", this.onStopPlayback
         );
     },
 
@@ -76,7 +79,7 @@ var MusicStore = Fluxxor.createStore({
         };
 
         $.getJSON("/tracks", query, function(tracks) {
-            this.api.stop();
+            this.onStopPlayback();
             this.api.removeAllTracks();
 
             for(var i = 0; i < tracks.length; i++)
@@ -84,13 +87,59 @@ var MusicStore = Fluxxor.createStore({
                 this.api.addTrack("/stream/" + tracks[i].path);
             }
 
-            this.api.play();
+            this.onPlayOrPausePlayback();
         }.bind(this));
     },
 
     onInitializePlayer: function(playerId) {
         this.api = new Gapless5(playerId);
+
+        this.api.onplay = function() {
+            console.log("gapless5 onplay");
+            this.playing = true;
+            this.emit("change");
+        }.bind(this);
+
+        this.api.onpause = function() {
+            console.log("gapless5 onpause");
+            this.playing = false;
+            this.emit("change");
+        }.bind(this);
+
+        this.api.onstop = function() {
+            console.log("gapless5 onstop");
+            this.playing = false;
+            this.emit("change");
+        }.bind(this);
+
+        this.api.onfinishedall = function() {
+            console.log("gapless5 onfinishedall");
+            this.playing = false;
+            this.emit("change");
+        }.bind(this);
+
         this.emit("change");
+    },
+
+    onPlayOrPausePlayback: function() {
+        if(this.api)
+        {
+            if(this.playing)
+            {
+                this.api.pause();
+            }
+            else
+            {
+                this.api.play();
+            }
+        }
+    },
+
+    onStopPlayback: function() {
+        if(this.api)
+        {
+            this.api.stop();
+        }
     }
 });
 
@@ -105,6 +154,14 @@ var actions = {
 
     initializePlayer: function(playerId) {
         this.dispatch("INITIALIZE_PLAYER", playerId);
+    },
+
+    playOrPause: function() {
+        this.dispatch("PLAY_OR_PAUSE_PLAYBACK");
+    },
+
+    stop: function() {
+        this.dispatch("STOP_PLAYBACK");
     }
 };
 
@@ -166,6 +223,7 @@ var GaplessPlayer = React.createClass({
 
     render: function() {
         var musicStore = this.getFlux().store("MusicStore");
+        var playOrPause = musicStore.playing ? "Pause" : "Play"
 
         return (
             <div>
@@ -175,9 +233,8 @@ var GaplessPlayer = React.createClass({
 
                 <Toolbar>
                     <ToolbarGroup key={0}>
-                        <FlatButton label="Play" onClick={this.play} />
-                        <FlatButton label="Pause" onClick={this.pause} />
-                        <FlatButton label="Stop" onClick={this.stop} />
+                        <FlatButton label={playOrPause} onClick={this.getFlux().actions.playOrPause} />
+                        <FlatButton label="Stop" onClick={this.getFlux().actions.stop} />
                     </ToolbarGroup>
                 </Toolbar>
 
@@ -185,27 +242,6 @@ var GaplessPlayer = React.createClass({
             </div>
         );
     },
-
-    play: function() {
-        if(this.state.api)
-        {
-            this.state.api.play();
-        }
-    },
-
-    pause: function() {
-        if(this.state.api)
-        {
-            this.state.api.pause();
-        }
-    },
-
-    stop: function() {
-        if(this.state.api)
-        {
-            this.state.api.stop();
-        }
-    }
 });
 
 module.exports = React.createClass({
