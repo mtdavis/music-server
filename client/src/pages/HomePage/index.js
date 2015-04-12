@@ -47,11 +47,19 @@ var Tab = mui.Tab;
 //
 //     <SomeView flux={flux} />
 
+var PlayerState = {
+    STOPPED: "STOPPED",
+    PLAYING: "PLAYING",
+    PAUSED: "PAUSED"
+}
+
 var MusicStore = Fluxxor.createStore({
     initialize: function() {
         this.albums = [];
         this.api = null;
-        this.playing = false;
+        this.playerState = PlayerState.STOPPED;
+        this.playlist = [];
+        this.nowPlaying = 0;
 
         $.getJSON("/albums", function(albums) {
             this.albums = albums;
@@ -68,7 +76,10 @@ var MusicStore = Fluxxor.createStore({
 
     getState: function() {
         return {
-            albums: this.albums
+            albums: this.albums,
+            playerState: this.playerState,
+            playlist: this.playList,
+            nowPlaying: this.nowPlaying
         };
     },
 
@@ -80,14 +91,9 @@ var MusicStore = Fluxxor.createStore({
 
         $.getJSON("/tracks", query, function(tracks) {
             this.onStopPlayback();
-            this.api.removeAllTracks();
-
-            for(var i = 0; i < tracks.length; i++)
-            {
-                this.api.addTrack("/stream/" + tracks[i].path);
-            }
-
+            this.setPlaylist(tracks);
             this.onPlayOrPausePlayback();
+            this.emit("change");
         }.bind(this));
     },
 
@@ -96,25 +102,43 @@ var MusicStore = Fluxxor.createStore({
 
         this.api.onplay = function() {
             console.log("gapless5 onplay");
-            this.playing = true;
+            this.playerState = PlayerState.PLAYING;
             this.emit("change");
         }.bind(this);
 
         this.api.onpause = function() {
             console.log("gapless5 onpause");
-            this.playing = false;
+            this.playerState = PlayerState.PAUSED;
             this.emit("change");
         }.bind(this);
 
         this.api.onstop = function() {
             console.log("gapless5 onstop");
-            this.playing = false;
+            this.playerState = PlayerState.STOPPED;
+            this.emit("change");
+        }.bind(this);
+
+        this.api.onfinishedtrack = function() {
+            console.log("gapless5 onfinishedtrack");
+            //this.nowPlaying += 1;
             this.emit("change");
         }.bind(this);
 
         this.api.onfinishedall = function() {
             console.log("gapless5 onfinishedall");
-            this.playing = false;
+            this.playerState = PlayerState.STOPPED;
+            this.emit("change");
+        }.bind(this);
+
+        this.api.onprev = function() {
+            console.log("gapless5 onprev");
+            this.nowPlaying -= 1;
+            this.emit("change");
+        }.bind(this);
+
+        this.api.onnext = function() {
+            console.log("gapless5 onnext");
+            this.nowPlaying += 1;
             this.emit("change");
         }.bind(this);
 
@@ -124,7 +148,7 @@ var MusicStore = Fluxxor.createStore({
     onPlayOrPausePlayback: function() {
         if(this.api)
         {
-            if(this.playing)
+            if(this.playerState === PlayerState.PLAYING)
             {
                 this.api.pause();
             }
@@ -132,6 +156,8 @@ var MusicStore = Fluxxor.createStore({
             {
                 this.api.play();
             }
+
+            this.emit("change");
         }
     },
 
@@ -139,6 +165,30 @@ var MusicStore = Fluxxor.createStore({
         if(this.api)
         {
             this.api.stop();
+            this.emit("change");
+        }
+    },
+
+    clearPlaylist: function(tracks)
+    {
+        this.nowPlaying = 0;
+        this.playlist = [];
+        this.api.removeAllTracks();
+        this.emit("change");
+    },
+
+    setPlaylist: function(tracks) {
+        if(this.api)
+        {
+            this.clearPlaylist();
+
+            for(var i = 0; i < tracks.length; i++)
+            {
+                this.playlist.push(tracks[i]);
+                this.api.addTrack("/stream/" + tracks[i].path);
+            }
+
+            this.emit("change");
         }
     }
 });
@@ -167,13 +217,46 @@ var actions = {
 
 var flux = new Fluxxor.Flux(stores, actions);
 
+var PlaylistItem = React.createClass({
+    mixins: [FluxMixin],
+
+    getDefaultProps: function() {
+        return {
+            track: null
+        };
+    },
+
+    render: function() {
+        var musicStore = this.getFlux().store("MusicStore");
+        var nowPlaying = this.props.track === musicStore.playlist[musicStore.nowPlaying] ? "> " : "";
+        return (
+            <li>{nowPlaying}{this.props.track.artist} - {this.props.track.title}</li>
+        );
+    }
+})
+
+var Playlist = React.createClass({
+    mixins: [FluxMixin],
+
+    render: function() {
+        var musicStore = this.getFlux().store("MusicStore");
+        var playlistItems = musicStore.playlist.map(track =>
+            <PlaylistItem key={track.id} track={track} />);
+
+        return (
+            <ol>
+                {playlistItems}
+            </ol>
+        );
+    }
+})
+
 var AlbumButton = React.createClass({
     mixins: [FluxMixin],
 
     getDefaultProps: function() {
         return {
-            album: null,
-            api: null
+            album: null
         };
     },
 
@@ -223,7 +306,7 @@ var GaplessPlayer = React.createClass({
 
     render: function() {
         var musicStore = this.getFlux().store("MusicStore");
-        var playOrPause = musicStore.playing ? "Pause" : "Play"
+        var playOrPause = musicStore.playerState === PlayerState.PLAYING ? "Pause" : "Play"
 
         return (
             <div>
@@ -237,6 +320,8 @@ var GaplessPlayer = React.createClass({
                         <FlatButton label="Stop" onClick={this.getFlux().actions.stop} />
                     </ToolbarGroup>
                 </Toolbar>
+
+                <Playlist />
 
                 <AlbumButtonList />
             </div>
