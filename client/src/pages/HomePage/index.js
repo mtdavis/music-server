@@ -59,6 +59,7 @@ var MusicStore = Fluxxor.createStore({
         this.api = null;
         this.playerState = PlayerState.STOPPED;
         this.playlist = [];
+        this.previouslyPlayed = 0;
         this.nowPlaying = 0;
 
         $.getJSON("/albums", function(albums) {
@@ -120,7 +121,7 @@ var MusicStore = Fluxxor.createStore({
 
         this.api.onfinishedtrack = function() {
             console.log("gapless5 onfinishedtrack");
-            //this.nowPlaying += 1;
+            this.onSubmitPreviouslyPlayed();
             this.emit("change");
         }.bind(this);
 
@@ -132,12 +133,14 @@ var MusicStore = Fluxxor.createStore({
 
         this.api.onprev = function() {
             console.log("gapless5 onprev");
+            this.previouslyPlayed = this.nowPlaying;
             this.nowPlaying -= 1;
             this.emit("change");
         }.bind(this);
 
         this.api.onnext = function() {
             console.log("gapless5 onnext");
+            this.previouslyPlayed = this.nowPlaying;
             this.nowPlaying += 1;
             this.emit("change");
         }.bind(this);
@@ -171,6 +174,7 @@ var MusicStore = Fluxxor.createStore({
 
     clearPlaylist: function(tracks)
     {
+        this.previouslyPlayed = 0;
         this.nowPlaying = 0;
         this.playlist = [];
         this.api.removeAllTracks();
@@ -190,6 +194,14 @@ var MusicStore = Fluxxor.createStore({
 
             this.emit("change");
         }
+    },
+
+    onSubmitPreviouslyPlayed: function() {
+        var playedTrack = this.playlist[this.previouslyPlayed];
+        var postData = {
+            id: playedTrack.id
+        };
+        $.post("submit-play", postData);
     }
 });
 
@@ -307,6 +319,7 @@ var GaplessPlayer = React.createClass({
     render: function() {
         var musicStore = this.getFlux().store("MusicStore");
         var playOrPause = musicStore.playerState === PlayerState.PLAYING ? "Pause" : "Play"
+        var stoppable = musicStore.playerState !== PlayerState.STOPPED;
 
         return (
             <div>
@@ -317,7 +330,7 @@ var GaplessPlayer = React.createClass({
                 <Toolbar>
                     <ToolbarGroup key={0}>
                         <FlatButton label={playOrPause} onClick={this.getFlux().actions.playOrPause} />
-                        <FlatButton label="Stop" onClick={this.getFlux().actions.stop} />
+                        <FlatButton label="Stop" onClick={this.getFlux().actions.stop} disabled={!stoppable}/>
                     </ToolbarGroup>
                 </Toolbar>
 

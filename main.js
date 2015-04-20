@@ -4,6 +4,7 @@ var serveStatic = require("serve-static");
 var sqlite3 = require("sqlite3");
 var connectRoute = require("connect-route");
 var url = require("url");
+var bodyParser = require("body-parser");
 
 function initDatabase()
 {
@@ -16,12 +17,8 @@ function initRouter(db)
     {
         router.get("/albums", albumsHandler(db));
         router.get("/tracks", tracksHandler(db));
+        router.post("/submit-play", submitPlayHandler(db));
     });
-
-    /*router.addRoute("/tracks", function(req, res, match)
-    {
-        listTracks(db, req, res, match);
-    });*/
 
     return result;
 }
@@ -38,6 +35,8 @@ function albumsHandler(db)
 
     return function(req, res, next)
     {
+        console.log(req.url);
+
         statement.all(function(err, rows)
         {
             if(err)
@@ -61,6 +60,7 @@ function tracksHandler(db)
 
     return function(req, res, next)
     {
+        console.log(req.url);
         var query = url.parse(req.url, true)["query"];
 
         statement.all({
@@ -79,11 +79,38 @@ function tracksHandler(db)
     };
 }
 
+function submitPlayHandler(db)
+{
+    var statement = db.prepare(
+        "UPDATE track SET play_count = play_count + 1, last_play = $last_play " +
+        "WHERE rowid = $id");
+
+    return function(req, res, next)
+    {
+        console.log(req.url, req.body);
+
+        statement.run({
+            $id: req.body.id,
+            $last_play: req.body.last_play || Math.floor(Date.now() / 1000)
+        }, function(err)
+        {
+            if(err)
+            {
+                throw err;
+            }
+
+            res.statusCode = 200;
+            res.end();
+        });
+    }
+}
+
 function startServer(db, router)
 {
     var app = connect();
     app.use("/stream", serveStatic("D:/music/"));
     app.use("/", serveStatic("./client/build"));
+    app.use(bodyParser.urlencoded({extended: false}));
     app.use(router);
     http.createServer(app).listen(80);
 }
