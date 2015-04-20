@@ -12,6 +12,7 @@ var Toolbar = mui.Toolbar;
 var ToolbarGroup = mui.ToolbarGroup;
 var Tabs = mui.Tabs;
 var Tab = mui.Tab;
+var Menu = mui.Menu;
 
 // If you are going to be using stores, be sure to first load in the `Fluxxor`
 // module.
@@ -229,73 +230,46 @@ var actions = {
 
 var flux = new Fluxxor.Flux(stores, actions);
 
-var PlaylistItem = React.createClass({
-    mixins: [FluxMixin],
-
-    getDefaultProps: function() {
-        return {
-            track: null
-        };
-    },
-
-    render: function() {
-        var musicStore = this.getFlux().store("MusicStore");
-        var nowPlaying = this.props.track === musicStore.playlist[musicStore.nowPlaying] ? "> " : "";
-        return (
-            <li>{nowPlaying}{this.props.track.artist} - {this.props.track.title}</li>
-        );
-    }
-})
-
 var Playlist = React.createClass({
     mixins: [FluxMixin],
 
     render: function() {
         var musicStore = this.getFlux().store("MusicStore");
-        var playlistItems = musicStore.playlist.map(track =>
-            <PlaylistItem key={track.id} track={track} />);
+
+        var playlistItems = musicStore.playlist.map(function(track) {
+            var nowPlaying = track === musicStore.playlist[musicStore.nowPlaying] ? "> " : "";
+            return {
+                payload: track,
+                text: nowPlaying + track.artist + " - " + track.title
+            }
+        });
 
         return (
-            <ol>
-                {playlistItems}
-            </ol>
+            <Menu menuItems={playlistItems} />
         );
-    }
-})
-
-var AlbumButton = React.createClass({
-    mixins: [FluxMixin],
-
-    getDefaultProps: function() {
-        return {
-            album: null
-        };
-    },
-
-    render: function() {
-        var label = this.props.album.album_artist + " - " + this.props.album.album;
-
-        return <Paper onClick={this.playAlbum}><p>{label}</p></Paper>;
-    },
-
-    playAlbum: function() {
-        this.getFlux().actions.playAlbum(this.props.album);
     }
 });
 
-var AlbumButtonList = React.createClass({
+var AlbumList = React.createClass({
     mixins: [FluxMixin],
 
     render: function() {
         var musicStore = this.getFlux().store("MusicStore");
-        var albumButtons = musicStore.albums.map(album =>
-            <AlbumButton key={album.id} album={album} />);
+        var albumItems = musicStore.albums.map(function(album) {
+            return {
+                payload: album,
+                text: album.album_artist + " - " + album.album
+            };
+        });
 
         return (
-            <div>
-                {albumButtons}
-            </div>
+            <Menu menuItems={albumItems} onItemClick={this.onAlbumClick}/>
         );
+    },
+
+    onAlbumClick: function(event, index, item)
+    {
+        this.getFlux().actions.playAlbum(item.payload);
     }
 });
 
@@ -318,6 +292,7 @@ var GaplessPlayer = React.createClass({
 
     render: function() {
         var musicStore = this.getFlux().store("MusicStore");
+        var playable = musicStore.playlist.length > 0;
         var playOrPause = musicStore.playerState === PlayerState.PLAYING ? "Pause" : "Play"
         var stoppable = musicStore.playerState !== PlayerState.STOPPED;
 
@@ -329,14 +304,23 @@ var GaplessPlayer = React.createClass({
 
                 <Toolbar>
                     <ToolbarGroup key={0}>
-                        <FlatButton label={playOrPause} onClick={this.getFlux().actions.playOrPause} />
-                        <FlatButton label="Stop" onClick={this.getFlux().actions.stop} disabled={!stoppable}/>
+                        <FlatButton label={playOrPause}
+                            disabled={!playable}
+                            onClick={this.getFlux().actions.playOrPause} />
+                        <FlatButton label="Stop"
+                            disabled={!stoppable}
+                            onClick={this.getFlux().actions.stop} />
                     </ToolbarGroup>
                 </Toolbar>
 
-                <Playlist />
-
-                <AlbumButtonList />
+                <Tabs>
+                    <Tab label="All Albums">
+                        <AlbumList />
+                    </Tab>
+                    <Tab label="Playlist">
+                        <Playlist />
+                    </Tab>
+                </Tabs>
             </div>
         );
     },

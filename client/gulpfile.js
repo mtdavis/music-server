@@ -82,6 +82,7 @@ gulp.task('js', function() {
     .bundle()
     .on('error', function (err) {
       gutil.log(err.message);
+      gutil.beep();
       this.emit('end');
     })
     .pipe(source('bundle.js'))
