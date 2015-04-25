@@ -134,7 +134,7 @@ gulp.task('build', function (done) {
   return runsequence(
     'clean',
     ['copy-material', 'bower'],
-    ['style', 'less', 'js'],
+    ['style', 'less', 'js', 'icons'],
     'index',
     done
   );
@@ -213,6 +213,13 @@ gulp.task('develop', function () {
 gulp.task('bower', function() {
   return bower()
     .pipe(gulp.dest('build/'))
+});
+
+gulp.task('icons', function(done) {
+  var source =
+    path.join(__dirname, 'src', 'style', 'icomoon');
+  var dest = path.join(__dirname, 'build', 'icomoon');
+  ncp(source, dest, done);
 });
 
 /*

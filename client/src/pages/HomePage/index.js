@@ -7,6 +7,7 @@ var StoreWatchMixin = Fluxxor.StoreWatchMixin;
 var mui = require('material-ui');
 var RaisedButton = mui.RaisedButton;
 var FlatButton = mui.FlatButton;
+var IconButton = mui.IconButton;
 var Paper = mui.Paper;
 var Toolbar = mui.Toolbar;
 var ToolbarGroup = mui.ToolbarGroup;
@@ -72,7 +73,8 @@ var MusicStore = Fluxxor.createStore({
             "PLAY_ALBUM", this.onPlayAlbum,
             "INITIALIZE_PLAYER", this.onInitializePlayer,
             "PLAY_OR_PAUSE_PLAYBACK", this.onPlayOrPausePlayback,
-            "STOP_PLAYBACK", this.onStopPlayback
+            "STOP_PLAYBACK", this.onStopPlayback,
+            "JUMP_TO_PLAYLIST_ITEM", this.onJumpToPlaylistItem
         );
     },
 
@@ -197,6 +199,16 @@ var MusicStore = Fluxxor.createStore({
         }
     },
 
+    onJumpToPlaylistItem: function(index) {
+        if(this.api)
+        {
+            this.nowPlaying = index;
+            this.api.gotoTrack(index, true);
+            this.api.onplay();
+            this.emit("change");
+        }
+    },
+
     onSubmitPreviouslyPlayed: function() {
         var playedTrack = this.playlist[this.previouslyPlayed];
         var postData = {
@@ -225,6 +237,10 @@ var actions = {
 
     stop: function() {
         this.dispatch("STOP_PLAYBACK");
+    },
+
+    jumpToPlaylistItem: function(index) {
+        this.dispatch("JUMP_TO_PLAYLIST_ITEM", index);
     }
 };
 
@@ -237,16 +253,22 @@ var Playlist = React.createClass({
         var musicStore = this.getFlux().store("MusicStore");
 
         var playlistItems = musicStore.playlist.map(function(track) {
-            var nowPlaying = track === musicStore.playlist[musicStore.nowPlaying] ? "> " : "";
+            var nowPlaying = track === musicStore.playlist[musicStore.nowPlaying];
             return {
                 payload: track,
-                text: nowPlaying + track.artist + " - " + track.title
+                text: track.artist + " - " + track.title,
+                iconClassName: nowPlaying ? "icon-play" : "icon-music"
             }
         });
 
         return (
-            <Menu menuItems={playlistItems} />
+            <Menu menuItems={playlistItems} onItemClick={this.onTrackClick}/>
         );
+    },
+
+    onTrackClick: function(event, index, item)
+    {
+        this.getFlux().actions.jumpToPlaylistItem(index);
     }
 });
 
@@ -293,7 +315,7 @@ var GaplessPlayer = React.createClass({
     render: function() {
         var musicStore = this.getFlux().store("MusicStore");
         var playable = musicStore.playlist.length > 0;
-        var playOrPause = musicStore.playerState === PlayerState.PLAYING ? "Pause" : "Play"
+        var playOrPause = musicStore.playerState === PlayerState.PLAYING ? "icon-pause" : "icon-play"
         var stoppable = musicStore.playerState !== PlayerState.STOPPED;
 
         return (
@@ -302,16 +324,14 @@ var GaplessPlayer = React.createClass({
                     <p id={this.props.id}></p>
                 </Paper>
 
-                <Toolbar>
-                    <ToolbarGroup key={0}>
-                        <FlatButton label={playOrPause}
-                            disabled={!playable}
-                            onClick={this.getFlux().actions.playOrPause} />
-                        <FlatButton label="Stop"
-                            disabled={!stoppable}
-                            onClick={this.getFlux().actions.stop} />
-                    </ToolbarGroup>
-                </Toolbar>
+                <Paper>
+                    <IconButton iconClassName={playOrPause}
+                        disabled={!playable}
+                        onClick={this.getFlux().actions.playOrPause} />
+                    <IconButton iconClassName="icon-stop"
+                        disabled={!stoppable}
+                        onClick={this.getFlux().actions.stop} />
+                </Paper>
 
                 <Tabs>
                     <Tab label="All Albums">
