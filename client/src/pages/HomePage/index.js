@@ -74,6 +74,8 @@ var MusicStore = Fluxxor.createStore({
             "INITIALIZE_PLAYER", this.onInitializePlayer,
             "PLAY_OR_PAUSE_PLAYBACK", this.onPlayOrPausePlayback,
             "STOP_PLAYBACK", this.onStopPlayback,
+            "JUMP_TO_PREVIOUS_TRACK", this.onJumpToPreviousTrack,
+            "JUMP_TO_NEXT_TRACK", this.onJumpToNextTrack,
             "JUMP_TO_PLAYLIST_ITEM", this.onJumpToPlaylistItem
         );
     },
@@ -209,6 +211,22 @@ var MusicStore = Fluxxor.createStore({
         }
     },
 
+    onJumpToPreviousTrack: function() {
+        if(this.api)
+        {
+            this.api.prevtrack();
+            this.emit("change");
+        }
+    },
+
+    onJumpToNextTrack: function() {
+        if(this.api)
+        {
+            this.api.next();
+            this.emit("change");
+        }
+    },
+
     onSubmitPreviouslyPlayed: function() {
         var playedTrack = this.playlist[this.previouslyPlayed];
         var postData = {
@@ -241,6 +259,14 @@ var actions = {
 
     jumpToPlaylistItem: function(index) {
         this.dispatch("JUMP_TO_PLAYLIST_ITEM", index);
+    },
+
+    jumpToPreviousTrack: function() {
+        this.dispatch("JUMP_TO_PREVIOUS_TRACK");
+    },
+
+    jumpToNextTrack: function() {
+        this.dispatch("JUMP_TO_NEXT_TRACK");
     }
 };
 
@@ -253,11 +279,28 @@ var Playlist = React.createClass({
         var musicStore = this.getFlux().store("MusicStore");
 
         var playlistItems = musicStore.playlist.map(function(track) {
-            var nowPlaying = track === musicStore.playlist[musicStore.nowPlaying];
+            var icon = "icon-music";
+
+            if(track === musicStore.playlist[musicStore.nowPlaying])
+            {
+                if(musicStore.playerState === PlayerState.PLAYING)
+                {
+                    icon = "icon-play2";
+                }
+                else if(musicStore.playerState === PlayerState.PAUSED)
+                {
+                    icon = "icon-pause2";
+                }
+                else if(musicStore.playerState === PlayerState.STOPPED)
+                {
+                    icon = "icon-stop2";
+                }
+            }
+
             return {
                 payload: track,
                 text: track.artist + " - " + track.title,
-                iconClassName: nowPlaying ? "icon-play" : "icon-music"
+                iconClassName: icon
             }
         });
 
@@ -314,9 +357,13 @@ var GaplessPlayer = React.createClass({
 
     render: function() {
         var musicStore = this.getFlux().store("MusicStore");
-        var playable = musicStore.playlist.length > 0;
+        var playButtonEnabled = musicStore.playlist.length > 0;
         var playOrPause = musicStore.playerState === PlayerState.PLAYING ? "icon-pause" : "icon-play"
-        var stoppable = musicStore.playerState !== PlayerState.STOPPED;
+        var stopButtonEnabled = musicStore.playerState !== PlayerState.STOPPED;
+        var prevButtonEnabled = musicStore.playlist.length > 1 &&
+            musicStore.nowPlaying > 0;
+        var nextButtonEnabled = musicStore.playlist.length > 1 &&
+            musicStore.nowPlaying < musicStore.playlist.length - 1;
 
         return (
             <div>
@@ -325,12 +372,18 @@ var GaplessPlayer = React.createClass({
                 </Paper>
 
                 <Paper>
+                    <IconButton iconClassName="icon-previous"
+                        disabled={!prevButtonEnabled}
+                        onClick={this.getFlux().actions.jumpToPreviousTrack} />
                     <IconButton iconClassName={playOrPause}
-                        disabled={!playable}
+                        disabled={!playButtonEnabled}
                         onClick={this.getFlux().actions.playOrPause} />
                     <IconButton iconClassName="icon-stop"
-                        disabled={!stoppable}
+                        disabled={!stopButtonEnabled}
                         onClick={this.getFlux().actions.stop} />
+                    <IconButton iconClassName="icon-next"
+                        disabled={!nextButtonEnabled}
+                        onClick={this.getFlux().actions.jumpToNextTrack} />
                 </Paper>
 
                 <Tabs>
