@@ -142,6 +142,7 @@ var MusicStore = Fluxxor.createStore({
             console.log("gapless5 onprev");
             this.previouslyPlayed = this.nowPlaying;
             this.nowPlaying -= 1;
+            this.onSubmitNowPlaying();
             this.emit("change");
         }.bind(this);
 
@@ -149,6 +150,7 @@ var MusicStore = Fluxxor.createStore({
             console.log("gapless5 onnext");
             this.previouslyPlayed = this.nowPlaying;
             this.nowPlaying += 1;
+            this.onSubmitNowPlaying();
             this.emit("change");
         }.bind(this);
 
