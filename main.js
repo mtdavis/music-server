@@ -1,7 +1,8 @@
+var Promise = require("bluebird");
 var connect = require("connect");
 var http = require("http");
 var serveStatic = require("serve-static");
-var sqlite3 = require("sqlite3");
+var sqlite3 = Promise.promisifyAll(require("sqlite3"));
 var connectRoute = require("connect-route");
 var url = require("url");
 var bodyParser = require("body-parser");
@@ -19,7 +20,7 @@ function initLastfm()
 
     if(musicServerSettings.lastfm.session_key === null)
     {
-        result.getSessionKey(function(result)
+        var callback = function(result)
         {
             if(result.success)
             {
@@ -29,7 +30,9 @@ function initLastfm()
             {
                 console.error("could not get last.fm session key");
             }
-        });
+        };
+
+        result.getSessionKey(callback);
     }
 
     return result;
@@ -62,15 +65,15 @@ function albumsHandler(db)
     {
         console.log(req.url);
 
-        statement.all(function(err, rows)
+        statement.allAsync().then(function(rows)
         {
-            if(err)
-            {
-                throw err;
-            }
-
             res.statusCode = 200;
             res.end(JSON.stringify(rows));
+        }).catch(function(error)
+        {
+            console.error(error)
+            res.statusCode = 500;
+            res.end();
         });
     };
 }
@@ -88,37 +91,49 @@ function tracksHandler(db)
         console.log(req.url);
         var query = url.parse(req.url, true)["query"];
 
-        statement.all({
+        statement.allAsync({
             $album_artist: query.album_artist || "%",
             $album: query.album || "%"
-        }, function(err, rows)
+        }).then(function(rows)
         {
-            if(err)
-            {
-                throw err;
-            }
-
             res.statusCode = 200;
             res.end(JSON.stringify(rows));
+        }).catch(function(error)
+        {
+            console.error(error)
+            res.statusCode = 500;
+            res.end();
         });
     };
 }
 
-function selectTrackById(db, trackId, callback)
+function selectTrackById(db, trackId)
 {
     var statement = db.prepare(
         "SELECT * FROM track WHERE rowid = $trackId");
 
-    statement.get({
+    return statement.getAsync({
         $trackId: trackId
-    }, function(err, track)
-    {
-        if(err)
-        {
-            console.error(err);
-        }
+    });
+}
 
-        callback(err, track);
+function doScrobble(lastfm, options)
+{
+    return new Promise(function(resolve, reject)
+    {
+        options.callback = function(result)
+        {
+            if(result.success)
+            {
+                resolve(result);
+            }
+            else
+            {
+                reject(result.error);
+            }
+        };
+
+        lastfm.doScrobble(options);
     });
 }
 
@@ -136,38 +151,32 @@ function submitPlayHandler(db, lastfm)
         //TODO: correct for duration
         var startedPlaying = req.body.started_playing || Math.floor(Date.now() / 1000);
 
-        statement.run({
+        statement.runAsync({
             $id: trackId,
             $started_playing: startedPlaying
-        }, function(err)
+        }).then(function()
         {
-            selectTrackById(db, trackId, function(err, track)
-            {
-                console.log("played", track);
-
-                lastfm.doScrobble({
-                    method: 'track.scrobble',
-                    artist: track.artist,
-                    track: track.title,
-                    timestamp: startedPlaying,
-                    album: track.album,
-                    trackNumber: track.track_number,
-                    duration: track.duration,
-                    callback: function(result)
-                    {
-                        if(result.success)
-                        {
-                            res.statusCode = 200;
-                        }
-                        else
-                        {
-                            console.error(result.error);
-                            res.statusCode = 500;
-                        }
-                        res.end();
-                    }
-                });
+            return selectTrackById(db, trackId);
+        }).then(function(track)
+        {
+            return doScrobble(lastfm, {
+                method: 'track.scrobble',
+                artist: track.artist,
+                track: track.title,
+                timestamp: startedPlaying,
+                album: track.album,
+                trackNumber: track.track_number,
+                duration: track.duration
             });
+        }).then(function()
+        {
+            res.statusCode = 200;
+            res.end();
+        }).catch(function(error)
+        {
+            console.error(error)
+            res.statusCode = 500;
+            res.end();
         });
     }
 }
@@ -182,30 +191,25 @@ function submitNowPlayingHandler(db, lastfm)
         console.log(req.url, req.body);
         var trackId = req.body.id;
 
-        selectTrackById(db, trackId, function(err, track)
+        selectTrackById(db, trackId).then(function(track)
         {
-            console.log("now playing", track);
-            lastfm.doScrobble({
+            return doScrobble(lastfm, {
                 method: 'track.updateNowPlaying',
                 artist: track.artist,
                 track: track.title,
                 album: track.album,
                 trackNumber: track.track_number,
-                duration: track.duration,
-                callback: function(result)
-                {
-                    if(result.success)
-                    {
-                        res.statusCode = 200;
-                    }
-                    else
-                    {
-                        console.error(result.error);
-                        res.statusCode = 500;
-                    }
-                    res.end();
-                }
+                duration: track.duration
             });
+        }).then(function()
+        {
+            res.statusCode = 200;
+            res.end();
+        }).catch(function(error)
+        {
+            console.error(error)
+            res.statusCode = 500;
+            res.end();
         });
     }
 }
