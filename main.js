@@ -42,6 +42,7 @@ function initRouter(db, lastfm)
         router.get("/albums", albumsHandler(db));
         router.get("/tracks", tracksHandler(db));
         router.post("/submit-play", submitPlayHandler(db, lastfm));
+        router.post("/submit-now-playing", submitNowPlayingHandler(db, lastfm));
     });
 
     return result;
@@ -103,31 +104,109 @@ function tracksHandler(db)
     };
 }
 
-function submitPlayHandler(db)
+function selectTrackById(db, trackId, callback)
 {
     var statement = db.prepare(
-        "UPDATE track SET play_count = play_count + 1, last_play = $last_play " +
+        "SELECT * FROM track WHERE rowid = $trackId");
+
+    statement.get({
+        $trackId: trackId
+    }, function(err, track)
+    {
+        if(err)
+        {
+            console.error(err);
+        }
+
+        callback(err, track);
+    });
+}
+
+function submitPlayHandler(db, lastfm)
+{
+    var statement = db.prepare(
+        "UPDATE track SET play_count = play_count + 1, last_play = $started_playing " +
         "WHERE rowid = $id");
 
     return function(req, res, next)
     {
         console.log(req.url, req.body);
+        var trackId = req.body.id;
+
+        //TODO: correct for duration
+        var startedPlaying = req.body.started_playing || Math.floor(Date.now() / 1000);
 
         statement.run({
-            $id: req.body.id,
-            $last_play: req.body.last_play || Math.floor(Date.now() / 1000)
+            $id: trackId,
+            $started_playing: startedPlaying
         }, function(err)
         {
-            if(err)
+            selectTrackById(db, trackId, function(err, track)
             {
-                throw err;
-            }
+                console.log("played", track);
 
-            res.statusCode = 200;
-            res.end();
+                lastfm.doScrobble({
+                    method: 'track.scrobble',
+                    artist: track.artist,
+                    track: track.title,
+                    timestamp: startedPlaying,
+                    album: track.album,
+                    trackNumber: track.track_number,
+                    duration: track.duration,
+                    callback: function(result)
+                    {
+                        if(result.success)
+                        {
+                            res.statusCode = 200;
+                        }
+                        else
+                        {
+                            console.error(result.error);
+                            res.statusCode = 500;
+                        }
+                        res.end();
+                    }
+                });
+            });
         });
+    }
+}
 
+function submitNowPlayingHandler(db, lastfm)
+{
+    var statement = db.prepare(
+        "SELECT * FROM track WHERE rowid = $id");
 
+    return function(req, res, next)
+    {
+        console.log(req.url, req.body);
+        var trackId = req.body.id;
+
+        selectTrackById(db, trackId, function(err, track)
+        {
+            console.log("now playing", track);
+            lastfm.doScrobble({
+                method: 'track.updateNowPlaying',
+                artist: track.artist,
+                track: track.title,
+                album: track.album,
+                trackNumber: track.track_number,
+                duration: track.duration,
+                callback: function(result)
+                {
+                    if(result.success)
+                    {
+                        res.statusCode = 200;
+                    }
+                    else
+                    {
+                        console.error(result.error);
+                        res.statusCode = 500;
+                    }
+                    res.end();
+                }
+            });
+        });
     }
 }
 
