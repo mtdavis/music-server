@@ -5,19 +5,43 @@ var sqlite3 = require("sqlite3");
 var connectRoute = require("connect-route");
 var url = require("url");
 var bodyParser = require("body-parser");
+var SimpleLastfm = require("simple-lastfm");
+var musicServerSettings = require("./music-server-settings.json");
 
 function initDatabase()
 {
-    return new sqlite3.Database("db.sqlite");
+    return new sqlite3.Database(musicServerSettings.files.db_path);
 }
 
-function initRouter(db)
+function initLastfm()
+{
+    var result = new SimpleLastfm(musicServerSettings.lastfm);
+
+    if(musicServerSettings.lastfm.session_key === null)
+    {
+        result.getSessionKey(function(result)
+        {
+            if(result.success)
+            {
+                console.log("got last.fm session key: " + result.session_key);
+            }
+            else
+            {
+                console.error("could not get last.fm session key");
+            }
+        });
+    }
+
+    return result;
+}
+
+function initRouter(db, lastfm)
 {
     var result = connectRoute(function(router)
     {
         router.get("/albums", albumsHandler(db));
         router.get("/tracks", tracksHandler(db));
-        router.post("/submit-play", submitPlayHandler(db));
+        router.post("/submit-play", submitPlayHandler(db, lastfm));
     });
 
     return result;
@@ -102,13 +126,15 @@ function submitPlayHandler(db)
             res.statusCode = 200;
             res.end();
         });
+
+
     }
 }
 
 function startServer(db, router)
 {
     var app = connect();
-    app.use("/stream", serveStatic("D:/music/"));
+    app.use("/stream", serveStatic(musicServerSettings.files.base_stream_path));
     app.use("/", serveStatic("./client/build"));
     app.use(bodyParser.urlencoded({extended: false}));
     app.use(router);
@@ -118,7 +144,8 @@ function startServer(db, router)
 function main()
 {
     var db = initDatabase();
-    var router = initRouter(db);
+    var lastfm = initLastfm();
+    var router = initRouter(db, lastfm);
     startServer(db, router);
 }
 
