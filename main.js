@@ -51,60 +51,97 @@ function initRouter(db, lastfm)
     return result;
 }
 
+function selectFromDb(db, lastModifiedSql, selectSql, sqlParamsBuilder)
+{
+    return function(req, res, next)
+    {
+        console.log(req.url);
+
+        var lastModifed;
+        var ifModifiedSince = null;
+        if(req.headers["if-modified-since"])
+        {
+            var ifModifiedSince = new Date(req.headers["if-modified-since"]);
+        }
+
+        var sqlParams = {};
+        if(sqlParamsBuilder)
+        {
+            sqlParams = sqlParamsBuilder(req);
+        }
+
+        db.getAsync(lastModifiedSql, sqlParams).then(function(row)
+        {
+            lastModified = new Date(row.last_modified * 1000);
+
+            if(ifModifiedSince &&
+                ifModifiedSince.getTime() === lastModified.getTime())
+            {
+                res.writeHead(304, {
+                    "Last-Modified": lastModified.toUTCString()
+                })
+                res.end();
+            }
+            else
+            {
+                return db.allAsync(selectSql, sqlParams);
+            }
+        }).then(function(rows)
+        {
+            res.writeHead(200, {
+                "Content-Type": "application/json",
+                "Pragma": "Public",
+                "Last-Modified": lastModified.toUTCString()
+            });
+            res.end(JSON.stringify(rows));
+        }).catch(function(error)
+        {
+            console.error(error)
+            res.statusCode = 500;
+            res.end();
+        });
+    }
+}
+
 function albumsHandler(db)
 {
-    var statement = db.prepare(
-        "SELECT MIN(rowid) AS id, album_artist, album, genre, SUM(duration) AS duration, " +
+    var lastModifiedSql = "SELECT MAX(row_modified) AS last_modified " +
+        "FROM track " +
+        "WHERE album != ''";
+
+    var albumsSql = "SELECT MIN(rowid) AS id, album_artist, album, genre, SUM(duration) AS duration, " +
         "COUNT(track_number) AS tracks, year, " +
         "MIN(last_play) AS last_play, MIN(play_count) AS play_count " +
         "FROM track " +
         "WHERE album != '' " +
-        "GROUP BY album_artist, album");
+        "GROUP BY album_artist, album";
 
-    return function(req, res, next)
-    {
-        console.log(req.url);
-
-        statement.allAsync().then(function(rows)
-        {
-            res.statusCode = 200;
-            res.end(JSON.stringify(rows));
-        }).catch(function(error)
-        {
-            console.error(error)
-            res.statusCode = 500;
-            res.end();
-        });
-    };
+    return selectFromDb(db, lastModifiedSql, albumsSql);
 }
 
 function tracksHandler(db)
 {
-    var statement = db.prepare(
-        "SELECT rowid AS id, * FROM track " +
+    var lastModifiedSql = "SELECT max(row_modified) AS last_modified " +
+        "FROM track " +
+        "WHERE album_artist LIKE $album_artist " +
+        "AND album LIKE $album";
+
+    var tracksSql = "SELECT rowid AS id, * FROM track " +
         "WHERE album_artist LIKE $album_artist " +
         "AND album LIKE $album " +
-        "ORDER BY album_artist, album, track_number");
+        "ORDER BY album_artist, album, track_number";
 
-    return function(req, res, next)
+    var sqlParamsBuilder = function(req)
     {
-        console.log(req.url);
         var query = url.parse(req.url, true)["query"];
 
-        statement.allAsync({
+        return {
             $album_artist: query.album_artist || "%",
             $album: query.album || "%"
-        }).then(function(rows)
-        {
-            res.statusCode = 200;
-            res.end(JSON.stringify(rows));
-        }).catch(function(error)
-        {
-            console.error(error)
-            res.statusCode = 500;
-            res.end();
-        });
-    };
+        };
+    }
+
+    return selectFromDb(db, lastModifiedSql, tracksSql, sqlParamsBuilder);
 }
 
 function selectTrackById(db, trackId)

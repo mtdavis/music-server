@@ -15,7 +15,8 @@ function createTable(db)
         "year INTEGER, " +
         "last_play INTEGER, " +
         "play_count TEXT NOT NULL, " +
-        "path TEXT NOT NULL" +
+        "path TEXT NOT NULL, " +
+        "row_modified INTEGER" +
         ")");
 }
 
@@ -33,8 +34,10 @@ function insertTracks(db, tracks)
     console.log("Inserting tracks...");
 
     var statement = db.prepare("INSERT INTO track " +
-        "(title, artist, album_artist, album, genre, duration, track_number, year, last_play, play_count, path) " + 
-        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        "(title, artist, album_artist, album, genre, duration, track_number, year, last_play, play_count, path, row_modified) " + 
+        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+    var currentTime = Math.floor(new Date().getTime() / 1000);
 
     for(var key in tracks)
     {
@@ -53,7 +56,8 @@ function insertTracks(db, tracks)
             track["Year"],
             track["Play Date"],
             track["Play Count"] || 0,
-            location);
+            location,
+            track["Play Date"] || currentTime);
     }
 
     statement.finalize();
