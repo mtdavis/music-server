@@ -8,6 +8,8 @@
         "connect": "^3.3.5",
         "serve-static": "^1.9.2",
         "connect-route": "^0.1.5",
-        "body-parser": "^1.12.3"
+        "body-parser": "^1.12.3",
+        "simple-lastfm": "^1.0.5",
+        "bluebird": "^2.9.24"
     }
 }

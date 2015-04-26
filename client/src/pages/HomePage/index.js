@@ -1,6 +1,6 @@
 var React = require('react');
 
-var Fluxxor = require('Fluxxor');
+var Fluxxor = require('fluxxor');
 var FluxMixin = Fluxxor.FluxMixin(React);
 var StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
@@ -109,6 +109,7 @@ var MusicStore = Fluxxor.createStore({
         this.api.onplay = function() {
             console.log("gapless5 onplay");
             this.playerState = PlayerState.PLAYING;
+            this.onSubmitNowPlaying();
             this.emit("change");
         }.bind(this);
 
@@ -127,6 +128,7 @@ var MusicStore = Fluxxor.createStore({
         this.api.onfinishedtrack = function() {
             console.log("gapless5 onfinishedtrack");
             this.onSubmitPreviouslyPlayed();
+            this.onSubmitNowPlaying();
             this.emit("change");
         }.bind(this);
 
@@ -140,6 +142,7 @@ var MusicStore = Fluxxor.createStore({
             console.log("gapless5 onprev");
             this.previouslyPlayed = this.nowPlaying;
             this.nowPlaying -= 1;
+            this.onSubmitNowPlaying();
             this.emit("change");
         }.bind(this);
 
@@ -147,6 +150,7 @@ var MusicStore = Fluxxor.createStore({
             console.log("gapless5 onnext");
             this.previouslyPlayed = this.nowPlaying;
             this.nowPlaying += 1;
+            this.onSubmitNowPlaying();
             this.emit("change");
         }.bind(this);
 
@@ -233,6 +237,17 @@ var MusicStore = Fluxxor.createStore({
             id: playedTrack.id
         };
         $.post("submit-play", postData);
+    },
+
+    onSubmitNowPlaying: function() {
+        if(this.playerState === PlayerState.PLAYING)
+        {
+            var playingTrack = this.playlist[this.nowPlaying];
+            var postData = {
+                id: playingTrack.id
+            };
+            $.post("submit-now-playing", postData);
+        }
     }
 });
 
