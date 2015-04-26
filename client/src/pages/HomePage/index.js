@@ -1,6 +1,6 @@
 var React = require('react');
 
-var Fluxxor = require('Fluxxor');
+var Fluxxor = require('fluxxor');
 var FluxMixin = Fluxxor.FluxMixin(React);
 var StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
