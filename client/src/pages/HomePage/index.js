@@ -58,6 +58,7 @@ var PlayerState = {
 var MusicStore = Fluxxor.createStore({
     initialize: function() {
         this.albums = [];
+        this.albumsNotRecentlyPlayed = [];
         this.api = null;
         this.playerState = PlayerState.STOPPED;
         this.playlist = [];
@@ -66,6 +67,11 @@ var MusicStore = Fluxxor.createStore({
 
         $.getJSON("/albums", function(albums) {
             this.albums = albums;
+            this.emit("change");
+        }.bind(this));
+
+        $.getJSON("/albums/not-recently-played", function(albumsNotRecentlyPlayed) {
+            this.albumsNotRecentlyPlayed = albumsNotRecentlyPlayed;
             this.emit("change");
         }.bind(this));
 
@@ -293,7 +299,7 @@ var Playlist = React.createClass({
     render: function() {
         var musicStore = this.getFlux().store("MusicStore");
 
-        var playlistItems = musicStore.playlist.map(function(track) {
+        var playlistItems = musicStore.playlist.map(function(track, index) {
             var icon = "icon-music";
 
             if(track === musicStore.playlist[musicStore.nowPlaying])
@@ -314,7 +320,7 @@ var Playlist = React.createClass({
 
             return {
                 payload: track,
-                text: track.artist + " - " + track.title,
+                text: (index + 1) + ". " + track.artist + " - " + track.title,
                 iconClassName: icon
             }
         });
@@ -333,9 +339,14 @@ var Playlist = React.createClass({
 var AlbumList = React.createClass({
     mixins: [FluxMixin],
 
+    getDefaultProps: function() {
+        return {
+            albums: []
+        };
+    },
+
     render: function() {
-        var musicStore = this.getFlux().store("MusicStore");
-        var albumItems = musicStore.albums.map(function(album) {
+        var albumItems = this.props.albums.map(function(album) {
             return {
                 payload: album,
                 text: album.album_artist + " - " + album.album
@@ -382,9 +393,7 @@ var GaplessPlayer = React.createClass({
 
         return (
             <div>
-                <Paper>
-                    <p id={this.props.id}></p>
-                </Paper>
+                <p id={this.props.id} style={{display:"none"}}></p>
 
                 <Paper>
                     <IconButton iconClassName="icon-previous"
@@ -403,7 +412,10 @@ var GaplessPlayer = React.createClass({
 
                 <Tabs>
                     <Tab label="All Albums">
-                        <AlbumList />
+                        <AlbumList albums={musicStore.albums} />
+                    </Tab>
+                    <Tab label="Not Recently Played">
+                        <AlbumList albums={musicStore.albumsNotRecentlyPlayed} />
                     </Tab>
                     <Tab label="Playlist">
                         <Playlist />

@@ -42,6 +42,7 @@ function initRouter(db, lastfm)
 {
     var result = connectRoute(function(router)
     {
+        router.get("/albums/not-recently-played", albumsNotRecentlyPlayedHandler(db));
         router.get("/albums", albumsHandler(db));
         router.get("/tracks", tracksHandler(db));
         router.post("/submit-play", submitPlayHandler(db, lastfm));
@@ -51,7 +52,7 @@ function initRouter(db, lastfm)
     return result;
 }
 
-function selectFromDb(db, lastModifiedSql, selectSql, sqlParamsBuilder)
+function selectFromDb(db, lastModifiedSql, selectSql, settings)
 {
     return function(req, res, next)
     {
@@ -64,13 +65,13 @@ function selectFromDb(db, lastModifiedSql, selectSql, sqlParamsBuilder)
             var ifModifiedSince = new Date(req.headers["if-modified-since"]);
         }
 
-        var sqlParams = {};
-        if(sqlParamsBuilder)
+        var lastModifiedSqlParams = {};
+        if(settings && settings.lastModifiedSqlParamsBuilder)
         {
-            sqlParams = sqlParamsBuilder(req);
+            lastModifiedSqlParams = settings.lastModifiedSqlParamsBuilder(req);
         }
 
-        db.getAsync(lastModifiedSql, sqlParams).then(function(row)
+        db.getAsync(lastModifiedSql, lastModifiedSqlParams).then(function(row)
         {
             lastModified = new Date(row.last_modified * 1000);
 
@@ -84,7 +85,12 @@ function selectFromDb(db, lastModifiedSql, selectSql, sqlParamsBuilder)
             }
             else
             {
-                return db.allAsync(selectSql, sqlParams);
+                var selectSqlParams = {}
+                if(settings && settings.selectSqlParamsBuilder)
+                {
+                    selectSqlParams = settings.selectSqlParamsBuilder(req);
+                }
+                return db.allAsync(selectSql, selectSqlParams);
             }
         }).then(function(rows)
         {
@@ -101,6 +107,41 @@ function selectFromDb(db, lastModifiedSql, selectSql, sqlParamsBuilder)
             res.end();
         });
     }
+}
+
+function albumsNotRecentlyPlayedHandler(db)
+{
+    var lastModifiedSql = "SELECT MAX(row_modified) AS last_modified " +
+        "FROM track " +
+        "WHERE album != ''";
+
+    var albumsSql =
+        "SELECT * FROM (" +
+        "    SELECT MIN(rowid) AS id, album_artist, album, genre, SUM(duration) AS duration, " +
+        "    COUNT(track_number) AS tracks, year, " +
+        "    (CASE WHEN COUNT(last_play) = COUNT(*) THEN min(last_play) ELSE NULL END) AS last_play, " +
+        "    MIN(play_count) AS play_count " +
+        "    FROM track " +
+        "    WHERE album != '' " +
+        "    GROUP BY album_artist, album) " +
+        "WHERE last_play IS NULL OR last_play < $before_timestamp " +
+        "ORDER BY last_play DESC";
+
+    var selectSqlParamsBuilder = function(req)
+    {
+        var query = url.parse(req.url, true)["query"];
+        var daysAgo = query.daysAgo || 42; //default == 6 weeks
+        var secondsAgo = daysAgo * 24 * 60 * 60;
+        var beforeTimestamp = Math.floor(new Date().getTime() / 1000) - secondsAgo;
+
+        return {
+            $before_timestamp: beforeTimestamp
+        };
+    };
+
+    return selectFromDb(db, lastModifiedSql, albumsSql, {
+        selectSqlParamsBuilder: selectSqlParamsBuilder
+    });
 }
 
 function albumsHandler(db)
@@ -139,9 +180,12 @@ function tracksHandler(db)
             $album_artist: query.album_artist || "%",
             $album: query.album || "%"
         };
-    }
+    };
 
-    return selectFromDb(db, lastModifiedSql, tracksSql, sqlParamsBuilder);
+    return selectFromDb(db, lastModifiedSql, tracksSql, {
+        lastModifiedSqlParamsBuilder: sqlParamsBuilder,
+        selectSqlParamsBuilder: sqlParamsBuilder
+    });
 }
 
 function selectTrackById(db, trackId)
