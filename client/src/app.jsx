@@ -3,6 +3,16 @@ var Router = require('react-router');
 var mui = require('material-ui');
 var injectTapEventPlugin = require("react-tap-event-plugin");
 
+var Fluxxor = require('fluxxor');
+var FluxMixin = Fluxxor.FluxMixin(React);
+var StoreWatchMixin = Fluxxor.StoreWatchMixin;
+
+var MusicStore = require('./stores/MusicStore');
+var {PlayerState, GaplessPlayer} = require('./music-lib');
+
+var Paper = mui.Paper;
+var IconButton = mui.IconButton;
+
 // A lot of the code is auto-generated. However, fiddling around with it
 // shouldn't be a catastrophic failure. Just that you'd need to know your way
 // around a little. However, **BE CAREFUL WHILE DELETING SOME OF THE COMMENTS IN
@@ -10,17 +20,23 @@ var injectTapEventPlugin = require("react-tap-event-plugin");
 
 // inject:pagerequire
 var HomePage = require('./pages/HomePage');
+var AlbumsPage = require('./pages/AlbumsPage');
+var NotRecentlyPlayedPage = require('./pages/NotRecentlyPlayedPage');
 // endinject
 
 var menuItems = [
   // inject:menuitems
-  { payload: 'home', text: 'Mike\'s Music Player' },
+  { payload: 'home', text: 'Now Playing' },
+  { payload: 'albums', text: 'All Albums' },
+  { payload: 'not-recently-played', text: 'Not Recently Played' },
   // endinject
 ];
 
 var titles = {
   // inject:titles
-  '/home': 'Mike\'s Music Player',
+  '/home': 'Now Playing',
+  '/albums': 'All Albums',
+  '/not-recently-played': 'Not Recently Played',
   // endinject
 };
 
@@ -68,12 +84,45 @@ var LeftNavComponent = React.createClass({
 });
 
 var Master = React.createClass({
-  mixins: [Router.State],
+  mixins: [Router.State, FluxMixin, StoreWatchMixin("MusicStore")],
+
+  getStateFromFlux: function() {
+    return this.getFlux().store("MusicStore").getState();
+  },
 
   _onMenuIconButtonTouchTap: function () {
     this.refs.leftNav.toggle();
   },
+
   render: function () {
+    var musicStore = this.getFlux().store("MusicStore");
+    var playButtonEnabled = musicStore.playlist.length > 0;
+    var playOrPause = musicStore.playerState === PlayerState.PLAYING ? "icon-pause" : "icon-play"
+    var stopButtonEnabled = musicStore.playerState !== PlayerState.STOPPED;
+    var prevButtonEnabled = musicStore.playlist.length > 1 &&
+        musicStore.nowPlaying > 0;
+    var nextButtonEnabled = musicStore.playlist.length > 1 &&
+        musicStore.nowPlaying < musicStore.playlist.length - 1;
+
+    var toolbar = (
+      <div style={{textAlign:"right"}}>
+          <GaplessPlayer />
+
+          <IconButton iconClassName="icon-previous"
+              disabled={!prevButtonEnabled}
+              onClick={this.getFlux().actions.jumpToPreviousTrack} />
+          <IconButton iconClassName={playOrPause}
+              disabled={!playButtonEnabled}
+              onClick={this.getFlux().actions.playOrPause} />
+          <IconButton iconClassName="icon-stop"
+              disabled={!stopButtonEnabled}
+              onClick={this.getFlux().actions.stop} />
+          <IconButton iconClassName="icon-next"
+              disabled={!nextButtonEnabled}
+              onClick={this.getFlux().actions.jumpToNextTrack} />
+      </div>
+    );
+
     return (
       <AppCanvas predefinedLayout={1}>
 
@@ -82,6 +131,7 @@ var Master = React.createClass({
           title={titles[this.getPath()]}
           onMenuIconButtonTouchTap={this._onMenuIconButtonTouchTap}
           zDepth={0}>
+          {toolbar}
         </AppBar>
 
         <LeftNavComponent ref='leftNav' menuItems={menuItems} />
@@ -99,11 +149,49 @@ var routes = (
   <Route name='app' path='/' handler={Master}>
     {/* inject:route */}
     <Route name='home' handler={HomePage} />
+    <Route name='albums' handler={AlbumsPage} />
+    <Route name='not-recently-played' handler={NotRecentlyPlayedPage} />
     {/* endinject */}
     <DefaultRoute handler={HomePage} />
   </Route>
 );
 
+var actions = {
+    playAlbum: function(album) {
+        this.dispatch("PLAY_ALBUM", album);
+    },
+
+    initializePlayer: function(playerId) {
+        this.dispatch("INITIALIZE_PLAYER", playerId);
+    },
+
+    playOrPause: function() {
+        this.dispatch("PLAY_OR_PAUSE_PLAYBACK");
+    },
+
+    stop: function() {
+        this.dispatch("STOP_PLAYBACK");
+    },
+
+    jumpToPlaylistItem: function(index) {
+        this.dispatch("JUMP_TO_PLAYLIST_ITEM", index);
+    },
+
+    jumpToPreviousTrack: function() {
+        this.dispatch("JUMP_TO_PREVIOUS_TRACK");
+    },
+
+    jumpToNextTrack: function() {
+        this.dispatch("JUMP_TO_NEXT_TRACK");
+    }
+};
+
+var stores = {
+    MusicStore: new MusicStore()
+};
+
+var flux = new Fluxxor.Flux(stores, actions);
+
 Router.run(routes, function (Handler) {
-  React.render(<Handler />, document.body);
+  React.render(<Handler flux={flux} />, document.body);
 });
