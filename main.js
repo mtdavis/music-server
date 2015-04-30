@@ -8,6 +8,8 @@ var url = require("url");
 var bodyParser = require("body-parser");
 var SimpleLastfm = require("simple-lastfm");
 var musicServerSettings = require("./music-server-settings.json");
+var fs = Promise.promisifyAll(require("fs"));
+var path = require("path");
 
 function initDatabase()
 {
@@ -45,6 +47,7 @@ function initRouter(db, lastfm)
         router.get("/albums/not-recently-played", albumsNotRecentlyPlayedHandler(db));
         router.get("/albums", albumsHandler(db));
         router.get("/tracks", tracksHandler(db));
+        router.get("/album-art", albumArtHandler(db));
         router.post("/submit-play", submitPlayHandler(db, lastfm));
         router.post("/submit-now-playing", submitNowPlayingHandler(db, lastfm));
     });
@@ -186,6 +189,74 @@ function tracksHandler(db)
         lastModifiedSqlParamsBuilder: sqlParamsBuilder,
         selectSqlParamsBuilder: sqlParamsBuilder
     });
+}
+
+function albumArtHandler(db)
+{
+    return function(req, res, next)
+    {
+        var query = url.parse(req.url, true)["query"];
+        var trackId = query.id;
+
+        var ifModifiedSince = null;
+        if(req.headers["if-modified-since"])
+        {
+            var ifModifiedSince = new Date(req.headers["if-modified-since"]);
+        }
+
+        selectTrackById(db, trackId).then(function(track)
+        {
+            console.log(track);
+
+            //TODO: confirm it's actually on an album
+
+            //find path to mp3
+            var trackPath = path.join(musicServerSettings.files.base_stream_path, track.path);
+
+            //find directory containing mp3
+            var trackDirectory = path.dirname(trackPath);
+
+            var expectedArtPath = path.join(trackDirectory, track.album + ".jpg");
+
+            console.log(expectedArtPath);
+
+            //assume it exists and read it.
+            var contents = fs.readFileAsync(expectedArtPath);
+            var stat = fs.statAsync(expectedArtPath);
+            console.log(expectedArtPath);
+
+            return Promise.join(contents, stat);
+        }).then(function(array)
+        {
+            var contents = array[0];
+            var stat = array[1];
+            var lastModified = stat.mtime;
+
+            if(ifModifiedSince &&
+                ifModifiedSince.getTime() === lastModified.getTime())
+            {
+                res.writeHead(304, {
+                    "Last-Modified": lastModified.toUTCString()
+                })
+                res.end();
+            }
+            else
+            {
+                res.writeHead(200, {
+                    "Content-Type": "image/JPEG",
+                    "Pragma": "Public",
+                    "Last-Modified": lastModified.toUTCString()
+                });
+                res.end(contents);
+            }
+        }).catch(function(error)
+        {
+            console.trace(error)
+            res.statusCode = 500;
+            res.end();
+        });
+
+    };
 }
 
 function selectTrackById(db, trackId)
