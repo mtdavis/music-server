@@ -30,5 +30,10 @@
     "unmockedModulePathPatterns": [
       "node_modules/fluxxor"
     ]
+  },
+  "browserify": {
+    "transform": [
+      ["reactify", {"es6": true}]
+    ]
   }
 }
