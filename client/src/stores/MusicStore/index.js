@@ -53,6 +53,7 @@ module.exports = Fluxxor.createStore({
             this.onStopPlayback();
             this.setPlaylist(tracks);
             this.onPlayOrPausePlayback();
+            location.hash = "home";
             this.emit("change");
         }.bind(this));
     },
