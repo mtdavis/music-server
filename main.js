@@ -204,6 +204,9 @@ function albumArtHandler(db)
             var ifModifiedSince = new Date(req.headers["if-modified-since"]);
         }
 
+        var relativeTrackPath;
+        var relativeTrackDirectory;
+
         selectTrackById(db, trackId).then(function(track)
         {
             console.log(track);
@@ -211,43 +214,30 @@ function albumArtHandler(db)
             //TODO: confirm it's actually on an album
 
             //find path to mp3
-            var trackPath = path.join(musicServerSettings.files.base_stream_path, track.path);
+            relativeTrackPath = track.path;
+            relativeTrackDirectory = path.dirname(relativeTrackPath);
+            relativeExpectedArtPath = path.join(relativeTrackDirectory, track.album + ".jpg");
 
-            //find directory containing mp3
-            var trackDirectory = path.dirname(trackPath);
+            //TODO: check for PNG too
 
-            var expectedArtPath = path.join(trackDirectory, track.album + ".jpg");
-
-            console.log(expectedArtPath);
+            var fullExpectedArtPath = path.join(musicServerSettings.files.base_stream_path, relativeExpectedArtPath);
 
             //assume it exists and read it.
-            var contents = fs.readFileAsync(expectedArtPath);
-            var stat = fs.statAsync(expectedArtPath);
-            console.log(expectedArtPath);
-
-            return Promise.join(contents, stat);
-        }).then(function(array)
+            return fs.statAsync(fullExpectedArtPath);
+        }).then(function(stat)
         {
-            var contents = array[0];
-            var stat = array[1];
-            var lastModified = stat.mtime;
-
-            if(ifModifiedSince &&
-                ifModifiedSince.getTime() === lastModified.getTime())
+            if(stat)
             {
-                res.writeHead(304, {
-                    "Last-Modified": lastModified.toUTCString()
+                //file exists; forward to the static address
+                res.writeHead(303, {
+                    "Location":"http://localhost/stream/" + relativeExpectedArtPath
                 })
                 res.end();
             }
             else
             {
-                res.writeHead(200, {
-                    "Content-Type": "image/JPEG",
-                    "Pragma": "Public",
-                    "Last-Modified": lastModified.toUTCString()
-                });
-                res.end(contents);
+                res.statusCode = 404;
+                res.end();
             }
         }).catch(function(error)
         {
