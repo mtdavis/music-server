@@ -49,10 +49,19 @@ var AlbumList = React.createClass({
     },
 
     render: function() {
+
         var albumItems = this.props.albums.map(function(album) {
+            var lastPlayString;
+            if(album.last_play !== null)
+            {
+                var lastPlayDate = new Date(album.last_play * 1000);
+                lastPlayString = lastPlayDate.getFullYear() + "/" + (lastPlayDate.getMonth()+1) + "/" + lastPlayDate.getDate();
+            }
+
             return {
                 payload: album,
-                text: album.album_artist + " - " + album.album
+                text: album.album_artist + " - " + album.album,
+                data: lastPlayString
             };
         });
 
