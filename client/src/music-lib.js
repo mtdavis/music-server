@@ -22,11 +22,11 @@ var GaplessPlayer = React.createClass({
     },
 
     componentDidMount: function() {
-        this.getFlux().actions.initializePlayer(this.props.id);
+        this.getFlux().actions.initializePlayer(this.getDOMNode());
     },
 
     componentWillUnmount: function() {
-        console.error("GaplessPlayer unmounting!");
+        console.log("GaplessPlayer unmounting!");
     },
 
     render: function() {
@@ -34,6 +34,7 @@ var GaplessPlayer = React.createClass({
 
         return (
             <p id={this.props.id} style={{display:"none"}}></p>
+            //<p id={this.props.id} style={{ position:"absolute", right:"20", top:"120" }}></p>
         );
     },
 });
@@ -117,9 +118,27 @@ var Playlist = React.createClass({
     }
 });
 
+var secondsToTimeString = function(seconds)
+{
+    var minutes = Math.floor(seconds / 60);
+    var remainderSeconds = seconds % 60;
+    var leadingZero = remainderSeconds < 10 ? "0" : "";
+    return minutes + ":" + leadingZero + remainderSeconds;
+};
+
+var timeStringToSeconds = function(timeString)
+{
+    var split = timeString.split(":");
+    var minutes = parseInt(split[0], 10);
+    var seconds = parseInt(split[1], 10);
+    return minutes * 60 + seconds;
+};
+
 module.exports = {
     PlayerState: PlayerState,
     GaplessPlayer: GaplessPlayer,
     AlbumList: AlbumList,
-    Playlist: Playlist
+    Playlist: Playlist,
+    secondsToTimeString: secondsToTimeString,
+    timeStringToSeconds: timeStringToSeconds
 };

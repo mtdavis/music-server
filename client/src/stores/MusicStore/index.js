@@ -1,5 +1,5 @@
 var Fluxxor = require('Fluxxor');
-var {PlayerState} = require('../../music-lib');
+var {PlayerState, timeStringToSeconds} = require('../../music-lib');
 
 module.exports = Fluxxor.createStore({
 
@@ -11,6 +11,7 @@ module.exports = Fluxxor.createStore({
         this.playlist = [];
         this.previouslyPlayed = 0;
         this.nowPlaying = 0;
+        this.currentTrackPosition = 0;
 
         $.getJSON("/albums", function(albums) {
             this.albums = albums;
@@ -56,8 +57,8 @@ module.exports = Fluxxor.createStore({
         }.bind(this));
     },
 
-    onInitializePlayer: function(playerId) {
-        this.api = new Gapless5(playerId);
+    onInitializePlayer: function(playerNode) {
+        this.api = new Gapless5(playerNode.id);
 
         this.api.onplay = function() {
             console.log("gapless5 onplay");
@@ -106,6 +107,32 @@ module.exports = Fluxxor.createStore({
             this.onSubmitNowPlaying();
             this.emit("change");
         }.bind(this);
+
+        var currentPositionNode = playerNode.querySelector(".g5position span:nth-child(1)");
+        var trackIndexNode = playerNode.querySelector(".g5position span:nth-child(3)");
+
+        var observer = new MutationObserver(function(mutationRecords)
+        {
+            for(var i = 0; i < mutationRecords.length; i++)
+            {
+                var mutation = mutationRecords[i];
+                if(mutation.target === currentPositionNode)
+                {
+                    var timeString = mutation.addedNodes[0].textContent.substr(0, 5);
+                    var newTrackPosition = timeStringToSeconds(timeString);
+                    if(newTrackPosition !== this.currentTrackPosition)
+                    {
+                        this.currentTrackPosition = newTrackPosition;
+                        this.emit("change");
+                    }
+                }
+            }
+        }.bind(this));
+
+        observer.observe(currentPositionNode, {
+            childList: true,
+            subtree: true
+        });
 
         this.emit("change");
     },

@@ -8,10 +8,9 @@ var FluxMixin = Fluxxor.FluxMixin(React);
 var StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
 var MusicStore = require('./stores/MusicStore');
-var {PlayerState, GaplessPlayer} = require('./music-lib');
+var {PlayerState, GaplessPlayer, secondsToTimeString} = require('./music-lib');
 
-var Paper = mui.Paper;
-var IconButton = mui.IconButton;
+var {Paper, IconButton, MenuItem} = mui;
 
 // A lot of the code is auto-generated. However, fiddling around with it
 // shouldn't be a catastrophic failure. Just that you'd need to know your way
@@ -27,6 +26,7 @@ var NotRecentlyPlayedPage = require('./pages/NotRecentlyPlayedPage');
 var menuItems = [
   // inject:menuitems
   { payload: 'home', text: 'Now Playing' },
+  { type: MenuItem.Types.SUBHEADER, text: 'Browse' },
   { payload: 'albums', text: 'All Albums' },
   { payload: 'not-recently-played', text: 'Not Recently Played' },
   // endinject
@@ -34,6 +34,7 @@ var menuItems = [
 
 var titles = {
   // inject:titles
+  '/': 'Now Playing',
   '/home': 'Now Playing',
   '/albums': 'All Albums',
   '/not-recently-played': 'Not Recently Played',
@@ -61,6 +62,7 @@ var LeftNavComponent = React.createClass({
     return (
       <LeftNav
         ref="leftNav"
+        header={<h1>{"Mike's Music Player"}</h1>}
         docked={false}
         isInitiallyOpen={false}
         menuItems={this.props.menuItems}
@@ -123,12 +125,18 @@ var Master = React.createClass({
       </div>
     );
 
+    var timeIndicator = "";
+    if(musicStore.playerState !== PlayerState.STOPPED)
+    {
+      timeIndicator = " \u2022 " + secondsToTimeString(musicStore.currentTrackPosition);
+    }
+
     return (
       <AppCanvas predefinedLayout={1}>
 
         <AppBar
           className="mui-dark-theme"
-          title={titles[this.getPath()]}
+          title={titles[this.getPath()] + timeIndicator}
           onMenuIconButtonTouchTap={this._onMenuIconButtonTouchTap}
           zDepth={0}>
           {toolbar}
@@ -161,8 +169,8 @@ var actions = {
         this.dispatch("PLAY_ALBUM", album);
     },
 
-    initializePlayer: function(playerId) {
-        this.dispatch("INITIALIZE_PLAYER", playerId);
+    initializePlayer: function(playerNode) {
+        this.dispatch("INITIALIZE_PLAYER", playerNode);
     },
 
     playOrPause: function() {
