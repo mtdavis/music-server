@@ -222,11 +222,19 @@ module.exports = Fluxxor.createStore({
     onSubmitNowPlaying: function() {
         if(this.playerState === PlayerState.PLAYING)
         {
-            var playingTrack = this.playlist[this.nowPlaying];
-            var postData = {
-                id: playingTrack.id
-            };
-            $.post("submit-now-playing", postData);
+            var playingTrackId = this.playlist[this.nowPlaying].id;
+
+            //submit in 5 seconds if it's still playing.
+            setTimeout(function()
+            {
+                if(playingTrackId === this.playlist[this.nowPlaying].id)
+                {
+                    var postData = {
+                        id: playingTrackId
+                    };
+                    $.post("submit-now-playing", postData);
+                }
+            }.bind(this), 5000);
         }
     }
 
