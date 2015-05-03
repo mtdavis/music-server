@@ -10,6 +10,7 @@ var SimpleLastfm = require("simple-lastfm");
 var musicServerSettings = require("./music-server-settings.json");
 var fs = Promise.promisifyAll(require("fs"));
 var path = require("path");
+var musicmetadata = require("musicmetadata");
 
 function initDatabase()
 {
@@ -195,6 +196,7 @@ function albumArtHandler(db)
 {
     return function(req, res, next)
     {
+        console.log(req.url);
         var query = url.parse(req.url, true)["query"];
         var trackId = query.id;
 
@@ -204,35 +206,73 @@ function albumArtHandler(db)
             var ifModifiedSince = new Date(req.headers["if-modified-since"]);
         }
 
-        var relativeTrackPath;
-        var relativeTrackDirectory;
+        var relativeExpectedArtPathJpg;
+        var relativeExpectedArtPathPng;
 
-        selectTrackById(db, trackId).then(function(track)
+        selectTrackByIdAsync(db, trackId).then(function(track)
         {
-            console.log(track);
-
-            //TODO: confirm it's actually on an album
-
             //find path to mp3
-            relativeTrackPath = track.path;
-            relativeTrackDirectory = path.dirname(relativeTrackPath);
-            relativeExpectedArtPath = path.join(relativeTrackDirectory, track.album + ".jpg");
+            var relativeTrackPath = track.path;
+            var relativeTrackDirectory = path.dirname(relativeTrackPath);
+            relativeExpectedArtPathJpg = path.join(relativeTrackDirectory, track.album + ".jpg");
+            relativeExpectedArtPathPng = path.join(relativeTrackDirectory, track.album + ".png");
 
-            //TODO: check for PNG too
+            var fullTrackPath = path.join(musicServerSettings.files.base_stream_path, relativeTrackPath);
 
-            var fullExpectedArtPath = path.join(musicServerSettings.files.base_stream_path, relativeExpectedArtPath);
-
-            //assume it exists and read it.
-            return fs.statAsync(fullExpectedArtPath);
-        }).then(function(stat)
+            return Promise.join(
+                fs.statAsync(fullTrackPath),
+                fileExistsAsync(path.join(musicServerSettings.files.base_stream_path, relativeExpectedArtPathJpg)),
+                fileExistsAsync(path.join(musicServerSettings.files.base_stream_path, relativeExpectedArtPathPng)),
+                getMetadataAsync(fullTrackPath));
+        }).spread(function(mp3Stat, jpgExists, pngExists, metadata)
         {
-            if(stat)
+            //if file exists... forward to the static address
+            //it will handle caching info
+            if(jpgExists)
             {
-                //file exists; forward to the static address
                 res.writeHead(303, {
-                    "Location":"http://localhost/stream/" + relativeExpectedArtPath
-                })
+                    "Location":"/stream/" + relativeExpectedArtPathJpg
+                });
                 res.end();
+            }
+            else if(pngExists)
+            {
+                res.writeHead(303, {
+                    "Location":"/stream/" + relativeExpectedArtPathPng
+                });
+                res.end();
+            }
+            else if(metadata.picture && metadata.picture.length > 0)
+            {
+                var contentType;
+
+                if(metadata.picture[0].format === "jpg")
+                {
+                    contentType = "image/JPEG";
+                }
+                else
+                {
+                    //don't send a content type; maybe the browser can figure it out
+                    console.log("Unexpected album art format: " + metadata.picture[0].format);
+                }
+
+                if(ifModifiedSince &&
+                    ifModifiedSince.getTime() === mp3Stat.mtime.getTime())
+                {
+                    res.writeHead(304, {
+                        "Last-Modified": mp3Stat.mtime.toUTCString()
+                    });
+                    res.end();
+                }
+                else
+                {
+                    res.writeHead(200, {
+                        "Content-Type": contentType,
+                        "Pragma": "Public",
+                        "Last-Modified": mp3Stat.mtime.toUTCString()
+                    });
+                    res.end(metadata.picture[0].data);
+                }
             }
             else
             {
@@ -241,7 +281,7 @@ function albumArtHandler(db)
             }
         }).catch(function(error)
         {
-            console.trace(error)
+            console.trace(error);
             res.statusCode = 500;
             res.end();
         });
@@ -249,7 +289,28 @@ function albumArtHandler(db)
     };
 }
 
-function selectTrackById(db, trackId)
+function fileExistsAsync(filePath)
+{
+    return new Promise(function(resolve, reject)
+    {
+        fs.statAsync(filePath).then(function(stat)
+        {
+            resolve(true);
+        }).catch(function(error)
+        {
+            if(error.code === "ENOENT")
+            {
+                resolve(false);
+            }
+            else
+            {
+                reject(error);
+            }
+        });
+    });
+}
+
+function selectTrackByIdAsync(db, trackId)
 {
     var statement = db.prepare(
         "SELECT * FROM track WHERE rowid = $trackId");
@@ -259,7 +320,7 @@ function selectTrackById(db, trackId)
     });
 }
 
-function doScrobble(lastfm, options)
+function doScrobbleAsync(lastfm, options)
 {
     return new Promise(function(resolve, reject)
     {
@@ -276,6 +337,24 @@ function doScrobble(lastfm, options)
         };
 
         lastfm.doScrobble(options);
+    });
+}
+
+function getMetadataAsync(trackPath)
+{
+    return new Promise(function(resolve, reject)
+    {
+        musicmetadata(fs.createReadStream(trackPath), {}, function(err, metadata)
+        {
+            if(err)
+            {
+                reject(err);
+            }
+            else
+            {
+                resolve(metadata);
+            }
+        });
     });
 }
 
@@ -298,10 +377,10 @@ function submitPlayHandler(db, lastfm)
             $started_playing: startedPlaying
         }).then(function()
         {
-            return selectTrackById(db, trackId);
+            return selectTrackByIdAsync(db, trackId);
         }).then(function(track)
         {
-            return doScrobble(lastfm, {
+            return doScrobbleAsync(lastfm, {
                 method: 'track.scrobble',
                 artist: track.artist,
                 track: track.title,
@@ -333,9 +412,9 @@ function submitNowPlayingHandler(db, lastfm)
         console.log(req.url, req.body);
         var trackId = req.body.id;
 
-        selectTrackById(db, trackId).then(function(track)
+        selectTrackByIdAsync(db, trackId).then(function(track)
         {
-            return doScrobble(lastfm, {
+            return doScrobbleAsync(lastfm, {
                 method: 'track.updateNowPlaying',
                 artist: track.artist,
                 track: track.title,
