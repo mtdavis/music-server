@@ -43,7 +43,7 @@ function insertTracks(db, tracks)
     {
         var track = tracks[key];
 
-        var location = decodeURI(track["Location"]).
+        var location = unescape(decodeURI(track["Location"])).
             replace(/\\/g, "/").replace(/file:\/\/localhost\/D:\/music\//, "");
 
         statement.run(track["Name"], 

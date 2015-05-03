@@ -228,7 +228,8 @@ module.exports = Fluxxor.createStore({
             //submit in 5 seconds if it's still playing.
             setTimeout(function()
             {
-                if(playingTrackId === this.playlist[this.nowPlaying].id)
+                if(playingTrackId === this.playlist[this.nowPlaying].id &&
+                    this.playerState === PlayerState.PLAYING)
                 {
                     var postData = {
                         id: playingTrackId
