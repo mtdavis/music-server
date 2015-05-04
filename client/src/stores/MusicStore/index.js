@@ -1,4 +1,4 @@
-var Fluxxor = require('Fluxxor');
+var Fluxxor = require('fluxxor');
 var {PlayerState, timeStringToSeconds} = require('../../music-lib');
 
 module.exports = Fluxxor.createStore({
