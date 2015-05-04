@@ -10,19 +10,33 @@ module.exports = React.createClass({
 
   render: function () {
 
-    var nowPlayingImage;
+    var content;
     var musicStore = this.getFlux().store("MusicStore");
     if(musicStore.playlist.length !== 0)
     {
         var currentTrack = musicStore.playlist[musicStore.nowPlaying];
-        nowPlayingImage = <img src={"/album-art?id=" + currentTrack.id} />;
+        content = [
+          <img key="album-art" src={"/album-art?id=" + currentTrack.id} className="col-xs-12 col-sm-5" />,
+
+          <div key="playlist" className="col-xs-12 col-sm-7">
+            <Playlist />
+          </div>
+        ];
+    }
+    else
+    {
+      content = (
+        <div className="col-xs-12">
+          <Playlist />
+        </div>
+      );
     }
 
     return (
-      <div className='home-page'>
-        <Playlist />
-
-        {nowPlayingImage}
+      <div className='home-page container-fluid'>
+        <div className="row">
+          {content}
+        </div>
       </div>
     );
   }

@@ -62,7 +62,7 @@ var LeftNavComponent = React.createClass({
     return (
       <LeftNav
         ref="leftNav"
-        header={<h1>{"Mike's Music Player"}</h1>}
+        header={<div className="logo">{"Mike's Music Player"}</div>}
         docked={false}
         isInitiallyOpen={false}
         menuItems={this.props.menuItems}
