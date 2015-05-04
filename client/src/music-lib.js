@@ -66,7 +66,7 @@ var AlbumList = React.createClass({
         });
 
         return (
-            <Menu menuItems={albumItems} onItemClick={this.onAlbumClick}/>
+            <Menu menuItems={albumItems} onItemClick={this.onAlbumClick} autoWidth={false} />
         );
     },
 
@@ -111,11 +111,11 @@ var Playlist = React.createClass({
         if(playlistItems.length === 0)
         {
             var menuItems = [{text: "The playlist is empty!"}];
-            result = <Menu menuItems={menuItems} />
+            result = <Menu menuItems={menuItems} autoWidth={false} />
         }
         else
         {
-            result = <Menu menuItems={playlistItems} onItemClick={this.onTrackClick}/>
+            result = <Menu menuItems={playlistItems} onItemClick={this.onTrackClick} autoWidth={false} />
         }
 
         return result;

@@ -12,8 +12,12 @@ module.exports = React.createClass({
     var musicStore = this.getFlux().store("MusicStore");
 
     return (
-      <div className='albums-page'>
-        <AlbumList albums={musicStore.albums} />
+      <div className='albums-page container-fluid'>
+        <div className="row">
+          <div className="col-xs-12">
+            <AlbumList albums={musicStore.albums} />
+          </div>
+        </div>
       </div>
     );
   }
