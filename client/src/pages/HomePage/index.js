@@ -5,6 +5,9 @@ var FluxMixin = Fluxxor.FluxMixin(React);
 
 var {Playlist} = require('../../music-lib');
 
+var mui = require("material-ui");
+var {Paper} = mui;
+
 module.exports = React.createClass({
   mixins: [FluxMixin],
 
@@ -16,7 +19,11 @@ module.exports = React.createClass({
     {
         var currentTrack = musicStore.playlist[musicStore.nowPlaying];
         content = [
-          <img key="album-art" src={"/album-art?id=" + currentTrack.id} className="col-xs-12 col-sm-5" />,
+          <div className="col-xs-12 col-sm-5">
+            <Paper rounded={false} style={{width:"100%", lineHeight:"0"}}>
+              <img key="album-art" src={"/album-art?id=" + currentTrack.id} style={{width:"100%"}} />
+            </Paper>
+          </div>,
 
           <div key="playlist" className="col-xs-12 col-sm-7">
             <Playlist />
