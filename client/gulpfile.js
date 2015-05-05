@@ -16,7 +16,7 @@ var gutil = require('gulp-util');
 // Just some directories that we will be providing to `gulp.src` method calls.
 var paths = {
   less: ['src/**/*.less', 'src/**/**/*.less', '!src/{style,style/**}'],
-  css: ['build/**/*.css', '!build/{style,style/**}'],
+  css: ['build/**/*.css', '!build/{style,style/**}', '!build/icomoon/demo-files/*.css'],
   globalcss: ['build/style/*.css'],
   style: ['src/style/*.less'],
   appjs: ['./src/app.jsx'],
