@@ -8,7 +8,7 @@ var FluxMixin = Fluxxor.FluxMixin(React);
 var StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
 var MusicStore = require('./stores/MusicStore');
-var {PlayerState, GaplessPlayer, secondsToTimeString} = require('./music-lib');
+var {PlayerState, ScrobbleState, GaplessPlayer, secondsToTimeString} = require('./music-lib');
 
 var {Paper, IconButton, MenuItem} = mui;
 
@@ -96,6 +96,10 @@ var Master = React.createClass({
     this.refs.leftNav.toggle();
   },
 
+  openLastFm: function() {
+    window.open("//last.fm/user/ogreatone43");
+  },
+
   render: function () {
     var musicStore = this.getFlux().store("MusicStore");
     var playButtonEnabled = musicStore.playlist.length > 0;
@@ -106,9 +110,19 @@ var Master = React.createClass({
     var nextButtonEnabled = musicStore.playlist.length > 1 &&
         musicStore.nowPlaying < musicStore.playlist.length - 1;
 
+    var scrobbleTooltip = {};
+    scrobbleTooltip[ScrobbleState.NO_TRACK] = "last.fm";
+    scrobbleTooltip[ScrobbleState.TRACK_QUEUED] = "last.fm: track queued for scrobbling.";
+    scrobbleTooltip[ScrobbleState.TRACK_SCROBBLED] = "last.fm: track scrobbled.";
+    scrobbleTooltip[ScrobbleState.SCROBBLE_FAILED] = "last.fm: scrobble failed!";
+
     var toolbar = (
       <div style={{textAlign:"right"}}>
           <GaplessPlayer />
+
+          <IconButton iconClassName="icon-lastfm"
+              tooltip={scrobbleTooltip[musicStore.scrobbleState]}
+              onClick={this.openLastFm} />
 
           <IconButton iconClassName="icon-previous"
               disabled={!prevButtonEnabled}

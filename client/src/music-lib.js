@@ -15,7 +15,8 @@ var PlayerState = {
 var ScrobbleState = {
     NO_TRACK: "NO_TRACK",
     TRACK_QUEUED: "TRACK_QUEUED",
-    TRACK_SCROBBLED: "TRACK_SCROBBLED"
+    TRACK_SCROBBLED: "TRACK_SCROBBLED",
+    SCROBBLE_FAILED: "SCROBBLE_FAILED"
 };
 
 var GaplessPlayer = React.createClass({

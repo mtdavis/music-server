@@ -254,9 +254,15 @@ module.exports = Fluxxor.createStore({
                         id: trackToScrobble.id,
                         started_playing: trackStartedPlaying
                     };
-                    $.post("/submit-play", postData);
 
-                    this.scrobbleState = ScrobbleState.TRACK_SCROBBLED;
+                    $.post("/submit-play", postData).done(function()
+                    {
+                        this.scrobbleState = ScrobbleState.TRACK_SCROBBLED;
+                    }.bind(this)).fail(function()
+                    {
+                        this.scrobbleState = ScrobbleState.SCROBBLE_FAILED;
+                    }.bind(this));
+
                     this.emit("change");
                 }
 
