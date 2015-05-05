@@ -1,5 +1,5 @@
 var Fluxxor = require('fluxxor');
-var {PlayerState, timeStringToSeconds} = require('../../music-lib');
+var {PlayerState, ScrobbleState, timeStringToSeconds} = require('../../music-lib');
 
 module.exports = Fluxxor.createStore({
 
@@ -9,9 +9,11 @@ module.exports = Fluxxor.createStore({
         this.api = null;
         this.playerState = PlayerState.STOPPED;
         this.playlist = [];
-        this.previouslyPlayed = 0;
         this.nowPlaying = 0;
         this.currentTrackPosition = 0;
+        this.scrobbleState = ScrobbleState.NO_TRACK;
+        this.scrobblePlayTimer = null;
+        this.scrobbleNowPlayingTimer = null;
 
         $.getJSON("/albums", function(albums) {
             this.albums = albums;
@@ -37,9 +39,12 @@ module.exports = Fluxxor.createStore({
     getState: function() {
         return {
             albums: this.albums,
+            albumsNotRecentlyPlayed: this.albumsNotRecentlyPlayed,
             playerState: this.playerState,
+            scrobbleState: this.scrobbleState,
             playlist: this.playList,
-            nowPlaying: this.nowPlaying
+            nowPlaying: this.nowPlaying,
+            currentTrackPosition: this.currentTrackPosition
         };
     },
 
@@ -62,50 +67,49 @@ module.exports = Fluxxor.createStore({
         this.api = new Gapless5(playerNode.id);
 
         this.api.onplay = function() {
-            console.log("gapless5 onplay");
             this.playerState = PlayerState.PLAYING;
-            this.onSubmitNowPlaying();
+
+            //avoid restarting the scrobble timers, in case of player state moving from paused to play
+            if(this.scrobbleState === ScrobbleState.NO_TRACK)
+            {
+                this.startScrobbleTimers();
+            }
+
             this.emit("change");
         }.bind(this);
 
         this.api.onpause = function() {
-            console.log("gapless5 onpause");
             this.playerState = PlayerState.PAUSED;
             this.emit("change");
         }.bind(this);
 
         this.api.onstop = function() {
-            console.log("gapless5 onstop");
             this.playerState = PlayerState.STOPPED;
+            this.clearScrobbleTimers();
             this.emit("change");
         }.bind(this);
 
         this.api.onfinishedtrack = function() {
-            console.log("gapless5 onfinishedtrack");
-            this.onSubmitPreviouslyPlayed();
-            this.onSubmitNowPlaying();
             this.emit("change");
         }.bind(this);
 
         this.api.onfinishedall = function() {
-            console.log("gapless5 onfinishedall");
             this.playerState = PlayerState.STOPPED;
+            this.clearScrobbleTimers();
             this.emit("change");
         }.bind(this);
 
         this.api.onprev = function() {
-            console.log("gapless5 onprev");
-            this.previouslyPlayed = this.nowPlaying;
             this.nowPlaying -= 1;
-            this.onSubmitNowPlaying();
+            this.clearScrobbleTimers();
+            this.startScrobbleTimers();
             this.emit("change");
         }.bind(this);
 
         this.api.onnext = function() {
-            console.log("gapless5 onnext");
-            this.previouslyPlayed = this.nowPlaying;
             this.nowPlaying += 1;
-            this.onSubmitNowPlaying();
+            this.clearScrobbleTimers();
+            this.startScrobbleTimers();
             this.emit("change");
         }.bind(this);
 
@@ -164,7 +168,6 @@ module.exports = Fluxxor.createStore({
 
     clearPlaylist: function(tracks)
     {
-        this.previouslyPlayed = 0;
         this.nowPlaying = 0;
         this.playlist = [];
         this.api.removeAllTracks();
@@ -212,32 +215,74 @@ module.exports = Fluxxor.createStore({
         }
     },
 
-    onSubmitPreviouslyPlayed: function() {
-        var playedTrack = this.playlist[this.previouslyPlayed];
-        var postData = {
-            id: playedTrack.id
-        };
-        $.post("submit-play", postData);
-    },
-
-    onSubmitNowPlaying: function() {
+    startScrobbleTimers: function() {
         if(this.playerState === PlayerState.PLAYING)
         {
-            var playingTrackId = this.playlist[this.nowPlaying].id;
+            this.clearScrobbleTimers();
 
-            //submit in 5 seconds if it's still playing.
-            setTimeout(function()
+            var trackStartedPlaying = Math.floor(Date.now() / 1000);
+            var trackToScrobble = this.playlist[this.nowPlaying];
+
+            var nowPlayingDelayMs = 5000;
+
+            if(trackToScrobble.duration * 1000 > nowPlayingDelayMs)
             {
-                if(playingTrackId === this.playlist[this.nowPlaying].id &&
-                    this.playerState === PlayerState.PLAYING)
+                //submit the now-playing update in 5 seconds if it's still playing.
+                this.scrobbleNowPlayingTimer = setTimeout(function()
+                {
+                    if(trackToScrobble === this.playlist[this.nowPlaying] &&
+                        this.playerState !== PlayerState.STOPPED)
+                    {
+                        var postData = {
+                            id: trackToScrobble.id
+                        };
+                        $.post("/submit-now-playing", postData);
+                    }
+
+                    this.scrobbleNowPlayingTimer = null;
+                }.bind(this), nowPlayingDelayMs);
+            }
+
+            //submit the play in (duration / 2) seconds if it's still playing.
+            var playDelayMs = trackToScrobble.duration / 2.0 * 1000;
+            this.scrobblePlayTimer = setTimeout(function()
+            {
+                if(trackToScrobble === this.playlist[this.nowPlaying] &&
+                    this.playerState !== PlayerState.STOPPED)
                 {
                     var postData = {
-                        id: playingTrackId
+                        id: trackToScrobble.id,
+                        started_playing: trackStartedPlaying
                     };
-                    $.post("submit-now-playing", postData);
-                }
-            }.bind(this), 5000);
-        }
-    }
+                    $.post("/submit-play", postData);
 
+                    this.scrobbleState = ScrobbleState.TRACK_SCROBBLED;
+                    this.emit("change");
+                }
+
+                this.scrobblePlayTimer = null;
+            }.bind(this), playDelayMs);
+
+            this.scrobbleState = ScrobbleState.TRACK_QUEUED;
+            this.emit("change");
+        }
+    },
+
+    clearScrobbleTimers: function() {
+        this.scrobbleState = ScrobbleState.NO_TRACK;
+
+        if(this.scrobblePlayTimer)
+        {
+            clearTimeout(this.scrobblePlayTimer);
+            this.scrobblePlayTimer = null;
+            this.emit("change");
+        }
+
+        if(this.scrobbleNowPlayingTimer)
+        {
+            clearTimeout(this.scrobbleNowPlayingTimer);
+            this.scrobbleNowPlayingTimer = null;
+            this.emit("change");
+        }
+    },
 });

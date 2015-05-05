@@ -328,14 +328,17 @@ function doScrobbleAsync(lastfm, options)
         {
             if(result.success)
             {
+                console.log("scrobble success!");
                 resolve(result);
             }
             else
             {
+                console.log("scrobble failed.");
                 reject(result.error);
             }
         };
 
+        console.log("scrobbling", options);
         lastfm.doScrobble(options);
     });
 }
@@ -360,8 +363,10 @@ function getMetadataAsync(trackPath)
 
 function submitPlayHandler(db, lastfm)
 {
+    var currentTime = Math.floor(Date.now() / 1000);
+
     var statement = db.prepare(
-        "UPDATE track SET play_count = play_count + 1, last_play = $started_playing " +
+        "UPDATE track SET play_count = play_count + 1, last_play = $last_play, row_modified = $current_time " +
         "WHERE rowid = $id");
 
     return function(req, res, next)
@@ -369,12 +374,12 @@ function submitPlayHandler(db, lastfm)
         console.log(req.url, req.body);
         var trackId = req.body.id;
 
-        //TODO: correct for duration
-        var startedPlaying = req.body.started_playing || Math.floor(Date.now() / 1000);
+        var lastPlay = req.body.started_playing || currentTime;
 
         statement.runAsync({
             $id: trackId,
-            $started_playing: startedPlaying
+            $last_play: lastPlay,
+            $current_time: currentTime
         }).then(function()
         {
             return selectTrackByIdAsync(db, trackId);
@@ -384,7 +389,7 @@ function submitPlayHandler(db, lastfm)
                 method: 'track.scrobble',
                 artist: track.artist,
                 track: track.title,
-                timestamp: startedPlaying,
+                timestamp: lastPlay,
                 album: track.album,
                 trackNumber: track.track_number,
                 duration: track.duration

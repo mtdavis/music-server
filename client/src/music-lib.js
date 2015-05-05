@@ -12,6 +12,12 @@ var PlayerState = {
     PAUSED: "PAUSED"
 };
 
+var ScrobbleState = {
+    NO_TRACK: "NO_TRACK",
+    TRACK_QUEUED: "TRACK_QUEUED",
+    TRACK_SCROBBLED: "TRACK_SCROBBLED"
+};
+
 var GaplessPlayer = React.createClass({
     mixins: [FluxMixin],
 
@@ -145,6 +151,7 @@ var timeStringToSeconds = function(timeString)
 
 module.exports = {
     PlayerState: PlayerState,
+    ScrobbleState: ScrobbleState,
     GaplessPlayer: GaplessPlayer,
     AlbumList: AlbumList,
     Playlist: Playlist,
