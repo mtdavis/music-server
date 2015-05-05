@@ -1,6 +1,7 @@
 var Promise = require("bluebird");
 var connect = require("connect");
 var http = require("http");
+var https = require("https");
 var serveStatic = require("serve-static");
 var sqlite3 = Promise.promisifyAll(require("sqlite3"));
 var connectRoute = require("connect-route");
@@ -447,7 +448,24 @@ function startServer(db, router)
     app.use("/", serveStatic("./client/build"));
     app.use(bodyParser.urlencoded({extended: false}));
     app.use(router);
-    http.createServer(app).listen(80);
+
+    var options = {
+        key: fs.readFileSync('key.pem'),
+        cert: fs.readFileSync('cert.pem')
+    };
+
+    https.createServer(options, app).listen(443);
+
+    var httpApp = connect();
+    httpApp.use("/", function(req, res, next)
+    {
+        res.writeHead(303, {
+            "Location":"https://" + req.headers.host
+        });
+        res.end();
+    });
+
+    http.createServer(httpApp).listen(80);
 }
 
 function main()
