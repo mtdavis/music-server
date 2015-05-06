@@ -3,61 +3,33 @@ var connect = require("connect");
 var http = require("http");
 var https = require("https");
 var serveStatic = require("serve-static");
-var sqlite3 = Promise.promisifyAll(require("sqlite3"));
 var connectRoute = require("connect-route");
 var url = require("url");
 var bodyParser = require("body-parser");
-var SimpleLastfm = require("simple-lastfm");
 var musicServerSettings = require("./music-server-settings.json");
 var fs = Promise.promisifyAll(require("fs"));
 var path = require("path");
-var musicmetadata = require("musicmetadata");
 
-function initDatabase()
-{
-    return new sqlite3.Database(musicServerSettings.files.db_path);
-}
+var db = require("./music-server-db").MusicServerDb();
+var lastfm = require("./music-server-lastfm").MusicServerLastfm();
+var util = require("./music-server-util");
 
-function initLastfm()
-{
-    var result = new SimpleLastfm(musicServerSettings.lastfm);
-
-    if(musicServerSettings.lastfm.session_key === null)
-    {
-        var callback = function(result)
-        {
-            if(result.success)
-            {
-                console.log("got last.fm session key: " + result.session_key);
-            }
-            else
-            {
-                console.error("could not get last.fm session key");
-            }
-        };
-
-        result.getSessionKey(callback);
-    }
-
-    return result;
-}
-
-function initRouter(db, lastfm)
+function initRouter()
 {
     var result = connectRoute(function(router)
     {
-        router.get("/albums/not-recently-played", albumsNotRecentlyPlayedHandler(db));
-        router.get("/albums", albumsHandler(db));
-        router.get("/tracks", tracksHandler(db));
-        router.get("/album-art", albumArtHandler(db));
-        router.post("/submit-play", submitPlayHandler(db, lastfm));
-        router.post("/submit-now-playing", submitNowPlayingHandler(db, lastfm));
+        router.get("/albums/not-recently-played", albumsNotRecentlyPlayedHandler());
+        router.get("/albums", albumsHandler());
+        router.get("/tracks", tracksHandler());
+        router.get("/album-art", albumArtHandler());
+        router.post("/submit-play", submitPlayHandler());
+        router.post("/submit-now-playing", submitNowPlayingHandler());
     });
 
     return result;
 }
 
-function selectFromDb(db, lastModifiedSql, selectSql, settings)
+function selectFromDb(lastModifiedSql, selectSql, settings)
 {
     return function(req, res, next)
     {
@@ -114,7 +86,7 @@ function selectFromDb(db, lastModifiedSql, selectSql, settings)
     }
 }
 
-function albumsNotRecentlyPlayedHandler(db)
+function albumsNotRecentlyPlayedHandler()
 {
     var lastModifiedSql = "SELECT MAX(row_modified) AS last_modified " +
         "FROM track " +
@@ -144,12 +116,12 @@ function albumsNotRecentlyPlayedHandler(db)
         };
     };
 
-    return selectFromDb(db, lastModifiedSql, albumsSql, {
+    return selectFromDb(lastModifiedSql, albumsSql, {
         selectSqlParamsBuilder: selectSqlParamsBuilder
     });
 }
 
-function albumsHandler(db)
+function albumsHandler()
 {
     var lastModifiedSql = "SELECT MAX(row_modified) AS last_modified " +
         "FROM track " +
@@ -162,10 +134,10 @@ function albumsHandler(db)
         "WHERE album != '' " +
         "GROUP BY album_artist, album";
 
-    return selectFromDb(db, lastModifiedSql, albumsSql);
+    return selectFromDb(lastModifiedSql, albumsSql);
 }
 
-function tracksHandler(db)
+function tracksHandler()
 {
     var lastModifiedSql = "SELECT max(row_modified) AS last_modified " +
         "FROM track " +
@@ -187,13 +159,13 @@ function tracksHandler(db)
         };
     };
 
-    return selectFromDb(db, lastModifiedSql, tracksSql, {
+    return selectFromDb(lastModifiedSql, tracksSql, {
         lastModifiedSqlParamsBuilder: sqlParamsBuilder,
         selectSqlParamsBuilder: sqlParamsBuilder
     });
 }
 
-function albumArtHandler(db)
+function albumArtHandler()
 {
     return function(req, res, next)
     {
@@ -210,7 +182,7 @@ function albumArtHandler(db)
         var relativeExpectedArtPathJpg;
         var relativeExpectedArtPathPng;
 
-        selectTrackByIdAsync(db, trackId).then(function(track)
+        db.selectTrackByIdAsync(trackId).then(function(track)
         {
             //find path to mp3
             var relativeTrackPath = track.path;
@@ -222,9 +194,9 @@ function albumArtHandler(db)
 
             return Promise.join(
                 fs.statAsync(fullTrackPath),
-                fileExistsAsync(path.join(musicServerSettings.files.base_stream_path, relativeExpectedArtPathJpg)),
-                fileExistsAsync(path.join(musicServerSettings.files.base_stream_path, relativeExpectedArtPathPng)),
-                getMetadataAsync(fullTrackPath));
+                util.fileExistsAsync(path.join(musicServerSettings.files.base_stream_path, relativeExpectedArtPathJpg)),
+                util.fileExistsAsync(path.join(musicServerSettings.files.base_stream_path, relativeExpectedArtPathPng)),
+                util.getMetadataAsync(fullTrackPath));
         }).spread(function(mp3Stat, jpgExists, pngExists, metadata)
         {
             //if file exists... forward to the static address
@@ -286,83 +258,10 @@ function albumArtHandler(db)
             res.statusCode = 500;
             res.end();
         });
-
     };
 }
 
-function fileExistsAsync(filePath)
-{
-    return new Promise(function(resolve, reject)
-    {
-        fs.statAsync(filePath).then(function(stat)
-        {
-            resolve(true);
-        }).catch(function(error)
-        {
-            if(error.code === "ENOENT")
-            {
-                resolve(false);
-            }
-            else
-            {
-                reject(error);
-            }
-        });
-    });
-}
-
-function selectTrackByIdAsync(db, trackId)
-{
-    var statement = db.prepare(
-        "SELECT * FROM track WHERE rowid = $trackId");
-
-    return statement.getAsync({
-        $trackId: trackId
-    });
-}
-
-function doScrobbleAsync(lastfm, options)
-{
-    return new Promise(function(resolve, reject)
-    {
-        options.callback = function(result)
-        {
-            if(result.success)
-            {
-                console.log("scrobble success!");
-                resolve(result);
-            }
-            else
-            {
-                console.log("scrobble failed.");
-                reject(result.error);
-            }
-        };
-
-        console.log("scrobbling", options);
-        lastfm.doScrobble(options);
-    });
-}
-
-function getMetadataAsync(trackPath)
-{
-    return new Promise(function(resolve, reject)
-    {
-        musicmetadata(fs.createReadStream(trackPath), {}, function(err, metadata)
-        {
-            if(err)
-            {
-                reject(err);
-            }
-            else
-            {
-                resolve(metadata);
-            }
-        });
-    });
-}
-
-function submitPlayHandler(db, lastfm)
+function submitPlayHandler()
 {
     var currentTime = Math.floor(Date.now() / 1000);
 
@@ -383,10 +282,10 @@ function submitPlayHandler(db, lastfm)
             $current_time: currentTime
         }).then(function()
         {
-            return selectTrackByIdAsync(db, trackId);
+            return db.selectTrackByIdAsync(trackId);
         }).then(function(track)
         {
-            return doScrobbleAsync(lastfm, {
+            return lastfm.doScrobbleAsync({
                 method: 'track.scrobble',
                 artist: track.artist,
                 track: track.title,
@@ -408,7 +307,7 @@ function submitPlayHandler(db, lastfm)
     }
 }
 
-function submitNowPlayingHandler(db, lastfm)
+function submitNowPlayingHandler()
 {
     var statement = db.prepare(
         "SELECT * FROM track WHERE rowid = $id");
@@ -418,9 +317,9 @@ function submitNowPlayingHandler(db, lastfm)
         console.log(req.url, req.body);
         var trackId = req.body.id;
 
-        selectTrackByIdAsync(db, trackId).then(function(track)
+        db.selectTrackByIdAsync(trackId).then(function(track)
         {
-            return doScrobbleAsync(lastfm, {
+            return lastfm.doScrobbleAsync({
                 method: 'track.updateNowPlaying',
                 artist: track.artist,
                 track: track.title,
@@ -441,7 +340,7 @@ function submitNowPlayingHandler(db, lastfm)
     }
 }
 
-function startServer(db, router)
+function startServer(router)
 {
     var app = connect();
     app.use("/stream", serveStatic(musicServerSettings.files.base_stream_path));
@@ -470,10 +369,8 @@ function startServer(db, router)
 
 function main()
 {
-    var db = initDatabase();
-    var lastfm = initLastfm();
-    var router = initRouter(db, lastfm);
-    startServer(db, router);
+    var router = initRouter();
+    startServer(router);
 }
 
 main();
