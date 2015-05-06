@@ -27,6 +27,7 @@ module.exports = Fluxxor.createStore({
 
         this.bindActions(
             "PLAY_ALBUM", this.onPlayAlbum,
+            "PLAY_SHUFFLE", this.onPlayShuffle,
             "INITIALIZE_PLAYER", this.onInitializePlayer,
             "PLAY_OR_PAUSE_PLAYBACK", this.onPlayOrPausePlayback,
             "STOP_PLAYBACK", this.onStopPlayback,
@@ -57,6 +58,32 @@ module.exports = Fluxxor.createStore({
         $.getJSON("/tracks", query, function(tracks) {
             this.onStopPlayback();
             this.setPlaylist(tracks);
+            this.onPlayOrPausePlayback();
+            location.hash = "home";
+            this.emit("change");
+        }.bind(this));
+    },
+
+    onPlayShuffle: function(minutes) {
+        $.getJSON("/shuffle", function(tracks) {
+            var tracksToEnqueue = [];
+
+            var secondsToFill = minutes * 60;
+            var enqueuedSeconds = 0;
+
+            for(var i = 0; i < tracks.length; i++)
+            {
+                tracksToEnqueue.push(tracks[i]);
+                enqueuedSeconds += tracks[i].duration;
+
+                if(enqueuedSeconds >= secondsToFill)
+                {
+                    break;
+                }
+            }
+
+            this.onStopPlayback();
+            this.setPlaylist(tracksToEnqueue);
             this.onPlayOrPausePlayback();
             location.hash = "home";
             this.emit("change");

@@ -14,7 +14,7 @@ function createTable(db)
         "track_number INTEGER, " +
         "year INTEGER, " +
         "last_play INTEGER, " +
-        "play_count TEXT NOT NULL, " +
+        "play_count INTEGER NOT NULL, " +
         "path TEXT NOT NULL, " +
         "row_modified INTEGER" +
         ")");

@@ -21,6 +21,7 @@ var {Paper, IconButton, MenuItem} = mui;
 var HomePage = require('./pages/HomePage');
 var AlbumsPage = require('./pages/AlbumsPage');
 var NotRecentlyPlayedPage = require('./pages/NotRecentlyPlayedPage');
+var ShufflePage = require('./pages/ShufflePage');
 // endinject
 
 var menuItems = [
@@ -29,6 +30,7 @@ var menuItems = [
   { type: MenuItem.Types.SUBHEADER, text: 'Browse' },
   { payload: 'albums', text: 'All Albums' },
   { payload: 'not-recently-played', text: 'Not Recently Played' },
+  { payload: 'shuffle', text: 'Shuffle' },
   // endinject
 ];
 
@@ -38,6 +40,7 @@ var titles = {
   '/home': 'Now Playing',
   '/albums': 'All Albums',
   '/not-recently-played': 'Not Recently Played',
+  '/shuffle': 'Shuffle',
   // endinject
 };
 
@@ -173,6 +176,7 @@ var routes = (
     <Route name='home' handler={HomePage} />
     <Route name='albums' handler={AlbumsPage} />
     <Route name='not-recently-played' handler={NotRecentlyPlayedPage} />
+    <Route name='shuffle' handler={ShufflePage} />
     {/* endinject */}
     <DefaultRoute handler={HomePage} />
   </Route>
@@ -181,6 +185,10 @@ var routes = (
 var actions = {
     playAlbum: function(album) {
         this.dispatch("PLAY_ALBUM", album);
+    },
+
+    playShuffle: function(minutes) {
+        this.dispatch("PLAY_SHUFFLE", minutes);
     },
 
     initializePlayer: function(playerNode) {

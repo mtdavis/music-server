@@ -18,12 +18,30 @@ module.exports = React.createClass({
     if(musicStore.playlist.length !== 0)
     {
         var currentTrack = musicStore.playlist[musicStore.nowPlaying];
+        var albumArt;
+        if(currentTrack.album === "")
+        {
+            albumArt = (
+              <div key="album-art" className="hidden-xs col-sm-5">
+                <Paper rounded={false} style={{width:"100%", textAlign:"center", background:"white"}}>
+                  No album art!
+                </Paper>
+              </div>
+            );
+        }
+        else
+        {
+            albumArt = (
+              <div key="album-art" className="col-xs-12 col-sm-5">
+                <Paper rounded={false} style={{width:"100%", lineHeight:"0"}}>
+                  <img src={"/album-art?id=" + currentTrack.id} style={{width:"100%"}} />
+                </Paper>
+              </div>
+            );
+        }
+
         content = [
-          <div className="col-xs-12 col-sm-5">
-            <Paper rounded={false} style={{width:"100%", lineHeight:"0"}}>
-              <img key="album-art" src={"/album-art?id=" + currentTrack.id} style={{width:"100%"}} />
-            </Paper>
-          </div>,
+          {albumArt},
 
           <div key="playlist" className="col-xs-12 col-sm-7">
             <Playlist />

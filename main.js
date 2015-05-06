@@ -22,6 +22,7 @@ function initRouter()
         router.get("/albums", albumsHandler());
         router.get("/tracks", tracksHandler());
         router.get("/album-art", albumArtHandler());
+        router.get("/shuffle", shuffleHandler());
         router.post("/submit-play", submitPlayHandler());
         router.post("/submit-now-playing", submitNowPlayingHandler());
     });
@@ -165,6 +166,19 @@ function tracksHandler()
     });
 }
 
+function shuffleHandler()
+{
+    var lastModifiedSql = "SELECT MAX(strftime('%s', 'now')) AS last_modified";
+
+    var shuffleSql = "SELECT rowid AS id, * FROM track " +
+        "WHERE (play_count >= 5) AND (duration >= 50) AND (duration < 1000) " +
+        "AND (last_play < strftime('%s', 'now') - 180*24*60*60) " +
+        "ORDER BY RANDOM() " +
+        "LIMIT 100";
+
+    return selectFromDb(lastModifiedSql, shuffleSql);
+}
+
 function albumArtHandler()
 {
     return function(req, res, next)
@@ -204,14 +218,14 @@ function albumArtHandler()
             if(jpgExists)
             {
                 res.writeHead(303, {
-                    "Location":"/stream/" + relativeExpectedArtPathJpg
+                    "Location":"/stream/" + relativeExpectedArtPathJpg.replace(/\\/g, "/")
                 });
                 res.end();
             }
             else if(pngExists)
             {
                 res.writeHead(303, {
-                    "Location":"/stream/" + relativeExpectedArtPathPng
+                    "Location":"/stream/" + relativeExpectedArtPathPng.replace(/\\/g, "/")
                 });
                 res.end();
             }
