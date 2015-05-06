@@ -148,9 +148,20 @@ module.exports = Fluxxor.createStore({
             for(var i = 0; i < mutationRecords.length; i++)
             {
                 var mutation = mutationRecords[i];
+                var timeString;
                 if(mutation.target === currentPositionNode)
                 {
-                    var timeString = mutation.addedNodes[0].textContent.substr(0, 5);
+                    //Firefox
+                    timeString = mutation.addedNodes[0].textContent.substr(0, 5);
+                }
+                else if(mutation.target.parentElement === currentPositionNode)
+                {
+                    //Webkit
+                    timeString = mutation.target.textContent;
+                }
+
+                if(timeString)
+                {
                     var newTrackPosition = timeStringToSeconds(timeString);
                     if(newTrackPosition !== this.currentTrackPosition)
                     {
@@ -163,7 +174,8 @@ module.exports = Fluxxor.createStore({
 
         observer.observe(currentPositionNode, {
             childList: true,
-            subtree: true
+            subtree: true,
+            characterData: true
         });
 
         this.emit("change");
