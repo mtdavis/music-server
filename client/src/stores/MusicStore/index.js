@@ -285,12 +285,12 @@ module.exports = Fluxxor.createStore({
                     $.post("/submit-play", postData).done(function()
                     {
                         this.scrobbleState = ScrobbleState.TRACK_SCROBBLED;
+                        this.emit("change");
                     }.bind(this)).fail(function()
                     {
                         this.scrobbleState = ScrobbleState.SCROBBLE_FAILED;
+                        this.emit("change");
                     }.bind(this));
-
-                    this.emit("change");
                 }
 
                 this.scrobblePlayTimer = null;
