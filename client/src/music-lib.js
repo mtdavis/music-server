@@ -6,6 +6,8 @@ var FluxMixin = Fluxxor.FluxMixin(React);
 var mui = require('material-ui');
 var Menu = mui.Menu;
 
+var DataTable = require('./material-data-table');
+
 var PlayerState = {
     STOPPED: "STOPPED",
     PLAYING: "PLAYING",
@@ -56,30 +58,24 @@ var AlbumList = React.createClass({
     },
 
     render: function() {
-
-        var albumItems = this.props.albums.map(function(album) {
-            var lastPlayString;
-            if(album.last_play !== null)
-            {
-                var lastPlayDate = new Date(album.last_play * 1000);
-                lastPlayString = lastPlayDate.getFullYear() + "/" + (lastPlayDate.getMonth()+1) + "/" + lastPlayDate.getDate();
-            }
-
-            return {
-                payload: album,
-                text: album.album_artist + " - " + album.album,
-                data: lastPlayString
-            };
-        });
+        var columns = [
+            {key:"album_artist", header:"Artist"},
+            {key:"album", header:"Album"},
+            {key:"year", header:"Year"},
+            {key:"tracks", header:"Tracks"},
+            {key:"duration", header:"Length", renderer:secondsToTimeString},
+            {key:"play_count", header:"Play Count"},
+            {key:"last_play", header:"Last Played", renderer:unixTimestampToDateString}
+        ];
 
         return (
-            <Menu menuItems={albumItems} onItemClick={this.onAlbumClick} autoWidth={false} />
+            <DataTable rows={this.props.albums} columns={columns} onRowClick={this.onAlbumClick}/>
         );
     },
 
-    onAlbumClick: function(event, index, item)
+    onAlbumClick: function(album)
     {
-        this.getFlux().actions.playAlbum(item.payload);
+        this.getFlux().actions.playAlbum(album);
     }
 });
 
@@ -149,6 +145,27 @@ var timeStringToSeconds = function(timeString)
     var seconds = parseInt(split[1], 10);
     return minutes * 60 + seconds;
 };
+
+var unixTimestampToDateString = function(timestamp)
+{
+    var dateObj = new Date(timestamp * 1000);
+
+    var year = dateObj.getFullYear();
+
+    var month = dateObj.getMonth()+1;
+    if(month < 10)
+    {
+        month = "0" + month;
+    }
+
+    var date = dateObj.getDate();
+    if(date < 10)
+    {
+        date = "0" + date;
+    }
+
+    return year + "-" + month + "-" + date;
+}
 
 module.exports = {
     PlayerState: PlayerState,
