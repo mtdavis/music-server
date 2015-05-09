@@ -56,8 +56,17 @@ var TableHeader = React.createClass({
     render: function() {
         var ths = this.props.columns.map(function(column)
         {
-            return <th key={column.key}>{column.header}</th>
-        });
+            var setSortColumnKey = function()
+            {
+                this.props.setSortColumnKey(column.key);
+            }.bind(this);
+
+            return (
+                <th key={column.key} onClick={setSortColumnKey}>
+                    {column.header}
+                </th>
+            );
+        }.bind(this));
 
         return (
             <thead>
@@ -70,7 +79,18 @@ var TableHeader = React.createClass({
 })
 
 module.exports = React.createClass({
+    getInitialState: function() {
+        return {
+            sortColumnKey:null,
+            sortOrder:1
+        };
+    },
+
     render: function() {
+        if(this.state.sortColumnKey !== null)
+        {
+            this.props.rows.sort(this.compareRows);
+        }
 
         var tableRows = this.props.rows.map(function(rowData)
         {
@@ -84,12 +104,62 @@ module.exports = React.createClass({
         return (
             <div className="table-responsive-vertical shadow-z-1">
                 <table className="table table-hover">
-                    <TableHeader columns={this.props.columns} />
+                    <TableHeader columns={this.props.columns} setSortColumnKey={this.setSortColumnKey}/>
                     <tbody>
                         {tableRows}
                     </tbody>
                 </table>
             </div>
         );
+    },
+
+    setSortColumnKey: function(columnKey) {
+        if(this.state.sortColumnKey === columnKey)
+        {
+            var currentSortOrder = this.state.sortOrder;
+            var newSortOrder = -currentSortOrder;
+            this.setState({
+                sortOrder: newSortOrder
+            });
+        }
+        else
+        {
+            this.setState({
+                sortColumnKey: columnKey,
+                sortOrder: 1
+            });
+        }
+    },
+
+    compareRows: function(rowA, rowB) {
+        var result;
+
+        var valA = rowA[this.state.sortColumnKey];
+        var valB = rowB[this.state.sortColumnKey];
+
+        if(typeof(valA) === "string" && valA.startsWith("The "))
+        {
+            valA = valA.substring(4);
+        }
+
+        if(typeof(valB) === "string" && valB.startsWith("The "))
+        {
+            valB = valB.substring(4);
+        }
+
+        if(valA < valB)
+        {
+            result = -1;
+        }
+        else if(valA === valB)
+        {
+            result = 0;
+        }
+        else
+        {
+            result = 1;
+        }
+
+        return result * this.state.sortOrder;
     }
 });

@@ -13,16 +13,18 @@
 
 // Variables
 // ---------------------
-@table-header-font-weight:      400;
-@table-header-font-color:       #757575;
+@table-header-font-weight:      500;
+@table-header-font-color:       rgba(0,0,0,.54);
 
+@table-cell-font-weight:        400;
+@table-cell-font-color:         rgba(0,0,0,.87);
 @table-cell-padding:            1.2rem;
 @table-condensed-cell-padding:  @table-cell-padding/2;
 
 
 @table-bg:                      #fff;
 @table-bg-accent:               #f5f5f5;
-@table-bg-hover:                rgba(0,0,0,.035);
+@table-bg-hover:                #eee;
 @table-bg-active:               @table-bg-hover;
 @table-border-color:            #e0e0e0;
 
@@ -59,6 +61,8 @@
         vertical-align: top;
         border-top: 0;
         .transition(all .3s ease);
+        font-weight: @table-cell-font-weight;
+        color: @table-cell-font-color;
       }
     }
   }
@@ -67,6 +71,7 @@
     color: @table-header-font-color;
     vertical-align: bottom;
     border-bottom: 1px solid rgba(0,0,0,.12);
+    cursor: pointer;
   }
   > caption + thead,
   > colgroup + thead,
@@ -148,6 +153,10 @@
 // Hover effect
 //
 .table-hover {
+  > thead > tr > th:hover
+  {
+    background-color: @table-bg-hover;
+  }
   > tbody > tr:hover {
     > td,
     > th {
