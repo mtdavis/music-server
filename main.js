@@ -277,8 +277,6 @@ function albumArtHandler()
 
 function submitPlayHandler()
 {
-    var currentTime = Math.floor(Date.now() / 1000);
-
     var statement = db.prepare(
         "UPDATE track SET play_count = play_count + 1, last_play = $last_play, row_modified = $current_time " +
         "WHERE rowid = $id");
@@ -288,6 +286,7 @@ function submitPlayHandler()
         console.log(req.url, req.body);
         var trackId = req.body.id;
 
+        var currentTime = Math.floor(Date.now() / 1000);
         var lastPlay = req.body.started_playing || currentTime;
 
         statement.runAsync({
