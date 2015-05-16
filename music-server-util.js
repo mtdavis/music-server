@@ -54,8 +54,26 @@ function dummyPromise()
     });
 }
 
+function escapeForFileSystem(string, options)
+{
+    if(!options)
+    {
+        options = {leadingTrailing: true};
+    }
+
+    var result = string.replace(/[\\\/:*?"<>|]/g, "-");
+
+    if(options.leadingTrailing)
+    {
+        result = result.replace(/^[. ]+/, "").replace(/[. ]+$/, "");
+    }
+
+    return result;
+}
+
 module.exports = {
     fileExistsAsync: fileExistsAsync,
     getMetadataAsync: getMetadataAsync,
-    dummyPromise: dummyPromise
+    dummyPromise: dummyPromise,
+    escapeForFileSystem: escapeForFileSystem
 }

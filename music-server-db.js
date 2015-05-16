@@ -73,12 +73,29 @@ var MusicServerDb = function()
 
     db.selectTrackByInfoAsync = function(track)
     {
-        var statement = db.prepare(
+        var sql =
             "SELECT rowid as id, * FROM track " +
-            "WHERE title = $title AND artist = $artist AND album = $album " +
-            "AND track_number = $track_number AND year = $year");
+            "WHERE title = $title AND artist = $artist AND album = $album";
 
-        return statement.getAsync({
+        if(track.track_number === null)
+        {
+            sql += " AND track_number IS $track_number";
+        }
+        else
+        {
+            sql += " AND track_number = $track_number";
+        }
+
+        if(track.year === null)
+        {
+            sql += " AND year IS $year";
+        }
+        else
+        {
+            sql += " AND year = $year";
+        }
+
+        return db.prepare(sql).getAsync({
             $title: track.title,
             $artist: track.artist,
             $album: track.album,
