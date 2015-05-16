@@ -23,11 +23,16 @@ function fileExistsAsync(filePath)
     });
 };
 
-function getMetadataAsync(trackPath)
+function getMetadataAsync(trackPath, options)
 {
+    if(!options)
+    {
+        options = {};
+    }
+
     return new Promise(function(resolve, reject)
     {
-        musicmetadata(fs.createReadStream(trackPath), {}, function(err, metadata)
+        musicmetadata(fs.createReadStream(trackPath), options, function(err, metadata)
         {
             if(err)
             {
@@ -41,7 +46,16 @@ function getMetadataAsync(trackPath)
     });
 }
 
+function dummyPromise()
+{
+    return new Promise(function(resolve, reject)
+    {
+        resolve();
+    });
+}
+
 module.exports = {
     fileExistsAsync: fileExistsAsync,
-    getMetadataAsync: getMetadataAsync
+    getMetadataAsync: getMetadataAsync,
+    dummyPromise: dummyPromise
 }
