@@ -33,7 +33,10 @@ module.exports = Fluxxor.createStore({
             "STOP_PLAYBACK", this.onStopPlayback,
             "JUMP_TO_PREVIOUS_TRACK", this.onJumpToPreviousTrack,
             "JUMP_TO_NEXT_TRACK", this.onJumpToNextTrack,
-            "JUMP_TO_PLAYLIST_ITEM", this.onJumpToPlaylistItem
+            "JUMP_TO_PLAYLIST_ITEM", this.onJumpToPlaylistItem,
+            "SCAN_FOR_CHANGED_METADATA", this.onScanForChangedMetadata,
+            "SCAN_FOR_MOVED_FILES", this.onScanForMovedFiles,
+            "SCAN_FOR_NEW_FILES", this.onScanForNewFiles
         );
     },
 
@@ -89,6 +92,22 @@ module.exports = Fluxxor.createStore({
             this.emit("change");
         }.bind(this));
     },
+
+    onScanForChangedMetadata: function()
+    {
+        $.post("/tools/scan-for-changed-metadata");
+    },
+
+    onScanForMovedFiles: function()
+    {
+        $.post("/tools/scan-for-moved-files");
+    },
+
+    onScanForNewFiles: function()
+    {
+        $.post("/tools/scan-for-new-files");
+    },
+
 
     onInitializePlayer: function(playerNode) {
         this.api = new Gapless5(playerNode.id);

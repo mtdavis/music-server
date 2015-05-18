@@ -22,6 +22,7 @@ var HomePage = require('./pages/HomePage');
 var AlbumsPage = require('./pages/AlbumsPage');
 var NotRecentlyPlayedPage = require('./pages/NotRecentlyPlayedPage');
 var ShufflePage = require('./pages/ShufflePage');
+var ScanPage = require('./pages/ScanPage');
 // endinject
 
 var menuItems = [
@@ -31,6 +32,8 @@ var menuItems = [
   { payload: 'albums', text: 'All Albums' },
   { payload: 'not-recently-played', text: 'Not Recently Played' },
   { payload: 'shuffle', text: 'Shuffle' },
+  { type: MenuItem.Types.SUBHEADER, text: 'Tools' },
+  { payload: 'scan', text: 'Scan Files and Metadata' },
   // endinject
 ];
 
@@ -41,6 +44,7 @@ var titles = {
   '/albums': 'All Albums',
   '/not-recently-played': 'Not Recently Played',
   '/shuffle': 'Shuffle',
+  '/scan': 'Scan Files and Metadata',
   // endinject
 };
 
@@ -177,6 +181,7 @@ var routes = (
     <Route name='albums' handler={AlbumsPage} />
     <Route name='not-recently-played' handler={NotRecentlyPlayedPage} />
     <Route name='shuffle' handler={ShufflePage} />
+    <Route name='scan' handler={ScanPage} />
     {/* endinject */}
     <DefaultRoute handler={HomePage} />
   </Route>
@@ -213,6 +218,18 @@ var actions = {
 
     jumpToNextTrack: function() {
         this.dispatch("JUMP_TO_NEXT_TRACK");
+    },
+
+    scanForChangedMetadata: function() {
+        this.dispatch("SCAN_FOR_CHANGED_METADATA");
+    },
+
+    scanForMovedFiles: function() {
+        this.dispatch("SCAN_FOR_MOVED_FILES");
+    },
+
+    scanForNewFiles: function() {
+        this.dispatch("SCAN_FOR_NEW_FILES");
     }
 };
 
