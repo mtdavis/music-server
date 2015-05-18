@@ -92,7 +92,7 @@ var checkForNewFile = function(root, fileStats, next)
         var metadataAlbum = fileMetadata.album;
         var metadataYear = fileMetadata.year ? Number(fileMetadata.year) : null;
         var metadataTrackNumber = fileMetadata.track.no ? fileMetadata.track.no : null;
-        var metadataGenre = fileMetadata.genre[0];
+        var metadataGenre = fileMetadata.genre[0] || "";
         var metadataDuration = fileMetadata.duration;
 
         var dbTrack = {};

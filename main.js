@@ -13,6 +13,7 @@ var path = require("path");
 var db = require("./music-server-db").MusicServerDb();
 var lastfm = require("./music-server-lastfm").MusicServerLastfm();
 var util = require("./music-server-util");
+var scanner = require("./music-server-scanner");
 
 function initRouter()
 {
@@ -25,6 +26,9 @@ function initRouter()
         router.get("/shuffle", shuffleHandler());
         router.post("/submit-play", submitPlayHandler());
         router.post("/submit-now-playing", submitNowPlayingHandler());
+        router.post("/tools/scan-for-changed-metadata", scanForChangedMetadataHandler());
+        router.post("/tools/scan-for-new-files", scanForNewFilesHandler());
+        router.post("/tools/scan-for-moved-files", scanForMovedFilesHandler());
     });
 
     return result;
@@ -351,6 +355,41 @@ function submitNowPlayingHandler()
             res.end();
         });
     }
+}
+
+function scanForChangedMetadataHandler()
+{
+    return scanHandler(scanner.scanForChangedMetadataAsync);
+}
+
+function scanForMovedFilesHandler()
+{
+    return scanHandler(scanner.scanForMovedFilesAsync);
+}
+
+function scanForNewFilesHandler()
+{
+    return scanHandler(scanner.scanForNewFilesAsync);
+}
+
+
+function scanHandler(scanFunction)
+{
+    return function(req, res, next)
+    {
+        console.log(req.url);
+
+        scanFunction().then(function()
+        {
+            res.statusCode = 200;
+            res.end();
+        }).catch(function(error)
+        {
+            console.error(error);
+            res.statusCode = 500;
+            res.end();
+        });
+    };
 }
 
 function startServer(router)
