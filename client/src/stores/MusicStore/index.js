@@ -240,7 +240,8 @@ module.exports = Fluxxor.createStore({
             for(var i = 0; i < tracks.length; i++)
             {
                 this.playlist.push(tracks[i]);
-                this.api.addTrack("/stream/" + tracks[i].path);
+                var path = tracks[i].path.replace(/#/, "%23");
+                this.api.addTrack("/stream/" + path);
             }
 
             this.emit("change");
