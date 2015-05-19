@@ -14,6 +14,7 @@ var db = require("./music-server-db").MusicServerDb();
 var lastfm = require("./music-server-lastfm").MusicServerLastfm();
 var util = require("./music-server-util");
 var scanner = require("./music-server-scanner");
+var connectLimitBandwidth = require("./connect-limit-bandwidth");
 
 function initRouter()
 {
@@ -64,6 +65,7 @@ function selectFromDb(lastModifiedSql, selectSql, settings)
                     "Last-Modified": lastModified.toUTCString()
                 })
                 res.end();
+                return null;
             }
             else
             {
@@ -76,12 +78,16 @@ function selectFromDb(lastModifiedSql, selectSql, settings)
             }
         }).then(function(rows)
         {
-            res.writeHead(200, {
-                "Content-Type": "application/json",
-                "Pragma": "Public",
-                "Last-Modified": lastModified.toUTCString()
-            });
-            res.end(JSON.stringify(rows));
+            if(rows)
+            {
+                res.writeHead(200, {
+                    "Content-Type": "application/json",
+                    "Pragma": "Public",
+                    "Last-Modified": lastModified.toUTCString()
+                });
+                res.write(JSON.stringify(rows));
+                res.end();
+            }
         }).catch(function(error)
         {
             console.error(error)
@@ -395,6 +401,7 @@ function scanHandler(scanFunction)
 function startServer(router)
 {
     var app = connect();
+    app.use(connectLimitBandwidth(musicServerSettings.throttleRate));
     app.use("/stream", serveStatic(musicServerSettings.files.base_stream_path));
     app.use("/", serveStatic("./client/build"));
     app.use(bodyParser.urlencoded({extended: false}));
