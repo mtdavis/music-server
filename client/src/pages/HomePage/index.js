@@ -6,7 +6,7 @@ var FluxMixin = Fluxxor.FluxMixin(React);
 var {Playlist} = require('../../music-lib');
 
 var mui = require("material-ui");
-var {Paper} = mui;
+var {Paper, Menu} = mui;
 
 module.exports = React.createClass({
   mixins: [FluxMixin],
@@ -21,11 +21,16 @@ module.exports = React.createClass({
         var albumArt;
         if(currentTrack.album === "")
         {
+            var menuItems = [
+                {
+                    text: "No album art!",
+                    iconClassName: "icon-album"
+                }
+            ]
+
             albumArt = (
               <div key="album-art" className="hidden-xs col-sm-5">
-                <Paper rounded={false} style={{width:"100%", textAlign:"center", background:"white"}}>
-                  No album art!
-                </Paper>
+                <Menu menuItems={menuItems} autoWidth={false} />
               </div>
             );
         }

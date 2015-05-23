@@ -401,6 +401,7 @@ function scanHandler(scanFunction)
 function startServer(router)
 {
     var app = connect();
+    app.use(bodyParser.urlencoded({extended: false}));
     app.use(connectLimitBandwidth(musicServerSettings.throttleRate));
     app.use("/stream", serveStatic(musicServerSettings.files.base_stream_path));
     app.use("/", serveStatic("./client/build"));
