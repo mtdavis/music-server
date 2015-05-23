@@ -123,9 +123,21 @@ var Master = React.createClass({
     scrobbleTooltip[ScrobbleState.TRACK_SCROBBLED] = "last.fm: track scrobbled.";
     scrobbleTooltip[ScrobbleState.SCROBBLE_FAILED] = "last.fm: scrobble failed!";
 
+    var timeIndicator = "";
+    if(musicStore.playerState !== PlayerState.STOPPED)
+    {
+      timeIndicator = (
+        <div className="time-indicator">
+          {secondsToTimeString(musicStore.currentTrackPosition)}
+        </div>
+      );
+    }
+
     var toolbar = (
       <div style={{textAlign:"right"}}>
           <GaplessPlayer />
+
+          {timeIndicator}
 
           <IconButton iconClassName="icon-lastfm"
               tooltip={scrobbleTooltip[musicStore.scrobbleState]}
@@ -140,24 +152,23 @@ var Master = React.createClass({
           <IconButton iconClassName="icon-stop"
               disabled={!stopButtonEnabled}
               onClick={this.getFlux().actions.stop} />
+          <IconButton iconClassName="icon-hour-glass"
+              className={musicStore.willStopAfterCurrent ? "pulsate" : "smaller-icon"}
+              disabled={!stopButtonEnabled}
+              tooltip="Stop After Current"
+              onClick={this.getFlux().actions.toggleStopAfterCurrent} />
           <IconButton iconClassName="icon-next"
               disabled={!nextButtonEnabled}
               onClick={this.getFlux().actions.jumpToNextTrack} />
       </div>
     );
 
-    var timeIndicator = "";
-    if(musicStore.playerState !== PlayerState.STOPPED)
-    {
-      timeIndicator = " \u2022 " + secondsToTimeString(musicStore.currentTrackPosition);
-    }
-
     return (
       <AppCanvas predefinedLayout={1}>
 
         <AppBar
           className="mui-dark-theme"
-          title={titles[this.getPath()] + timeIndicator}
+          title={titles[this.getPath()]}
           onMenuIconButtonTouchTap={this._onMenuIconButtonTouchTap}
           zDepth={0}>
           {toolbar}
@@ -206,6 +217,10 @@ var actions = {
 
     stop: function() {
         this.dispatch("STOP_PLAYBACK");
+    },
+
+    toggleStopAfterCurrent: function() {
+        this.dispatch("TOGGLE_STOP_AFTER_CURRENT");
     },
 
     jumpToPlaylistItem: function(index) {

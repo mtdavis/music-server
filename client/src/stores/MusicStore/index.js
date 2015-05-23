@@ -14,6 +14,7 @@ module.exports = Fluxxor.createStore({
         this.scrobbleState = ScrobbleState.NO_TRACK;
         this.scrobblePlayTimer = null;
         this.scrobbleNowPlayingTimer = null;
+        this.willStopAfterCurrent = false;
 
         $.getJSON("/albums", function(albums) {
             this.albums = albums;
@@ -31,6 +32,7 @@ module.exports = Fluxxor.createStore({
             "INITIALIZE_PLAYER", this.onInitializePlayer,
             "PLAY_OR_PAUSE_PLAYBACK", this.onPlayOrPausePlayback,
             "STOP_PLAYBACK", this.onStopPlayback,
+            "TOGGLE_STOP_AFTER_CURRENT", this.onToggleStopAfterCurrent,
             "JUMP_TO_PREVIOUS_TRACK", this.onJumpToPreviousTrack,
             "JUMP_TO_NEXT_TRACK", this.onJumpToNextTrack,
             "JUMP_TO_PLAYLIST_ITEM", this.onJumpToPlaylistItem,
@@ -45,6 +47,7 @@ module.exports = Fluxxor.createStore({
             albums: this.albums,
             albumsNotRecentlyPlayed: this.albumsNotRecentlyPlayed,
             playerState: this.playerState,
+            willStopAfterCurrent: this.willStopAfterCurrent,
             scrobbleState: this.scrobbleState,
             playlist: this.playList,
             nowPlaying: this.nowPlaying,
@@ -136,6 +139,11 @@ module.exports = Fluxxor.createStore({
         }.bind(this);
 
         this.api.onfinishedtrack = function() {
+            if(this.willStopAfterCurrent)
+            {
+                this.onStopPlayback();
+                this.willStopAfterCurrent = false;
+            }
             this.emit("change");
         }.bind(this);
 
@@ -220,6 +228,14 @@ module.exports = Fluxxor.createStore({
         if(this.api)
         {
             this.api.stop();
+            this.emit("change");
+        }
+    },
+
+    onToggleStopAfterCurrent: function() {
+        if(this.api)
+        {
+            this.willStopAfterCurrent = !this.willStopAfterCurrent;
             this.emit("change");
         }
     },
