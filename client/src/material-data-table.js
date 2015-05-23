@@ -170,12 +170,12 @@ module.exports = React.createClass({
 
             if(column.renderer)
             {
-                if(column.renderer(cellValue).toLowerCase().contains(text))
+                if(column.renderer(cellValue).toLowerCase().indexOf(text) > -1)
                 {
                     return true;
                 }
             }
-            else if(cellValue !== null && cellValue.toString().toLowerCase().contains(text))
+            else if(cellValue !== null && cellValue.toString().toLowerCase().indexOf(text) > -1)
             {
                 return true;
             }
