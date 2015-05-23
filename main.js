@@ -404,8 +404,13 @@ function startServer(router)
     app.use(connectLimitBandwidth(musicServerSettings.throttleRate));
     app.use("/stream", serveStatic(musicServerSettings.files.base_stream_path));
     app.use("/", serveStatic("./client/build"));
-    app.use(bodyParser.urlencoded({extended: false}));
     app.use(router);
+
+    app.use(function(req, res, next)
+    {
+        res.statusCode = 404;
+        res.end("404");
+    });
 
     var options = {
         key: fs.readFileSync('key.pem'),
@@ -431,5 +436,13 @@ function main()
     var router = initRouter();
     startServer(router);
 }
+
+process.on('uncaughtException', function(err) {
+  console.log('Caught exception: ' + err);
+  if(err.code !== "ENOENT")
+  {
+    throw err;
+  }
+});
 
 main();
