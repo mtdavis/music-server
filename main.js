@@ -4,6 +4,7 @@ var http = require("http");
 var https = require("https");
 var serveStatic = require("serve-static");
 var connectRoute = require("connect-route");
+var basicAuth = require("connect-basic-auth");
 var url = require("url");
 var bodyParser = require("body-parser");
 var musicServerSettings = require("./music-server-settings.json");
@@ -401,8 +402,33 @@ function scanHandler(scanFunction)
 function startServer(router)
 {
     var app = connect();
+
+    app.use(basicAuth(function(credentials, req, res, next)
+    {
+        var authenticated = false;
+        for(var i = 0; i < musicServerSettings.users.length; i++)
+        {
+            if(musicServerSettings.users[i].username === credentials.username &&
+                musicServerSettings.users[i].password === credentials.password)
+            {
+                authenticated = true;
+                next();
+            }
+        }
+
+        if(!authenticated)
+        {
+            next(new Error("Not authorized"));
+        }
+    }));
+
+    app.use(function(req, res, next) {
+        req.requireAuthorization(req, res, next);
+    });
+
     app.use(bodyParser.urlencoded({extended: false}));
     app.use(connectLimitBandwidth(musicServerSettings.throttleRate));
+
     app.use("/stream", serveStatic(musicServerSettings.files.base_stream_path));
     app.use("/", serveStatic("./client/build"));
     app.use(router);
