@@ -1,4 +1,7 @@
 var React = require('react');
+var mui = require('material-ui');
+
+var {TextField} = mui;
 
 var TableCell = React.createClass({
     render: function() {
@@ -79,8 +82,15 @@ var TableHeader = React.createClass({
 })
 
 module.exports = React.createClass({
+    getDefaultProps: function() {
+        return {
+            placeholderText:"Nothing to see here!"
+        };
+    },
+
     getInitialState: function() {
         return {
+            filterText:"",
             sortColumnKey:null,
             sortOrder:1
         };
@@ -92,25 +102,94 @@ module.exports = React.createClass({
             this.props.rows.sort(this.compareRows);
         }
 
-        var tableRows = this.props.rows.map(function(rowData)
+        var tableRows = [];
+
+        for(var i = 0; i < this.props.rows.length; i++)
         {
-            return <TableRow
-                key={rowData.id}
-                rowData={rowData}
-                columns={this.props.columns}
-                onRowClick={this.props.onRowClick} />;
-        }.bind(this));
+            var rowData = this.props.rows[i];
+
+            if(this.rowContainsText(rowData, this.state.filterText, this.props.columns))
+            {
+                tableRows.push(<TableRow
+                    key={rowData.id}
+                    rowData={rowData}
+                    columns={this.props.columns}
+                    onRowClick={this.props.onRowClick} />);
+            }
+        }
+
+        var table;
+        if(tableRows.length === 0)
+        {
+            table = (
+                <div className="table-placeholder shadow-z-1">
+                    {this.props.placeholderText}
+                </div>
+            );
+        }
+        else
+        {
+            table = (
+                <div className="table-responsive-vertical shadow-z-1">
+                    <table className="table table-hover">
+                        <TableHeader columns={this.props.columns} setSortColumnKey={this.setSortColumnKey}/>
+                        <tbody>
+                            {tableRows}
+                        </tbody>
+                    </table>
+                </div>
+            );
+        }
 
         return (
-            <div className="table-responsive-vertical shadow-z-1">
-                <table className="table table-hover">
-                    <TableHeader columns={this.props.columns} setSortColumnKey={this.setSortColumnKey}/>
-                    <tbody>
-                        {tableRows}
-                    </tbody>
-                </table>
+            <div>
+                <div className="table-filter shadow-z-1">
+                    <TextField
+                        hintText="Filter..."
+                        onChange={this.onFilterChange}
+                        onKeyUp={this.onFilterChange} />
+                </div>
+                {table}
             </div>
         );
+    },
+
+    rowContainsText: function(rowData, text, columns)
+    {
+        if(text === "")
+        {
+            return true;
+        }
+
+        text = text.toLowerCase();
+
+        for(var i = 0; i < columns.length; i++)
+        {
+            var column = columns[i];
+            var cellValue = rowData[column.key];
+
+            if(column.renderer)
+            {
+                if(column.renderer(cellValue).toLowerCase().contains(text))
+                {
+                    return true;
+                }
+            }
+            else if(cellValue !== null && cellValue.toString().toLowerCase().contains(text))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    },
+
+    onFilterChange: function(event)
+    {
+        this.setState({
+            filterText: event.target.value
+        });
+        console.log(this.state.filterText);
     },
 
     setSortColumnKey: function(columnKey) {
