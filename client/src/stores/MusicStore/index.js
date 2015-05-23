@@ -134,6 +134,7 @@ module.exports = Fluxxor.createStore({
 
         this.api.onstop = function() {
             this.playerState = PlayerState.STOPPED;
+            this.willStopAfterCurrent = false;
             this.clearScrobbleTimers();
             this.emit("change");
         }.bind(this);
@@ -149,12 +150,14 @@ module.exports = Fluxxor.createStore({
 
         this.api.onfinishedall = function() {
             this.playerState = PlayerState.STOPPED;
+            this.willStopAfterCurrent = false;
             this.clearScrobbleTimers();
             this.emit("change");
         }.bind(this);
 
         this.api.onprev = function() {
             this.nowPlaying -= 1;
+            this.willStopAfterCurrent = false;
             this.clearScrobbleTimers();
             this.startScrobbleTimers();
             this.emit("change");
@@ -162,6 +165,7 @@ module.exports = Fluxxor.createStore({
 
         this.api.onnext = function() {
             this.nowPlaying += 1;
+            this.willStopAfterCurrent = false;
             this.clearScrobbleTimers();
             this.startScrobbleTimers();
             this.emit("change");
