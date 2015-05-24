@@ -107,8 +107,8 @@ function albumsNotRecentlyPlayedHandler()
     var albumsSql =
         "SELECT * FROM (" +
         "    SELECT MIN(rowid) AS id, album_artist, album, genre, SUM(duration) AS duration, " +
-        "    COUNT(track_number) AS tracks, year, " +
-        "    (CASE WHEN COUNT(last_play) = COUNT(*) THEN min(last_play) ELSE NULL END) AS last_play, " +
+        "    COUNT(rowid) AS tracks, year, " +
+        "    (CASE WHEN COUNT(last_play) = COUNT(rowid) THEN min(last_play) ELSE NULL END) AS last_play, " +
         "    MIN(play_count) AS play_count " +
         "    FROM track " +
         "    WHERE album != '' " +
@@ -140,8 +140,9 @@ function albumsHandler()
         "WHERE album != ''";
 
     var albumsSql = "SELECT MIN(rowid) AS id, album_artist, album, genre, SUM(duration) AS duration, " +
-        "COUNT(track_number) AS tracks, year, " +
-        "MIN(last_play) AS last_play, MIN(play_count) AS play_count " +
+        "COUNT(rowid) AS tracks, year, " +
+        "(CASE WHEN COUNT(last_play) = COUNT(rowid) THEN min(last_play) ELSE NULL END) AS last_play, " +
+        "MIN(play_count) AS play_count " +
         "FROM track " +
         "WHERE album != '' " +
         "GROUP BY album_artist, album";

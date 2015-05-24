@@ -21,6 +21,7 @@ var {Paper, IconButton, MenuItem} = mui;
 var HomePage = require('./pages/HomePage');
 var AlbumsPage = require('./pages/AlbumsPage');
 var NotRecentlyPlayedPage = require('./pages/NotRecentlyPlayedPage');
+var NeverPlayedPage = require('./pages/NeverPlayedPage');
 var ShufflePage = require('./pages/ShufflePage');
 var ScanPage = require('./pages/ScanPage');
 // endinject
@@ -31,6 +32,7 @@ var menuItems = [
   { type: MenuItem.Types.SUBHEADER, text: 'Browse' },
   { payload: 'albums', text: 'All Albums' },
   { payload: 'not-recently-played', text: 'Not Recently Played' },
+  { payload: 'never-played', text: 'Never Played' },
   { payload: 'shuffle', text: 'Shuffle' },
   { type: MenuItem.Types.SUBHEADER, text: 'Tools' },
   { payload: 'scan', text: 'Scan Files and Metadata' },
@@ -43,6 +45,7 @@ var titles = {
   '/home': 'Now Playing',
   '/albums': 'All Albums',
   '/not-recently-played': 'Not Recently Played',
+  '/never-played': 'Never Played',
   '/shuffle': 'Shuffle',
   '/scan': 'Scan Files and Metadata',
   // endinject
@@ -191,6 +194,7 @@ var routes = (
     <Route name='home' handler={HomePage} />
     <Route name='albums' handler={AlbumsPage} />
     <Route name='not-recently-played' handler={NotRecentlyPlayedPage} />
+    <Route name='never-played' handler={NeverPlayedPage} />
     <Route name='shuffle' handler={ShufflePage} />
     <Route name='scan' handler={ScanPage} />
     {/* endinject */}
