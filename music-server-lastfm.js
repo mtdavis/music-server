@@ -1,6 +1,8 @@
 var Promise = require("bluebird");
 var SimpleLastfm = require("simple-lastfm");
 var musicServerSettings = require("./music-server-settings.json");
+var http = require("http");
+var url = require("url");
 
 var MusicServerLastfm = function()
 {
@@ -43,6 +45,43 @@ var MusicServerLastfm = function()
 
             console.log("scrobbling", options);
             lastfm.doScrobble(options);
+        });
+    };
+
+    this.getAlbumInfoAsync = function(options)
+    {
+        return new Promise(function(resolve, reject)
+        {
+            console.log("getting album info", options);
+
+            var callback = function(res) {
+                var body = '';
+                res.on('data', function(chunk)
+                {
+                    body += chunk;
+                });
+                res.on('end', function()
+                {
+                    resolve(JSON.parse(body));
+                });
+            };
+
+            var path = url.format({
+                pathname: "/2.0/",
+                query: {
+                    method: "album.getInfo",
+                    artist: options.artist,
+                    album: options.album,
+                    format: "json",
+                    api_key: musicServerSettings.lastfm.api_key
+                }
+            });
+
+            http.get({
+                host: 'ws.audioscrobbler.com',
+                port: 80,
+                path: path
+            }, callback);
         });
     };
 
