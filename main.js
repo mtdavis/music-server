@@ -212,8 +212,10 @@ function albumArtHandler()
             //find path to mp3
             var relativeTrackPath = track.path;
             var relativeTrackDirectory = path.dirname(relativeTrackPath);
-            relativeExpectedArtPathJpg = path.join(relativeTrackDirectory, track.album + ".jpg");
-            relativeExpectedArtPathPng = path.join(relativeTrackDirectory, track.album + ".png");
+            relativeExpectedArtPathJpg = path.join(relativeTrackDirectory,
+                util.escapeForFileSystem(track.album) + ".jpg");
+            relativeExpectedArtPathPng = path.join(relativeTrackDirectory,
+                util.escapeForFileSystem(track.album) + ".png");
 
             var fullTrackPath = path.join(musicServerSettings.files.base_stream_path, relativeTrackPath);
 
