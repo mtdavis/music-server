@@ -36,6 +36,7 @@ module.exports = Fluxxor.createStore({
             "JUMP_TO_PREVIOUS_TRACK", this.onJumpToPreviousTrack,
             "JUMP_TO_NEXT_TRACK", this.onJumpToNextTrack,
             "JUMP_TO_PLAYLIST_ITEM", this.onJumpToPlaylistItem,
+            "SEEK_TO_POSITION", this.onSeekToPosition,
             "SCAN_FOR_CHANGED_METADATA", this.onScanForChangedMetadata,
             "SCAN_FOR_MOVED_FILES", this.onScanForMovedFiles,
             "SCAN_FOR_NEW_FILES", this.onScanForNewFiles
@@ -157,7 +158,6 @@ module.exports = Fluxxor.createStore({
 
         this.api.onprev = function() {
             this.nowPlaying -= 1;
-            this.willStopAfterCurrent = false;
             this.clearScrobbleTimers();
             this.startScrobbleTimers();
             this.emit("change");
@@ -165,7 +165,6 @@ module.exports = Fluxxor.createStore({
 
         this.api.onnext = function() {
             this.nowPlaying += 1;
-            this.willStopAfterCurrent = false;
             this.clearScrobbleTimers();
             this.startScrobbleTimers();
             this.emit("change");
@@ -183,7 +182,7 @@ module.exports = Fluxxor.createStore({
                 if(mutation.target === currentPositionNode)
                 {
                     //Firefox
-                    timeString = mutation.addedNodes[0].textContent.substr(0, 5);
+                    timeString = mutation.addedNodes[0].textContent;
                 }
                 else if(mutation.target.parentElement === currentPositionNode)
                 {
@@ -246,6 +245,7 @@ module.exports = Fluxxor.createStore({
 
     clearPlaylist: function(tracks)
     {
+        this.willStopAfterCurrent = false;
         this.nowPlaying = 0;
         this.playlist = [];
         this.api.removeAllTracks();
@@ -271,6 +271,7 @@ module.exports = Fluxxor.createStore({
     onJumpToPlaylistItem: function(index) {
         if(this.api)
         {
+            this.willStopAfterCurrent = false;
             this.nowPlaying = index;
             this.api.gotoTrack(index, true);
             this.api.onplay();
@@ -281,6 +282,7 @@ module.exports = Fluxxor.createStore({
     onJumpToPreviousTrack: function() {
         if(this.api)
         {
+            this.willStopAfterCurrent = false;
             this.api.prevtrack();
             this.emit("change");
         }
@@ -289,8 +291,36 @@ module.exports = Fluxxor.createStore({
     onJumpToNextTrack: function() {
         if(this.api)
         {
+            this.willStopAfterCurrent = false;
             this.api.next();
             this.emit("change");
+        }
+    },
+
+    onSeekToPosition: function(position) {
+        if(this.api)
+        {
+            var duration = this.playlist[this.nowPlaying].duration;
+
+            if(position < 0)
+            {
+                position = 0;
+            }
+
+            if(position > duration)
+            {
+                position = duration;
+            }
+
+            //Gapless5 player has a resolution of 65535 slices.
+            var seekTo = Math.floor(position / duration * 65535);
+
+            //But if you seek to the last slice it will instead go to slice 0.
+            if(seekTo === 65535)
+            {
+                seekTo = 65534;
+            }
+            this.api.scrub(seekTo);
         }
     },
 

@@ -4,7 +4,7 @@ var Fluxxor = require('fluxxor');
 var FluxMixin = Fluxxor.FluxMixin(React);
 
 var mui = require('material-ui');
-var Menu = mui.Menu;
+var {Menu, Slider} = mui;
 
 var DataTable = require('./material-data-table');
 
@@ -130,6 +130,87 @@ var Playlist = React.createClass({
     }
 });
 
+var CurrentTimeSlider = React.createClass({
+    mixins: [FluxMixin],
+
+    getInitialState: function() {
+        return {
+            dragging: false
+        };
+    },
+
+    render: function() {
+        var musicStore = this.getFlux().store("MusicStore");
+
+        var timeIndicator = <div />;
+        var slider = <div />;
+
+        if(musicStore.playerState !== PlayerState.STOPPED)
+        {
+            var duration = musicStore.playlist[musicStore.nowPlaying].duration;
+
+            var timeString = secondsToTimeString(musicStore.currentTrackPosition);
+
+            //strip off decimal
+            if(timeString.indexOf(".") > -1)
+            {
+                timeString = timeString.split(".")[0];
+            }
+
+            timeIndicator = (
+                <div className="time-label">
+                    {timeString}
+                </div>
+            );
+
+            var value = this.state.dragging ? undefined : musicStore.currentTrackPosition;
+
+            slider = (
+                <Slider
+                    className="time-slider"
+                    name="currentTime"
+                    min={0}
+                    max={duration}
+                    value={value}
+                    onChange={this.onSliderChange}
+                    onDragStart={this.onSliderDragStart}
+                    onDragStop={this.onSliderDragStop}
+                />
+            );
+        }
+
+        return (
+            <div className="time-wrapper">
+                {slider}
+                {timeIndicator}
+            </div>
+        );
+    },
+
+    onSliderChange(event, value)
+    {
+        if(!this.state.dragging)
+        {
+            console.log(value);
+            this.getFlux().actions.seekToPosition(value);
+        }
+    },
+
+    onSliderDragStart()
+    {
+        this.setState({
+            dragging: true
+        });
+    },
+
+    onSliderDragStop()
+    {
+        this.setState({
+            dragging: false
+        });
+    }
+})
+
 var secondsToTimeString = function(seconds)
 {
     var minutes = Math.floor(seconds / 60);
@@ -142,7 +223,7 @@ var timeStringToSeconds = function(timeString)
 {
     var split = timeString.split(":");
     var minutes = parseInt(split[0], 10);
-    var seconds = parseInt(split[1], 10);
+    var seconds = Number(split[1]);
     return minutes * 60 + seconds;
 };
 
@@ -173,6 +254,7 @@ module.exports = {
     GaplessPlayer: GaplessPlayer,
     AlbumList: AlbumList,
     Playlist: Playlist,
+    CurrentTimeSlider: CurrentTimeSlider,
     secondsToTimeString: secondsToTimeString,
     timeStringToSeconds: timeStringToSeconds
 };

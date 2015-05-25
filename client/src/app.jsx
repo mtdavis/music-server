@@ -8,7 +8,10 @@ var FluxMixin = Fluxxor.FluxMixin(React);
 var StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
 var MusicStore = require('./stores/MusicStore');
-var {PlayerState, ScrobbleState, GaplessPlayer, secondsToTimeString} = require('./music-lib');
+var {
+  PlayerState, ScrobbleState, GaplessPlayer, CurrentTimeSlider,
+  secondsToTimeString
+} = require('./music-lib');
 
 var {Paper, IconButton, MenuItem} = mui;
 
@@ -126,25 +129,11 @@ var Master = React.createClass({
     scrobbleTooltip[ScrobbleState.TRACK_SCROBBLED] = "last.fm: track scrobbled.";
     scrobbleTooltip[ScrobbleState.SCROBBLE_FAILED] = "last.fm: scrobble failed!";
 
-    var timeIndicator = "";
-    if(musicStore.playerState !== PlayerState.STOPPED)
-    {
-      timeIndicator = (
-        <div className="time-indicator">
-          {secondsToTimeString(musicStore.currentTrackPosition)}
-        </div>
-      );
-    }
-
     var toolbar = (
-      <div style={{textAlign:"right"}}>
+      <div className="app-bar-toolbar">
           <GaplessPlayer />
 
-          {timeIndicator}
-
-          <IconButton iconClassName="icon-lastfm"
-              tooltip={scrobbleTooltip[musicStore.scrobbleState]}
-              onClick={this.openLastFm} />
+          <CurrentTimeSlider />
 
           <IconButton iconClassName="icon-previous"
               disabled={!prevButtonEnabled}
@@ -163,6 +152,10 @@ var Master = React.createClass({
           <IconButton iconClassName="icon-next"
               disabled={!nextButtonEnabled}
               onClick={this.getFlux().actions.jumpToNextTrack} />
+
+          <IconButton iconClassName="icon-lastfm"
+              tooltip={scrobbleTooltip[musicStore.scrobbleState]}
+              onClick={this.openLastFm} />
       </div>
     );
 
@@ -173,7 +166,7 @@ var Master = React.createClass({
           className="mui-dark-theme"
           title={titles[this.getPath()]}
           onMenuIconButtonTouchTap={this._onMenuIconButtonTouchTap}
-          zDepth={0}>
+          zDepth={1}>
           {toolbar}
         </AppBar>
 
@@ -237,6 +230,10 @@ var actions = {
 
     jumpToNextTrack: function() {
         this.dispatch("JUMP_TO_NEXT_TRACK");
+    },
+
+    seekToPosition: function(position) {
+        this.dispatch("SEEK_TO_POSITION", position);
     },
 
     scanForChangedMetadata: function() {

@@ -36,18 +36,6 @@ html, body
   padding-left: 10px;
 }
 
-.time-indicator
-{
-  display:inline-block;
-  .mui-font-style-headline;
-  .mui-text-full-white;
-  line-height: @app-bar-height;
-  padding-right: @desktop-gutter;
-  padding-top: 0;
-  margin-bottom: @desktop-gutter-mini;
-  vertical-align: top;
-}
-
 .pulsate
 {
   .pulsate(icon-button-focus-ripple-pulsate);
@@ -56,4 +44,41 @@ html, body
 .smaller-icon
 {
   transform: scale(.75);
+}
+
+.mui-app-bar
+{
+  display: flex;
+}
+
+.app-bar-toolbar
+{
+  display:flex;
+  justify-content: flex-end;
+}
+
+.time-wrapper
+{
+  display:flex;
+  justify-content:flex-end;
+  flex-grow:1;
+}
+
+.time-slider
+{
+  flex-grow:1;
+  margin: 0;
+  padding: 20px 24px 20px 24px;
+}
+
+.time-slider .mui-input-bar
+{
+  width:auto;
+}
+
+.time-label
+{
+  .mui-font-style-headline;
+  .mui-text-full-white;
+  padding-right: 12px;
 }
