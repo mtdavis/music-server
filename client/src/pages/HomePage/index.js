@@ -8,6 +8,39 @@ var {Playlist} = require('../../music-lib');
 var mui = require("material-ui");
 var {Paper, Menu} = mui;
 
+var AlbumArt = React.createClass({
+  render: function() {
+    var result;
+    if(this.props.track.album === "")
+    {
+      var menuItems = [
+        {
+          text: "No album art!",
+          iconClassName: "icon-album"
+        }
+      ]
+
+      result = (
+        <div key="album-art" className="hidden-xs col-sm-5">
+          <Menu menuItems={menuItems} autoWidth={false} />
+        </div>
+      );
+    }
+    else
+    {
+      result = (
+        <div key="album-art" className="col-xs-12 col-sm-5">
+          <Paper rounded={false} style={{width:"100%", lineHeight:"0"}}>
+            <img src={"/album-art?id=" + this.props.track.id} style={{width:"100%"}} />
+          </Paper>
+        </div>
+      );
+    }
+
+    return result;
+  }
+});
+
 module.exports = React.createClass({
   mixins: [FluxMixin],
 
@@ -17,36 +50,8 @@ module.exports = React.createClass({
     var musicStore = this.getFlux().store("MusicStore");
     if(musicStore.playlist.length !== 0)
     {
-        var currentTrack = musicStore.playlist[musicStore.nowPlaying];
-        var albumArt;
-        if(currentTrack.album === "")
-        {
-            var menuItems = [
-                {
-                    text: "No album art!",
-                    iconClassName: "icon-album"
-                }
-            ]
-
-            albumArt = (
-              <div key="album-art" className="hidden-xs col-sm-5">
-                <Menu menuItems={menuItems} autoWidth={false} />
-              </div>
-            );
-        }
-        else
-        {
-            albumArt = (
-              <div key="album-art" className="col-xs-12 col-sm-5">
-                <Paper rounded={false} style={{width:"100%", lineHeight:"0"}}>
-                  <img src={"/album-art?id=" + currentTrack.id} style={{width:"100%"}} />
-                </Paper>
-              </div>
-            );
-        }
-
         content = [
-          {albumArt},
+          <AlbumArt key="art" track={musicStore.playlist[0]} />,
 
           <div key="playlist" className="col-xs-12 col-sm-7">
             <Playlist />
