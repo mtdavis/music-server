@@ -32,7 +32,7 @@ var MusicServerDb = function()
         var statement = db.prepare(
             "UPDATE track " +
             "SET title = $title, artist = $artist, album_artist = $album_artist, album = $album, " +
-            "    genre = $genre, duration = $duration, track_number = $track_number, year = $year, " +
+            "    genre = $genre, track_number = $track_number, year = $year, " +
             "    row_modified = $current_time " +
             "WHERE rowid = $id");
 
@@ -42,7 +42,6 @@ var MusicServerDb = function()
             $album_artist: track.album_artist,
             $album: track.album,
             $genre: track.genre,
-            $duration: track.duration,
             $track_number: track.track_number,
             $year: track.year,
             $current_time: currentTime,

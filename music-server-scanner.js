@@ -23,7 +23,6 @@ var checkForChangedMetadata = function(root, fileStats, next)
         var metadataYear = fileMetadata.year ? Number(fileMetadata.year) : null;
         var metadataTrackNumber = fileMetadata.track.no ? fileMetadata.track.no : null;
         var metadataGenre = fileMetadata.genre[0];
-        var metadataDuration = fileMetadata.duration;
 
         if(metadataTitle !== dbTrack.title ||
             metadataArtist !== dbTrack.artist ||
@@ -31,8 +30,7 @@ var checkForChangedMetadata = function(root, fileStats, next)
             metadataAlbum !== dbTrack.album ||
             metadataYear !== dbTrack.year ||
             metadataTrackNumber !== dbTrack.track_number ||
-            metadataGenre !== dbTrack.genre ||
-            Math.abs(metadataDuration - dbTrack.duration) > 1)
+            metadataGenre !== dbTrack.genre)
         {
             console.log(fileMetadata, dbTrack);
             dbTrack.title = metadataTitle;
@@ -42,7 +40,6 @@ var checkForChangedMetadata = function(root, fileStats, next)
             dbTrack.year = metadataYear;
             dbTrack.track_number = metadataTrackNumber;
             dbTrack.genre = metadataGenre;
-            dbTrack.duration = metadataDuration;
 
             return db.updateTrackFromMetadataAsync(dbTrack);
         }
@@ -57,7 +54,7 @@ var checkForChangedMetadata = function(root, fileStats, next)
         process.stdout.write(".");
 
         Promise.join(
-            util.getMetadataAsync(absolutePath, {duration: true}),
+            util.getMetadataAsync(absolutePath, {duration: false}),
             db.selectTrackByPathAsync(pathRelativeToMusicRoot)
         ).spread(function(fileMetadata, dbTrack)
         {
