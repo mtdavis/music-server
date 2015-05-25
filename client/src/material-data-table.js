@@ -16,11 +16,18 @@ var TableCell = React.createClass({
     },
 
     render: function() {
+        var style = {};
+        if(this.props.textAlign)
+        {
+            style.textAlign = this.props.textAlign;
+        }
+
         var content;
 
         if(this.props.renderer === "icon")
         {
             content = <FontIcon className={this.props.value} />;
+            style.width = "48px";
         }
         else if(this.props.value !== null && this.props.value !== undefined)
         {
@@ -32,7 +39,7 @@ var TableCell = React.createClass({
         }
 
         return (
-            <td data-title={this.props.header} style={{textAlign:this.props.textAlign}}>
+            <td data-title={this.props.header} style={style}>
                 {content}
             </td>
         );
