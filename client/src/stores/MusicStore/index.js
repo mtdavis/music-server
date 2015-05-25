@@ -5,7 +5,6 @@ module.exports = Fluxxor.createStore({
 
     initialize: function() {
         this.albums = [];
-        this.albumsNotRecentlyPlayed = [];
         this.api = null;
         this.playerState = PlayerState.STOPPED;
         this.playlist = [];
@@ -18,11 +17,6 @@ module.exports = Fluxxor.createStore({
 
         $.getJSON("/albums", function(albums) {
             this.albums = albums;
-            this.emit("change");
-        }.bind(this));
-
-        $.getJSON("/albums/not-recently-played", function(albumsNotRecentlyPlayed) {
-            this.albumsNotRecentlyPlayed = albumsNotRecentlyPlayed;
             this.emit("change");
         }.bind(this));
 
@@ -46,7 +40,6 @@ module.exports = Fluxxor.createStore({
     getState: function() {
         return {
             albums: this.albums,
-            albumsNotRecentlyPlayed: this.albumsNotRecentlyPlayed,
             playerState: this.playerState,
             willStopAfterCurrent: this.willStopAfterCurrent,
             scrobbleState: this.scrobbleState,

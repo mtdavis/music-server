@@ -1,32 +1,53 @@
 var React = require('react');
 var mui = require('material-ui');
 
-var {TextField} = mui;
+var {TextField, FontIcon} = mui;
 
 var TableCell = React.createClass({
-    render: function() {
-        var text;
+    getDefaultProps: function() {
+        return {
+            renderer: x => x,
+            value: null,
+            header: "",
+            //default textAlign value is undefined so that responsive mode works
+            //(since in small screens, all text-align = right)
+            textAlign: undefined
+        };
+    },
 
-        if(this.props.renderer && this.props.value !== null && this.props.value !== undefined)
+    render: function() {
+        var content;
+
+        if(this.props.renderer === "icon")
         {
-            text = this.props.renderer(this.props.value);
+            content = <FontIcon className={this.props.value} />;
         }
         else if(this.props.value !== null && this.props.value !== undefined)
         {
-            text = this.props.value;
+            content = this.props.renderer(this.props.value);
         }
         else
         {
-            text = "-";
+            content = "-";
         }
 
         return (
-            <td data-title={this.props.header}>{text}</td>
+            <td data-title={this.props.header} style={{textAlign:this.props.textAlign}}>
+                {content}
+            </td>
         );
     }
 })
 
 var TableRow = React.createClass({
+    getDefaultProps: function() {
+        return {
+            columns: [],
+            value: null,
+            onRowClick: null
+        };
+    },
+
     render: function() {
         var tds = this.props.columns.map(function(column)
         {
@@ -36,7 +57,8 @@ var TableRow = React.createClass({
                     key={column.key}
                     value={value}
                     header={column.header}
-                    renderer={column.renderer} />
+                    renderer={column.renderer}
+                    textAlign={column.textAlign} />
             );
         }.bind(this));
 
@@ -56,6 +78,13 @@ var TableRow = React.createClass({
 });
 
 var TableHeader = React.createClass({
+    getDefaultProps: function() {
+        return {
+            columns: [],
+            setSortColumnKey: null
+        };
+    },
+
     render: function() {
         var ths = this.props.columns.map(function(column)
         {
@@ -65,7 +94,7 @@ var TableHeader = React.createClass({
             }.bind(this);
 
             return (
-                <th key={column.key} onClick={setSortColumnKey}>
+                <th key={column.key} onClick={setSortColumnKey} style={{textAlign:column.textAlign}}>
                     {column.header}
                 </th>
             );
@@ -84,15 +113,24 @@ var TableHeader = React.createClass({
 module.exports = React.createClass({
     getDefaultProps: function() {
         return {
-            placeholderText:"Nothing to see here!"
+            placeholderText:"Nothing to see here!",
+            columns: [],
+            rows: [],
+            onRowClick: function() {},
+            showHeader: true,
+            showFilter: true,
+            responsive: true,
+            condensed: false,
+            initialSortColumnKey:null,
+            initialSortOrder:1
         };
     },
 
     getInitialState: function() {
         return {
             filterText:"",
-            sortColumnKey:null,
-            sortOrder:1
+            sortColumnKey:this.props.initialSortColumnKey,
+            sortOrder:this.props.initialSortOrder
         };
     },
 
@@ -129,10 +167,21 @@ module.exports = React.createClass({
         }
         else
         {
+            var wrapperClassName = "shadow-z-1";
+            wrapperClassName += this.props.responsive ? " table-responsive-vertical" : "";
+
+            var tableClassName = "table table-hover"
+            tableClassName += this.props.condensed ? " table-condensed" : "";
+
             table = (
-                <div className="table-responsive-vertical shadow-z-1">
-                    <table className="table table-hover">
-                        <TableHeader columns={this.props.columns} setSortColumnKey={this.setSortColumnKey}/>
+                <div className={wrapperClassName}>
+                    <table className={tableClassName}>
+                        {this.props.showHeader &&
+                            <TableHeader
+                                columns={this.props.columns}
+                                setSortColumnKey={this.setSortColumnKey}
+                            />
+                        }
                         <tbody>
                             {tableRows}
                         </tbody>
@@ -141,14 +190,18 @@ module.exports = React.createClass({
             );
         }
 
+        var filter = (
+            <div className="table-filter shadow-z-1">
+                <TextField
+                    hintText="Filter..."
+                    onChange={this.onFilterChange}
+                    onKeyUp={this.onFilterChange} />
+            </div>
+        );
+
         return (
             <div>
-                <div className="table-filter shadow-z-1">
-                    <TextField
-                        hintText="Filter..."
-                        onChange={this.onFilterChange}
-                        onKeyUp={this.onFilterChange} />
-                </div>
+                {this.props.showFilter && filter}
                 {table}
             </div>
         );

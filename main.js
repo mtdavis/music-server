@@ -21,7 +21,6 @@ function initRouter()
 {
     var result = connectRoute(function(router)
     {
-        router.get("/albums/not-recently-played", albumsNotRecentlyPlayedHandler());
         router.get("/albums", albumsHandler());
         router.get("/tracks", tracksHandler());
         router.get("/album-art", albumArtHandler());
@@ -96,41 +95,6 @@ function selectFromDb(lastModifiedSql, selectSql, settings)
             res.end();
         });
     }
-}
-
-function albumsNotRecentlyPlayedHandler()
-{
-    var lastModifiedSql = "SELECT MAX(row_modified) AS last_modified " +
-        "FROM track " +
-        "WHERE album != ''";
-
-    var albumsSql =
-        "SELECT * FROM (" +
-        "    SELECT MIN(rowid) AS id, album_artist, album, genre, SUM(duration) AS duration, " +
-        "    COUNT(rowid) AS tracks, year, " +
-        "    (CASE WHEN COUNT(last_play) = COUNT(rowid) THEN min(last_play) ELSE NULL END) AS last_play, " +
-        "    MIN(play_count) AS play_count " +
-        "    FROM track " +
-        "    WHERE album != '' " +
-        "    GROUP BY album_artist, album) " +
-        "WHERE last_play IS NULL OR last_play < $before_timestamp " +
-        "ORDER BY last_play DESC";
-
-    var selectSqlParamsBuilder = function(req)
-    {
-        var query = url.parse(req.url, true)["query"];
-        var daysAgo = query.daysAgo || 42; //default == 6 weeks
-        var secondsAgo = daysAgo * 24 * 60 * 60;
-        var beforeTimestamp = Math.floor(new Date().getTime() / 1000) - secondsAgo;
-
-        return {
-            $before_timestamp: beforeTimestamp
-        };
-    };
-
-    return selectFromDb(lastModifiedSql, albumsSql, {
-        selectSqlParamsBuilder: selectSqlParamsBuilder
-    });
 }
 
 function albumsHandler()

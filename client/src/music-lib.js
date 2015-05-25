@@ -61,15 +61,20 @@ var AlbumList = React.createClass({
         var columns = [
             {key:"album_artist", header:"Artist"},
             {key:"album", header:"Album"},
-            {key:"year", header:"Year"},
-            {key:"tracks", header:"Tracks"},
-            {key:"duration", header:"Length", renderer:secondsToTimeString},
-            {key:"play_count", header:"Play Count"},
-            {key:"last_play", header:"Last Played", renderer:unixTimestampToDateString}
+            {key:"year", header:"Year", textAlign:"right"},
+            {key:"tracks", header:"Tracks", textAlign:"right"},
+            {key:"duration", header:"Length", renderer:secondsToTimeString, textAlign:"right"},
+            {key:"play_count", header:"Play Count", textAlign:"right"},
+            {key:"last_play", header:"Last Played", renderer:unixTimestampToDateString, textAlign:"right"}
         ];
 
         return (
-            <DataTable rows={this.props.albums} columns={columns} onRowClick={this.onAlbumClick}/>
+            <DataTable
+                {...this.props}
+                rows={this.props.albums}
+                columns={columns}
+                onRowClick={this.onAlbumClick}
+            />
         );
     },
 
@@ -84,6 +89,21 @@ var Playlist = React.createClass({
 
     render: function() {
         var musicStore = this.getFlux().store("MusicStore");
+
+        //check whether all artists are equal.
+        var allArtistsEqual = true;
+        var artist = null;
+        for(var i = 0; i < musicStore.playlist.length; i++)
+        {
+            if(artist === null)
+            {
+                artist = musicStore.playlist[i].artist;
+            }
+            else if(artist !== musicStore.playlist[i].artist)
+            {
+                allArtistsEqual = false;
+            }
+        }
 
         var playlistItems = musicStore.playlist.map(function(track, index) {
             var icon = "icon-music";
@@ -104,29 +124,41 @@ var Playlist = React.createClass({
                 }
             }
 
+            var text = allArtistsEqual ?
+                (index + 1) + ". " + track.title :
+                (index + 1) + ". " + track.artist + " - " + track.title;
+
             return {
-                payload: track,
-                text: (index + 1) + ". " + track.artist + " - " + track.title,
-                iconClassName: icon
-            }
+                id: index,
+                icon: icon,
+                text: text,
+                duration: track.duration
+            };
         });
 
-        if(playlistItems.length === 0)
-        {
-            var menuItems = [{text: "The playlist is empty!"}];
-            result = <Menu menuItems={menuItems} autoWidth={false} />
-        }
-        else
-        {
-            result = <Menu menuItems={playlistItems} onItemClick={this.onTrackClick} autoWidth={false} />
-        }
+        var columns = [
+            {key:"icon", renderer:"icon"},
+            {key:"text"},
+            {key:"duration", renderer:secondsToTimeString, textAlign:"right"}
+        ];
 
-        return result;
+        return (
+            <DataTable
+                rows={playlistItems}
+                showHeader={false}
+                showFilter={false}
+                responsive={false}
+                condensed={true}
+                columns={columns}
+                onRowClick={this.onTrackClick}
+                placeholderText={"The playlist is empty!"}
+            />
+        );
     },
 
-    onTrackClick: function(event, index, item)
+    onTrackClick: function(item)
     {
-        this.getFlux().actions.jumpToPlaylistItem(index);
+        this.getFlux().actions.jumpToPlaylistItem(item.id);
     }
 });
 
