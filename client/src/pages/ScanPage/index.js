@@ -14,13 +14,22 @@ module.exports = React.createClass({
       <div className='scan-page container-fluid'>
         <div className="row">
           <div className="col-xs-12" style={{textAlign:"center"}}>
-            <RaisedButton label="Scan for New Files" onClick={this.getFlux().actions.scanForNewFiles} />
+            <RaisedButton onClick={this.getFlux().actions.scanForNewFiles}>
+              <FontIcon className="icon-search"/>
+              <span className="mui-raised-button-label">Scan for New Files</span>
+            </RaisedButton>
             <br />
             <br />
-            <RaisedButton label="Scan for Changed Metadata" onClick={this.getFlux().actions.scanForChangedMetadata} />
+            <RaisedButton onClick={this.getFlux().actions.scanForChangedMetadata}>
+              <FontIcon className="icon-search"/>
+              <span className="mui-raised-button-label">Scan for Changed Metadata</span>
+            </RaisedButton>
             <br />
             <br />
-            <RaisedButton label="Scan for Moved Files" onClick={this.getFlux().actions.scanForMovedFiles} />
+            <RaisedButton onClick={this.getFlux().actions.scanForMovedFiles}>
+              <FontIcon className="icon-search"/>
+              <span className="mui-raised-button-label">Scan for Moved Files</span>
+            </RaisedButton>
           </div>
         </div>
       </div>

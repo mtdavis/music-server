@@ -7,9 +7,8 @@
 
 .logo
 {
-  cursor: pointer;
   .mui-font-style-headline;
-  .mui-text-full-white;
+  color: @app-bar-text-color;
   line-height: @app-bar-height;
   background-color: @primary-1-color;
   padding-left: @desktop-gutter;
@@ -36,12 +35,12 @@ html, body
   padding-left: 10px;
 }
 
-.pulsate
+.pulsate .mui-font-icon
 {
   .pulsate(icon-button-focus-ripple-pulsate);
 }
 
-.smaller-icon
+.smaller-icon .mui-font-icon
 {
   transform: scale(.75);
 }
@@ -79,6 +78,6 @@ html, body
 .time-label
 {
   .mui-font-style-headline;
-  .mui-text-full-white;
+  color: @app-bar-text-color;
   padding-right: 12px;
 }
