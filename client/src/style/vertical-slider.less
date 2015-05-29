@@ -1,0 +1,169 @@
+@import "material-ui/variables/colors.less";
+@import "material-ui/variables/spacing.less";
+@import "material-ui/variables/custom-variables.less";
+@import "material-ui/mixins/mixins.less";
+
+.react-draggable-dragging {
+  user-select: none;
+}
+
+.mui-vertical-slider {
+  @fill-gutter: @slider-handle-size-disabled - @slider-track-size;
+
+  -webkit-touch-callout: none;
+  cursor: default;
+  height:100%;
+  width: @slider-handle-size-active;
+  position: relative;
+
+  .handle-size(@size) {
+    width: @size;
+    height: @size;
+  }
+
+  .mui-vertical-slider-track {
+    position: absolute;
+    right: (@slider-handle-size-active - @slider-track-size) / 2;
+    top: 0;
+    width: @slider-track-size;
+    height: 100%;
+  }
+
+  .mui-vertical-slider-selection {
+    position: absolute;
+    right: 0;
+    width: 100%;
+
+    .mui-vertical-slider-selection-fill {
+      height: 100%;
+      .ease-out(@property: margin);
+    }
+  }
+
+  .mui-vertical-slider-selection-low {
+    top: 0;
+
+    .mui-vertical-slider-selection-fill {
+      background-color: @slider-selection-color;
+      margin-bottom: @fill-gutter;
+    }
+  }
+
+  .mui-vertical-slider-selection-high {
+    bottom: 0;
+
+    .mui-vertical-slider-selection-fill {
+      background-color: @slider-track-color;
+      margin-top: @fill-gutter;
+    }
+  }
+
+  .mui-vertical-slider-handle {
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+    top: 0%;
+    z-index: 1;
+    margin: 0 (@slider-track-size / 2) 0 0;
+
+    background-clip: padding-box;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition:
+      border 450ms @ease-out-function,
+      width 450ms @ease-out-function,
+      height 450ms @ease-out-function;
+
+    .handle-size(@slider-handle-size);
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &:not(.mui-disabled) {
+    .mui-vertical-slider-handle {
+      border: 0px solid transparent;
+      background-color: @slider-selection-color;
+      &:active {
+        .handle-size(@slider-handle-size-active);
+      }
+    }
+
+    &:hover, &:focus {
+      .mui-vertical-slider-selection-high {
+        .mui-vertical-slider-selection-fill {
+          background: @slider-track-color-selected;
+        }
+      }
+
+      &:not(.mui-vertical-slider-zero) {
+        .mui-vertical-slider-handle:not(:active) {
+          border: @slider-handle-size solid fade(@slider-selection-color, 20%);
+          .handle-size(@slider-handle-size-active + @slider-handle-size);
+        }
+      }
+    }
+
+    &.mui-vertical-slider-zero {
+      .mui-vertical-slider-handle {
+        border: @slider-track-size solid @slider-track-color;
+        background-color: transparent;
+        box-shadow: none;
+
+        &:active {
+          border-color: @slider-track-color-selected;
+          width: @slider-handle-size-active !important;
+          height: @slider-handle-size-active !important;
+          transition:
+            background-color 450ms @ease-out-function,
+            width 450ms @ease-out-function,
+            height 450ms @ease-out-function;
+
+          & ~ .mui-vertical-slider-selection-high .mui-vertical-slider-selection-fill {
+            margin-top: @slider-handle-size !important;
+            .ease-out(@property: margin);
+          }
+        }
+      }
+
+      &:hover, &:focus {
+        .mui-vertical-slider-handle {
+          @size: @slider-handle-size + @slider-track-size;
+          border: @slider-track-size solid @slider-handle-color-zero;
+          width: @size;
+          height: @size;
+        }
+      }
+    }
+  }
+
+  &.mui-disabled {
+    @gutter: (@slider-handle-size-disabled + @slider-track-size) / 2;
+
+    cursor: not-allowed;
+
+    .mui-vertical-slider-selection-fill {
+      background-color: @slider-track-color;
+    }
+
+    .mui-vertical-slider-handle {
+      cursor: not-allowed;
+      background-color: @slider-track-color;
+      .handle-size(@slider-handle-size-disabled);
+    }
+
+    &.mui-vertical-slider-zero {
+      .mui-vertical-slider-selection-low .mui-vertical-slider-selection-fill {
+        margin-bottom: @gutter;
+      }
+      .mui-vertical-slider-selection-high .mui-vertical-slider-selection-fill {
+        margin-top: @gutter;
+      }
+      .mui-vertical-slider-handle {
+        border: @slider-track-size solid @slider-track-color;
+        background-color: transparent;
+      }
+    }
+  }
+}
