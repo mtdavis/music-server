@@ -135,8 +135,6 @@ var Master = React.createClass({
 
           <CurrentTimeSlider />
 
-          <VolumeButton />
-
           <IconButton iconClassName="icon-previous"
               disabled={!prevButtonEnabled}
               onClick={this.getFlux().actions.jumpToPreviousTrack} />
@@ -154,6 +152,8 @@ var Master = React.createClass({
           <IconButton iconClassName="icon-next"
               disabled={!nextButtonEnabled}
               onClick={this.getFlux().actions.jumpToNextTrack} />
+
+          <VolumeButton />
 
           <IconButton iconClassName="icon-lastfm"
               tooltip={scrobbleTooltip[musicStore.scrobbleState]}

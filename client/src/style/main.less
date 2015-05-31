@@ -78,8 +78,13 @@ html, body
 .time-label
 {
   .mui-font-style-headline;
-  color: @app-bar-text-color;
+  color: lighten(@body-text-color, 75%);
   padding-right: 12px;
+
+  &.playing
+  {
+    color: @app-bar-text-color;
+  }
 }
 
 .volume-slider

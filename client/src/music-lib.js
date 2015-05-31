@@ -169,21 +169,35 @@ var CurrentTimeSlider = React.createClass({
 
     getInitialState: function() {
         return {
-            dragging: false
+            dragging: false,
+            draggingValue: 0
         };
     },
 
     render: function() {
         var musicStore = this.getFlux().store("MusicStore");
 
-        var timeIndicator = <div />;
-        var slider = <div />;
+        var timeLabelClassName = "time-label";
+        var timeString = "0:00";
+        var sliderValue = 0;
+        var sliderMax = 1;
+        var sliderDisabled = true;
 
         if(musicStore.playerState !== PlayerState.STOPPED)
         {
-            var duration = musicStore.playlist[musicStore.nowPlaying].duration;
+            var currentTrackDuration = musicStore.playlist[musicStore.nowPlaying].duration;
+            timeLabelClassName += " playing"
 
-            var timeString = secondsToTimeString(musicStore.currentTrackPosition);
+            if(this.state.dragging)
+            {
+                sliderValue = undefined;
+                timeString = secondsToTimeString(this.state.draggingValue);
+            }
+            else
+            {
+                sliderValue = musicStore.currentTrackPosition;
+                timeString = secondsToTimeString(musicStore.currentTrackPosition);
+            }
 
             //strip off decimal
             if(timeString.indexOf(".") > -1)
@@ -191,56 +205,57 @@ var CurrentTimeSlider = React.createClass({
                 timeString = timeString.split(".")[0];
             }
 
-            timeIndicator = (
-                <div className="time-label">
-                    {timeString}
-                </div>
-            );
-
-            var value = this.state.dragging ? undefined : musicStore.currentTrackPosition;
-
-            slider = (
-                <Slider
-                    className="time-slider"
-                    name="currentTime"
-                    min={0}
-                    max={duration}
-                    value={value}
-                    onChange={this.onSliderChange}
-                    onDragStart={this.onSliderDragStart}
-                    onDragStop={this.onSliderDragStop}
-                />
-            );
+            sliderMax = currentTrackDuration;
+            sliderDisabled = false;
         }
 
         return (
             <div className="time-wrapper">
-                {slider}
-                {timeIndicator}
+                <Slider
+                    className="time-slider"
+                    name="currentTime"
+                    min={0}
+                    max={sliderMax}
+                    value={sliderValue}
+                    disabled={sliderDisabled}
+                    onChange={this.onSliderChange}
+                    onDragStart={this.onSliderDragStart}
+                    onDragStop={this.onSliderDragStop}
+                />
+
+                <div className={timeLabelClassName}>
+                    {timeString}
+                </div>
             </div>
         );
     },
 
     onSliderChange(event, value)
     {
-        if(!this.state.dragging)
+        if(this.state.dragging)
         {
-            console.log(value);
+            this.setState({draggingValue: value});
+        }
+        else
+        {
             this.getFlux().actions.seekToPosition(value);
         }
     },
 
     onSliderDragStart()
     {
+        var musicStore = this.getFlux().store("MusicStore");
         this.setState({
-            dragging: true
+            dragging: true,
+            draggingValue: musicStore.currentTrackPosition
         });
     },
 
     onSliderDragStop()
     {
         this.setState({
-            dragging: false
+            dragging: false,
+            draggingValue: 0
         });
     }
 });
