@@ -9,7 +9,7 @@ var StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
 var MusicStore = require('./stores/MusicStore');
 var {
-  PlayerState, ScrobbleState, GaplessPlayer, CurrentTimeSlider,
+  PlayerState, ScrobbleState, GaplessPlayer, CurrentTimeSlider, VolumeButton,
   secondsToTimeString
 } = require('./music-lib');
 
@@ -135,6 +135,8 @@ var Master = React.createClass({
 
           <CurrentTimeSlider />
 
+          <VolumeButton />
+
           <IconButton iconClassName="icon-previous"
               disabled={!prevButtonEnabled}
               onClick={this.getFlux().actions.jumpToPreviousTrack} />
@@ -234,6 +236,10 @@ var actions = {
 
     seekToPosition: function(position) {
         this.dispatch("SEEK_TO_POSITION", position);
+    },
+
+    setVolume: function(volume) {
+      this.dispatch("SET_VOLUME", volume);
     },
 
     scanForChangedMetadata: function() {

@@ -29,7 +29,8 @@ var VerticalSlider = React.createClass({
       defaultValue: 0,
       min: 0,
       max: 1,
-      dragging: false
+      dragging: false,
+      height: 200
     };
   },
 
@@ -63,27 +64,17 @@ var VerticalSlider = React.createClass({
     var percent = this.state.percent;
     if (percent > 1) percent = 1; else if (percent < 0) percent = 0;
 
-    var height = 0;
-    try
-    {
-      height = this.getDOMNode().clientHeight;
-    }
-    catch(ex)
-    {
-      //ignored?
-    }
-
     return (
-      <div className={classes} style={this.props.style}>
+      <div className={classes} style={{width: "24px", height: this.props.height + "px"}} >
         <span className="mui-input-highlight"></span>
         <span className="mui-input-bar"></span>
         <span className="mui-input-description">{this.props.description}</span>
         <span className="mui-input-error">{this.props.error}</span>
         <div className={sliderClasses} onClick={this._onClick}>
           <div ref="track" className="mui-vertical-slider-track">
-            <Draggable axis="y" bound="all box"
+            <Draggable axis="y" bound="point"
               cancel={this.props.disabled ? '*' : null}
-              start={{y: (height * percent)}}
+              start={{y: (this.props.height * percent)}}
               onStart={this._onDragStart}
               onStop={this._onDragStop}
               onDrag={this._onDragUpdate}>
@@ -164,7 +155,6 @@ var VerticalSlider = React.createClass({
 
   _onDragUpdate: function(e, ui) {
     if (!this.state.dragging) return;
-    console.log(ui.position);
     if (!this.props.disabled) this._dragY(e, ui.position.top);
   },
 

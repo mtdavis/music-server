@@ -81,3 +81,47 @@ html, body
   color: @app-bar-text-color;
   padding-right: 12px;
 }
+
+.volume-slider
+{
+  position: absolute;
+  top: 0;
+  margin-top: 8px;
+  background: white;
+  height: 0;
+  padding: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: 
+    height 450ms @ease-out-function,
+    padding 450ms @ease-out-function,
+    opacity 450ms @ease-out-function;
+
+  &.open
+  {
+    height: calc(48px + 200px + 12px);
+    padding-bottom: 12px;
+    opacity: 1;
+  }
+
+  > .mui-icon-button
+  {
+    margin-top: 0;
+
+    *
+    {
+      color: @dark-black;
+    }
+  }
+
+  > .mui-input
+  {
+    margin: 0 12px;
+  }
+
+  //the "high" volume icon is ever-so-slightly misaligned with the others
+  .icon-volume-high
+  {
+    left:.7px;
+  }
+}

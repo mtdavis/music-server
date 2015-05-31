@@ -36,7 +36,6 @@
 
     .mui-vertical-slider-selection-fill {
       height: 100%;
-      .ease-out(@property: margin);
     }
   }
 
@@ -45,7 +44,6 @@
 
     .mui-vertical-slider-selection-fill {
       background-color: @slider-selection-color;
-      margin-bottom: @fill-gutter;
     }
   }
 
@@ -54,7 +52,6 @@
 
     .mui-vertical-slider-selection-fill {
       background-color: @slider-track-color;
-      margin-top: @fill-gutter;
     }
   }
 
@@ -64,7 +61,7 @@
     right: 0;
     top: 0%;
     z-index: 1;
-    margin: 0 (@slider-track-size / 2) 0 0;
+    margin: 0 0 0 (@slider-track-size / 2);
 
     background-clip: padding-box;
     border-radius: 50%;
@@ -96,45 +93,6 @@
           background: @slider-track-color-selected;
         }
       }
-
-      &:not(.mui-vertical-slider-zero) {
-        .mui-vertical-slider-handle:not(:active) {
-          border: @slider-handle-size solid fade(@slider-selection-color, 20%);
-          .handle-size(@slider-handle-size-active + @slider-handle-size);
-        }
-      }
-    }
-
-    &.mui-vertical-slider-zero {
-      .mui-vertical-slider-handle {
-        border: @slider-track-size solid @slider-track-color;
-        background-color: transparent;
-        box-shadow: none;
-
-        &:active {
-          border-color: @slider-track-color-selected;
-          width: @slider-handle-size-active !important;
-          height: @slider-handle-size-active !important;
-          transition:
-            background-color 450ms @ease-out-function,
-            width 450ms @ease-out-function,
-            height 450ms @ease-out-function;
-
-          & ~ .mui-vertical-slider-selection-high .mui-vertical-slider-selection-fill {
-            margin-top: @slider-handle-size !important;
-            .ease-out(@property: margin);
-          }
-        }
-      }
-
-      &:hover, &:focus {
-        .mui-vertical-slider-handle {
-          @size: @slider-handle-size + @slider-track-size;
-          border: @slider-track-size solid @slider-handle-color-zero;
-          width: @size;
-          height: @size;
-        }
-      }
     }
   }
 
@@ -151,19 +109,6 @@
       cursor: not-allowed;
       background-color: @slider-track-color;
       .handle-size(@slider-handle-size-disabled);
-    }
-
-    &.mui-vertical-slider-zero {
-      .mui-vertical-slider-selection-low .mui-vertical-slider-selection-fill {
-        margin-bottom: @gutter;
-      }
-      .mui-vertical-slider-selection-high .mui-vertical-slider-selection-fill {
-        margin-top: @gutter;
-      }
-      .mui-vertical-slider-handle {
-        border: @slider-track-size solid @slider-track-color;
-        background-color: transparent;
-      }
     }
   }
 }

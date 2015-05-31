@@ -31,6 +31,7 @@ module.exports = Fluxxor.createStore({
             "JUMP_TO_NEXT_TRACK", this.onJumpToNextTrack,
             "JUMP_TO_PLAYLIST_ITEM", this.onJumpToPlaylistItem,
             "SEEK_TO_POSITION", this.onSeekToPosition,
+            "SET_VOLUME", this.onSetVolume,
             "SCAN_FOR_CHANGED_METADATA", this.onScanForChangedMetadata,
             "SCAN_FOR_MOVED_FILES", this.onScanForMovedFiles,
             "SCAN_FOR_NEW_FILES", this.onScanForNewFiles
@@ -108,6 +109,7 @@ module.exports = Fluxxor.createStore({
 
     onInitializePlayer: function(playerNode) {
         this.api = new Gapless5(playerNode.id);
+        this.onSetVolume(.5);
 
         this.api.onplay = function() {
             this.playerState = PlayerState.PLAYING;
@@ -314,6 +316,32 @@ module.exports = Fluxxor.createStore({
                 seekTo = 65534;
             }
             this.api.scrub(seekTo);
+        }
+    },
+
+    onSetVolume: function(volume) {
+        if(this.api)
+        {
+            if(volume < 0)
+            {
+                volume = 0;
+            }
+
+            if(volume > 1)
+            {
+                volume = 1;
+            }
+
+            try
+            {
+                //Gapless5 takes a value between 0 and 65535.
+                this.api.setGain(Math.floor(volume * 65535));
+            }
+            catch(ex)
+            {
+                //Gapless 5 throws an exception if you set the gain while tracklist is empty;
+                //but it will still work.
+            }
         }
     },
 

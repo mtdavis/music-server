@@ -4,9 +4,11 @@ var Fluxxor = require('fluxxor');
 var FluxMixin = Fluxxor.FluxMixin(React);
 
 var mui = require('material-ui');
-var {Menu, Slider} = mui;
+var {IconButton, Menu, Slider} = mui;
+var {ClickAwayable} = mui.Mixins;
 
 var DataTable = require('./material-data-table');
+var VerticalSlider = require('./lib/vertical-slider');
 
 var PlayerState = {
     STOPPED: "STOPPED",
@@ -241,7 +243,106 @@ var CurrentTimeSlider = React.createClass({
             dragging: false
         });
     }
-})
+});
+
+var VolumeButton = React.createClass({
+    mixins: [ClickAwayable],
+
+    componentClickAway: function() {
+        this.setState({
+            volumeSliderVisible: false
+        });
+    },
+
+    getInitialState: function() {
+        return {
+            volume: .5,
+            volumeSliderVisible: false
+        };
+    },
+
+    render: function() {
+        var className = "volume-slider mui-paper mui-z-depth-2";
+        if(this.state.volumeSliderVisible)
+        {
+            className += " open"
+        }
+
+        var iconClassName;
+        if(this.state.volume < .01)
+        {
+            iconClassName = "icon-volume-mute";
+        }
+        else if(this.state.volume < .33)
+        {
+            iconClassName = "icon-volume-low";
+        }
+        else if(this.state.volume < .67)
+        {
+            iconClassName = "icon-volume-medium";
+        }
+        else
+        {
+            iconClassName = "icon-volume-high";
+        }
+
+        return (
+            <div className="volume-button-wrapper">
+                <IconButton iconClassName={iconClassName} onClick={this.toggleVolumeSlider} />
+                <div className={className}>
+                    <IconButton iconClassName={iconClassName} onClick={this.toggleVolumeSlider} />
+                    <VolumeSlider onVolumeChange={this.onVolumeChange} />
+                </div>
+            </div>
+        );
+    },
+
+    toggleVolumeSlider: function() {
+        this.setState({
+            volumeSliderVisible: !this.state.volumeSliderVisible
+        });
+    },
+
+    onVolumeChange: function(volume) {
+        this.setState({
+            volume: volume
+        });
+    }
+});
+
+var VolumeSlider = React.createClass({
+    mixins: [FluxMixin],
+
+    getDefaultProps: function()
+    {
+        return {
+            name: "bob"
+        };
+    },
+
+    render: function()
+    {
+        return (
+            <VerticalSlider
+                name={this.props.name}
+                min={0}
+                max={1}
+                defaultValue={.5}
+                height={200}
+                onChange={this.onSliderChange}
+            />
+        );
+    },
+
+    onSliderChange(event, value)
+    {
+        this.getFlux().actions.setVolume(value);
+        if(this.props.onVolumeChange)
+        {
+            this.props.onVolumeChange(value);
+        }
+    }
+});
 
 var secondsToTimeString = function(seconds)
 {
@@ -287,6 +388,8 @@ module.exports = {
     AlbumList: AlbumList,
     Playlist: Playlist,
     CurrentTimeSlider: CurrentTimeSlider,
+    VolumeButton: VolumeButton,
+    VolumeSlider: VolumeSlider,
     secondsToTimeString: secondsToTimeString,
     timeStringToSeconds: timeStringToSeconds
 };
