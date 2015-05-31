@@ -4,7 +4,7 @@ var Fluxxor = require('fluxxor');
 var FluxMixin = Fluxxor.FluxMixin(React);
 
 var mui = require('material-ui');
-var {IconButton, Menu, Slider} = mui;
+var {IconButton, Menu, Slider, Snackbar} = mui;
 var {ClickAwayable} = mui.Mixins;
 
 var DataTable = require('./material-data-table');
@@ -71,18 +71,38 @@ var AlbumList = React.createClass({
         ];
 
         return (
-            <DataTable
-                {...this.props}
-                rows={this.props.albums}
-                columns={columns}
-                onRowClick={this.onAlbumClick}
-            />
+            <div>
+                <DataTable
+                    {...this.props}
+                    rows={this.props.albums}
+                    columns={columns}
+                    onRowClick={this.onAlbumClick}
+                    onRowCtrlClick={this.onAlbumCtrlClick}
+                    condensed={true}
+                />
+
+                <Snackbar
+                    ref="snackbar"
+                    message="Album enqueued."
+                />
+            </div>
         );
     },
 
     onAlbumClick: function(album)
     {
         this.getFlux().actions.playAlbum(album);
+    },
+
+    onAlbumCtrlClick: function(album)
+    {
+        this.refs.snackbar.show();
+        this.getFlux().actions.enqueueAlbum(album);
+
+        setTimeout(function()
+        {
+            this.refs.snackbar.dismiss();
+        }.bind(this), 2000);
     }
 });
 

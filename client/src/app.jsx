@@ -202,6 +202,10 @@ var actions = {
         this.dispatch("PLAY_ALBUM", album);
     },
 
+    enqueueAlbum: function(album) {
+        this.dispatch("ENQUEUE_ALBUM", album);
+    },
+
     playShuffle: function(minutes) {
         this.dispatch("PLAY_SHUFFLE", minutes);
     },

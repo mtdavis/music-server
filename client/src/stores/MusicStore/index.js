@@ -22,6 +22,7 @@ module.exports = Fluxxor.createStore({
 
         this.bindActions(
             "PLAY_ALBUM", this.onPlayAlbum,
+            "ENQUEUE_ALBUM", this.onEnqueueAlbum,
             "PLAY_SHUFFLE", this.onPlayShuffle,
             "INITIALIZE_PLAYER", this.onInitializePlayer,
             "PLAY_OR_PAUSE_PLAYBACK", this.onPlayOrPausePlayback,
@@ -61,6 +62,25 @@ module.exports = Fluxxor.createStore({
             this.setPlaylist(tracks);
             this.onPlayOrPausePlayback();
             location.hash = "home";
+            this.emit("change");
+        }.bind(this));
+    },
+
+    onEnqueueAlbum: function(album) {
+        var query = {
+            album_artist: album.album_artist,
+            album: album.album
+        };
+
+        $.getJSON("/tracks", query, function(tracks)
+        {
+            for(var i = 0; i < tracks.length; i++)
+            {
+                this.playlist.push(tracks[i]);
+                var path = tracks[i].path.replace(/#/, "%23");
+                this.api.addTrack("/stream/" + path);
+            }
+
             this.emit("change");
         }.bind(this));
     },

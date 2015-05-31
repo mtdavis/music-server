@@ -51,7 +51,8 @@ var TableRow = React.createClass({
         return {
             columns: [],
             value: null,
-            onRowClick: null
+            onRowClick: null,
+            onRowCtrlClick: null
         };
     },
 
@@ -69,15 +70,26 @@ var TableRow = React.createClass({
             );
         }.bind(this));
 
+        var style;
+        if(this.props.onRowClick)
+        {
+            style = {cursor: "pointer"}
+        }
+
         return (
-            <tr onClick={this.onClick} style={{cursor:"pointer"}}>
+            <tr onClick={this.onClick} style={style}>
                 {tds}
             </tr>
         );
     },
 
-    onClick: function() {
-        if(this.props.onRowClick)
+    onClick: function(event) {
+        if(event.ctrlKey && this.props.onRowCtrlClick)
+        {
+            event.preventDefault();
+            this.props.onRowCtrlClick(this.props.rowData);
+        }
+        else if(this.props.onRowClick)
         {
             this.props.onRowClick(this.props.rowData);
         }
@@ -123,7 +135,8 @@ module.exports = React.createClass({
             placeholderText:"Nothing to see here!",
             columns: [],
             rows: [],
-            onRowClick: function() {},
+            onRowClick: null,
+            onRowCtrlClick: null,
             showHeader: true,
             showFilter: true,
             responsive: true,
@@ -159,7 +172,9 @@ module.exports = React.createClass({
                     key={rowData.id}
                     rowData={rowData}
                     columns={this.props.columns}
-                    onRowClick={this.props.onRowClick} />);
+                    onRowClick={this.props.onRowClick}
+                    onRowCtrlClick={this.props.onRowCtrlClick}
+                />);
             }
         }
 
@@ -249,7 +264,6 @@ module.exports = React.createClass({
         this.setState({
             filterText: event.target.value
         });
-        console.log(this.state.filterText);
     },
 
     setSortColumnKey: function(columnKey) {
