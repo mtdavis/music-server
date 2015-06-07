@@ -116,7 +116,50 @@ var MusicServerDb = function()
             $id: trackId,
             $current_time: currentTime
         });
-    }
+    };
+
+    db.addToScrobbleBacklog = function(track, timestamp)
+    {
+        var statement = db.prepare(
+            "INSERT INTO scrobble_backlog (title, artist, album, track_number, duration, timestamp) " +
+            "VALUES ($title, $artist, $album, $track_number, $duration, $timestamp)");
+
+        return statement.runAsync({
+            $title: track.title,
+            $artist: track.artist,
+            $album: track.album,
+            $track_number: track.track_number,
+            $duration: track.duration,
+            $timestamp: timestamp
+        });
+    };
+
+    db.peekScrobbleBacklog = function()
+    {
+        var statement = db.prepare(
+            "SELECT * FROM scrobble_backlog WHERE timestamp = " +
+            "   (SELECT MIN(timestamp) FROM scrobble_backlog)");
+
+        return statement.getAsync();
+    };
+
+    db.popScrobbleBacklog = function()
+    {
+        var statement = db.prepare(
+            "DELETE FROM scrobble_backlog WHERE timestamp = " +
+            "   (SELECT MIN(timestamp) FROM scrobble_backlog)");
+
+        return statement.runAsync();
+    };
+
+    db.run("CREATE TABLE IF NOT EXISTS scrobble_backlog(" +
+        "artist TEXT NOT NULL, " +
+        "title TEXT NOT NULL, " +
+        "album TEXT NOT NULL, " +
+        "track_number INTEGER, " +
+        "duration INTEGER NOT NULL, " +
+        "timestamp INTEGER" +
+        ")");
 
     //TODO: when refactoring is complete, should return this rather than db.
     return db;

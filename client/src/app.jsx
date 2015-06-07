@@ -164,6 +164,7 @@ var Master = React.createClass({
           <VolumeButton />
 
           <IconButton iconClassName="icon-lastfm"
+              className={musicStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED ? "accent" : ""}
               tooltip={scrobbleTooltip[musicStore.scrobbleState]}
               onClick={this.openLastFm} />
       </div>

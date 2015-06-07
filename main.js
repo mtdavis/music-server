@@ -267,14 +267,7 @@ function submitPlayHandler()
         var currentTime = Math.floor(Date.now() / 1000);
         var lastPlay = req.body.started_playing || currentTime;
 
-        statement.runAsync({
-            $id: trackId,
-            $last_play: lastPlay,
-            $current_time: currentTime
-        }).then(function()
-        {
-            return db.selectTrackByIdAsync(trackId);
-        }).then(function(track)
+        var scrobbleOrQueue = function(track)
         {
             return lastfm.doScrobbleAsync({
                 method: 'track.scrobble',
@@ -284,8 +277,20 @@ function submitPlayHandler()
                 album: track.album,
                 trackNumber: track.track_number,
                 duration: track.duration
+            }).catch(function(error)
+            {
+                return db.addToScrobbleBacklog(track, lastPlay).throw(error);
             });
+        };
+
+        statement.runAsync({
+            $id: trackId,
+            $last_play: lastPlay,
+            $current_time: currentTime
         }).then(function()
+        {
+            return db.selectTrackByIdAsync(trackId);
+        }).then(scrobbleOrQueue).then(function()
         {
             res.statusCode = 200;
             res.end();
@@ -425,10 +430,40 @@ function startServer(router)
     http.createServer(httpApp).listen(80);
 }
 
+function checkScrobbleBacklog()
+{
+    var scrobbleAndPop = function(row)
+    {
+        if(row)
+        {
+            return lastfm.doScrobbleAsync({
+                method: 'track.scrobble',
+                artist: row.artist,
+                track: row.title,
+                timestamp: row.timestamp,
+                album: row.album,
+                trackNumber: row.track_number,
+                duration: row.duration
+            }).then(db.popScrobbleBacklog);
+        }
+        else
+        {
+            return util.dummyPromise();
+        }
+    };
+
+    db.peekScrobbleBacklog().then(scrobbleAndPop).catch(function(error)
+    {
+        console.log(error);
+    });
+}
+
 function main()
 {
     var router = initRouter();
     startServer(router);
+
+    setInterval(checkScrobbleBacklog, 5 * 60 * 1000);
 }
 
 process.on('uncaughtException', function(err) {
