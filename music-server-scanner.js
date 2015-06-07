@@ -66,7 +66,10 @@ var checkForChangedMetadata = function(root, fileStats, next)
             {
                 return util.dummyPromise()
             }
-        }).then(next);
+        }).catch(function(error)
+        {
+            console.error(error);
+        }).finally(next);
     }
     else
     {
