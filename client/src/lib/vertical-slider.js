@@ -74,7 +74,7 @@ var VerticalSlider = React.createClass({
           <div ref="track" className="mui-vertical-slider-track">
             <Draggable axis="y" bound="point"
               cancel={this.props.disabled ? '*' : null}
-              start={{y: (this.props.height * percent)}}
+              start={{y: (this.props.height * (1 - percent))}}
               onStart={this._onDragStart}
               onStop={this._onDragStop}
               onDrag={this._onDragUpdate}>
@@ -136,7 +136,7 @@ var VerticalSlider = React.createClass({
     var node = this.refs.track.getDOMNode();
     var boundingClientRect = node.getBoundingClientRect();
     var offset = e.clientY - boundingClientRect.top;
-    this._updateWithChangeEvent(e, offset / node.clientHeight);
+    this._updateWithChangeEvent(e, 1 - (offset / node.clientHeight));
   },
 
   _onDragStart: function(e, ui) {
@@ -161,7 +161,7 @@ var VerticalSlider = React.createClass({
   _dragY: function(e, pos) {
     var max = this.refs.track.getDOMNode().clientHeight;
     if (pos < 0) pos = 0; else if (pos > max) pos = max;
-    this._updateWithChangeEvent(e, pos / max);
+    this._updateWithChangeEvent(e, 1 - (pos / max));
   },
 
   _updateWithChangeEvent: function(e, percent) {
