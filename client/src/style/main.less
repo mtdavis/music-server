@@ -5,6 +5,10 @@
 // Feel free to leverage the styles below in order to implement the header in
 // the sidebar.
 
+@accent-1-color: @deep-orange-A200;
+@accent-2-color: @deep-orange-A400;
+@accent-3-color: @deep-orange-A100;
+
 .logo
 {
   .mui-font-style-headline;
@@ -37,7 +41,15 @@ html, body
 
 .pulsate .mui-font-icon
 {
-  .pulsate(icon-button-focus-ripple-pulsate);
+  @keyframes pulsate {
+    0%, 50%, 100% {
+      color: @app-bar-text-color;
+    }
+    20%, 30% {
+      color: @accent-3-color;
+    }
+  }
+  animation: pulsate 2s linear 0s infinite;
 }
 
 .smaller-icon .mui-font-icon
@@ -115,7 +127,7 @@ html, body
 
     *
     {
-      color: @dark-black;
+      color: @accent-3-color;
     }
   }
 

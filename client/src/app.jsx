@@ -113,6 +113,18 @@ var Master = React.createClass({
     window.open("//last.fm/user/ogreatone43");
   },
 
+  stopButtonClicked: function(event)
+  {
+    if(event.ctrlKey)
+    {
+      this.getFlux().actions.toggleStopAfterCurrent();
+    }
+    else
+    {
+      this.getFlux().actions.stop();
+    }
+  },
+
   render: function () {
     var musicStore = this.getFlux().store("MusicStore");
     var playButtonEnabled = musicStore.playlist.length > 0;
@@ -125,9 +137,9 @@ var Master = React.createClass({
 
     var scrobbleTooltip = {};
     scrobbleTooltip[ScrobbleState.NO_TRACK] = "last.fm";
-    scrobbleTooltip[ScrobbleState.TRACK_QUEUED] = "last.fm: track queued for scrobbling.";
-    scrobbleTooltip[ScrobbleState.TRACK_SCROBBLED] = "last.fm: track scrobbled.";
-    scrobbleTooltip[ScrobbleState.SCROBBLE_FAILED] = "last.fm: scrobble failed!";
+    scrobbleTooltip[ScrobbleState.TRACK_QUEUED] = "Queued";
+    scrobbleTooltip[ScrobbleState.TRACK_SCROBBLED] = "Scrobbled";
+    scrobbleTooltip[ScrobbleState.SCROBBLE_FAILED] = "Scrobble failed!";
 
     var toolbar = (
       <div className="app-bar-toolbar">
@@ -142,13 +154,9 @@ var Master = React.createClass({
               disabled={!playButtonEnabled}
               onClick={this.getFlux().actions.playOrPause} />
           <IconButton iconClassName="icon-stop"
+              className={musicStore.willStopAfterCurrent ? "pulsate" : ""}
               disabled={!stopButtonEnabled}
-              onClick={this.getFlux().actions.stop} />
-          <IconButton iconClassName="icon-hour-glass"
-              className={musicStore.willStopAfterCurrent ? "pulsate" : "smaller-icon"}
-              disabled={!stopButtonEnabled}
-              tooltip="Stop After Current"
-              onClick={this.getFlux().actions.toggleStopAfterCurrent} />
+              onClick={this.stopButtonClicked} />
           <IconButton iconClassName="icon-next"
               disabled={!nextButtonEnabled}
               onClick={this.getFlux().actions.jumpToNextTrack} />
