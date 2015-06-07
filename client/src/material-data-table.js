@@ -1,7 +1,10 @@
 var React = require('react');
 var mui = require('material-ui');
-
 var {TextField, FontIcon} = mui;
+var jsep = require('jsep');
+
+jsep.addBinaryOp(":", 10);
+jsep.addBinaryOp("~=", 6);
 
 var TableCell = React.createClass({
     getDefaultProps: function() {
@@ -127,7 +130,96 @@ var TableHeader = React.createClass({
             </thead>
         );
     }
-})
+});
+
+function rowContainsText(rowData, text, columns)
+{
+    text = text.toLowerCase();
+
+    for(var i = 0; i < columns.length; i++)
+    {
+        var column = columns[i];
+        var cellValue = rowData[column.key];
+
+        if(column.renderer)
+        {
+            if(column.renderer(cellValue).toLowerCase().indexOf(text) > -1)
+            {
+                return true;
+            }
+        }
+        else if(cellValue !== null && cellValue.toString().toLowerCase().indexOf(text) > -1)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+var binops =
+{
+    "+" : function(a, b) { return a + b; },
+    "-" : function(a, b) { return a - b; },
+    "*" : function(a, b) { return a * b; },
+    "/" : function(a, b) { return a / b; },
+    ":" : function(a, b) { return a * 60 + b; },
+    "<" : function(a, b) { return a < b; },
+    "<=" : function(a, b) { return a <= b; },
+    "==" : function(a, b) { return a == b; },
+    ">=" : function(a, b) { return a >= b; },
+    ">" : function(a, b) { return a > b; },
+    "!=" : function(a, b) { return a != b; },
+    "~=" : function(a, b) { return a.toString().toLowerCase().indexOf(b.toString().toLowerCase()) > -1; },
+    "&&" : function(a, b) { return a && b; },
+    "||" : function(a, b) { return a || b; },
+};
+
+var unops = {
+    "-" : function(a) { return -a; },
+    "+" : function(a) { return +a; }
+};
+
+function evaluateFilterExpression(rowData, astNode, columns)
+{
+    if(astNode.type === "BinaryExpression" ||
+        astNode.type === "LogicalExpression")
+    {
+        return binops[astNode.operator](
+            evaluateFilterExpression(rowData, astNode.left, columns),
+            evaluateFilterExpression(rowData, astNode.right, columns));
+    }
+    else if(astNode.type === "UnaryExpression")
+    {
+        return unops[astNode.operator](
+            evaluateFilterExpression(rowData, astNode.argument, columns));
+    }
+    else if(astNode.type === "Literal")
+    {
+        return astNode.value;
+    }
+    else if(astNode.type === "Identifier")
+    {
+        return rowData[astNode.name];
+    }
+}
+
+function rowPassesFilter(rowData, filterText, columns)
+{
+    if(filterText === "")
+    {
+        return true;
+    }
+    else if(filterText[0] === "?")
+    {
+        var astNode = jsep(filterText.substring(1));
+        return evaluateFilterExpression(rowData, astNode, columns);
+    }
+    else
+    {
+        return rowContainsText(rowData, filterText, columns);
+    }
+}
 
 module.exports = React.createClass({
     getDefaultProps: function() {
@@ -160,22 +252,30 @@ module.exports = React.createClass({
             this.props.rows.sort(this.compareRows);
         }
 
+        var filterTextValid = true;
         var tableRows = [];
 
-        for(var i = 0; i < this.props.rows.length; i++)
+        try
         {
-            var rowData = this.props.rows[i];
-
-            if(this.rowContainsText(rowData, this.state.filterText, this.props.columns))
+            for(var i = 0; i < this.props.rows.length; i++)
             {
-                tableRows.push(<TableRow
-                    key={rowData.id}
-                    rowData={rowData}
-                    columns={this.props.columns}
-                    onRowClick={this.props.onRowClick}
-                    onRowCtrlClick={this.props.onRowCtrlClick}
-                />);
+                var rowData = this.props.rows[i];
+
+                if(rowPassesFilter(rowData, this.state.filterText, this.props.columns))
+                {
+                    tableRows.push(<TableRow
+                        key={rowData.id}
+                        rowData={rowData}
+                        columns={this.props.columns}
+                        onRowClick={this.props.onRowClick}
+                        onRowCtrlClick={this.props.onRowCtrlClick}
+                    />);
+                }
             }
+        }
+        catch(ex)
+        {
+            filterTextValid = false;
         }
 
         var table;
@@ -216,6 +316,7 @@ module.exports = React.createClass({
             <div className="table-filter shadow-z-1">
                 <TextField
                     hintText="Filter..."
+                    errorText={filterTextValid ? "" : "Error!"}
                     onChange={this.onFilterChange}
                     onKeyUp={this.onFilterChange} />
             </div>
@@ -227,36 +328,6 @@ module.exports = React.createClass({
                 {table}
             </div>
         );
-    },
-
-    rowContainsText: function(rowData, text, columns)
-    {
-        if(text === "")
-        {
-            return true;
-        }
-
-        text = text.toLowerCase();
-
-        for(var i = 0; i < columns.length; i++)
-        {
-            var column = columns[i];
-            var cellValue = rowData[column.key];
-
-            if(column.renderer)
-            {
-                if(column.renderer(cellValue).toLowerCase().indexOf(text) > -1)
-                {
-                    return true;
-                }
-            }
-            else if(cellValue !== null && cellValue.toString().toLowerCase().indexOf(text) > -1)
-            {
-                return true;
-            }
-        }
-
-        return false;
     },
 
     onFilterChange: function(event)

@@ -61,13 +61,13 @@ var AlbumList = React.createClass({
 
     render: function() {
         var columns = [
-            {key:"album_artist", header:"Artist"},
+            {key:"album_artist", header:"Album Artist"},
             {key:"album", header:"Album"},
             {key:"year", header:"Year", textAlign:"right"},
             {key:"tracks", header:"Tracks", textAlign:"right"},
-            {key:"duration", header:"Length", renderer:secondsToTimeString, textAlign:"right"},
+            {key:"duration", header:"Duration", renderer:secondsToTimeString, textAlign:"right"},
             {key:"play_count", header:"Play Count", textAlign:"right"},
-            {key:"last_play", header:"Last Played", renderer:unixTimestampToDateString, textAlign:"right"}
+            {key:"last_play", header:"Last Play", renderer:unixTimestampToDateString, textAlign:"right"}
         ];
 
         return (
