@@ -115,7 +115,7 @@ var Master = React.createClass({
 
   stopButtonClicked: function(event)
   {
-    if(event.ctrlKey)
+    if(event.ctrlKey || event.metaKey)
     {
       this.getFlux().actions.toggleStopAfterCurrent();
     }

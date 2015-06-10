@@ -87,7 +87,7 @@ var TableRow = React.createClass({
     },
 
     onClick: function(event) {
-        if(event.ctrlKey && this.props.onRowCtrlClick)
+        if((event.ctrlKey || event.metaKey) && this.props.onRowCtrlClick)
         {
             event.preventDefault();
             this.props.onRowCtrlClick(this.props.rowData);

@@ -32,7 +32,6 @@ var checkForChangedMetadata = function(root, fileStats, next)
             metadataTrackNumber !== dbTrack.track_number ||
             metadataGenre !== dbTrack.genre)
         {
-            console.log(fileMetadata, dbTrack);
             dbTrack.title = metadataTitle;
             dbTrack.artist = metadataArtist;
             dbTrack.album_artist = metadataAlbumArtist;
@@ -68,6 +67,7 @@ var checkForChangedMetadata = function(root, fileStats, next)
             }
         }).catch(function(error)
         {
+            console.error(absolutePath);
             console.error(error);
         }).finally(next);
     }
