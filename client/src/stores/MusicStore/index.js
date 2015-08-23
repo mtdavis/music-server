@@ -10,6 +10,7 @@ module.exports = Fluxxor.createStore({
         this.playlist = [];
         this.nowPlaying = 0;
         this.currentTrackPosition = 0;
+        this.trackPositionUpdateTimer = null;
         this.scrobbleState = ScrobbleState.NO_TRACK;
         this.scrobblePlayTimer = null;
         this.scrobbleNowPlayingTimer = null;
@@ -140,6 +141,8 @@ module.exports = Fluxxor.createStore({
                 this.startScrobbleTimers();
             }
 
+            this.startTrackPositionUpdateTimer();
+
             this.emit("change");
         }.bind(this);
 
@@ -152,6 +155,7 @@ module.exports = Fluxxor.createStore({
             this.playerState = PlayerState.STOPPED;
             this.willStopAfterCurrent = false;
             this.clearScrobbleTimers();
+            this.clearTrackPositionUpdateTimer();
             this.emit("change");
         }.bind(this);
 
@@ -168,6 +172,7 @@ module.exports = Fluxxor.createStore({
             this.playerState = PlayerState.STOPPED;
             this.willStopAfterCurrent = false;
             this.clearScrobbleTimers();
+            this.clearTrackPositionUpdateTimer();
             this.emit("change");
         }.bind(this);
 
@@ -186,42 +191,15 @@ module.exports = Fluxxor.createStore({
         }.bind(this);
 
         var currentPositionNode = playerNode.querySelector(".g5position span:nth-child(1)");
-        var trackIndexNode = playerNode.querySelector(".g5position span:nth-child(3)");
 
-        var observer = new MutationObserver(function(mutationRecords)
-        {
-            for(var i = 0; i < mutationRecords.length; i++)
+        this.api.getCurrentTrackPosition = function() {
+            var timeString = currentPositionNode.textContent;
+
+            if(timeString)
             {
-                var mutation = mutationRecords[i];
-                var timeString;
-                if(mutation.target === currentPositionNode)
-                {
-                    //Firefox
-                    timeString = mutation.addedNodes[0].textContent;
-                }
-                else if(mutation.target.parentElement === currentPositionNode)
-                {
-                    //Webkit
-                    timeString = mutation.target.textContent;
-                }
-
-                if(timeString)
-                {
-                    var newTrackPosition = timeStringToSeconds(timeString);
-                    if(newTrackPosition !== this.currentTrackPosition)
-                    {
-                        this.currentTrackPosition = newTrackPosition;
-                        this.emit("change");
-                    }
-                }
+                return timeStringToSeconds(timeString);
             }
-        }.bind(this));
-
-        observer.observe(currentPositionNode, {
-            childList: true,
-            subtree: true,
-            characterData: true
-        });
+        };
 
         this.emit("change");
     },
@@ -362,6 +340,27 @@ module.exports = Fluxxor.createStore({
                 //Gapless 5 throws an exception if you set the gain while tracklist is empty;
                 //but it will still work.
             }
+        }
+    },
+
+    startTrackPositionUpdateTimer: function() {
+        this.trackPositionUpdateTimer = setInterval(function() {
+            var newTrackPosition = this.api.getCurrentTrackPosition();
+            if(newTrackPosition !== this.currentTrackPosition)
+            {
+                this.currentTrackPosition = newTrackPosition;
+                this.emit("change");
+            }
+        }.bind(this), 100);
+    },
+
+    clearTrackPositionUpdateTimer: function() {
+        if(this.scrobblePlayTimer)
+        {
+            clearInterval(this.trackPositionUpdateTimer);
+            this.trackPositionUpdateTimer = null;
+            this.currentTrackPosition = 0;
+            this.emit("change");
         }
     },
 
