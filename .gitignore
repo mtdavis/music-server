@@ -4,3 +4,4 @@ node_modules
 lib.apple.xml
 music-server-settings.json
 *.pem
+.DS_Store
