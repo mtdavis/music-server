@@ -20,6 +20,7 @@
     "gulp-bower": "0.0.10"
   },
   "dependencies": {
+    "deep-equal": "^1.0.1",
     "fluxxor": "^1.5.1",
     "material-ui": "^0.7.3",
     "react": "^0.13",
