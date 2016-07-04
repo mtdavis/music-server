@@ -2,6 +2,7 @@ var React = require('react');
 var mui = require('material-ui');
 var {TextField, FontIcon} = mui;
 var jsep = require('jsep');
+var deepEqual = require('deep-equal');
 
 jsep.addBinaryOp(":", 10);
 jsep.addBinaryOp("~=", 6);
@@ -246,24 +247,32 @@ module.exports = React.createClass({
         };
     },
 
+    shouldComponentUpdate(nextProps, nextState) {
+        return !deepEqual(this.props, nextProps) ||
+            !deepEqual(this.state, nextState);
+    },
+
     render: function() {
+        console.log("rendering");
+        var sortedRows = this.props.rows.slice();
+
         if(this.state.sortColumnKey !== null)
         {
-            this.props.rows.sort(this.compareRows);
+            sortedRows.sort(this.compareRows);
         }
 
         var filterTextValid = true;
-        var tableRows = [];
+        var filteredRows = [];
 
         try
         {
-            for(var i = 0; i < this.props.rows.length; i++)
+            for(var i = 0; i < sortedRows.length; i++)
             {
-                var rowData = this.props.rows[i];
+                var rowData = sortedRows[i];
 
                 if(rowPassesFilter(rowData, this.state.filterText, this.props.columns))
                 {
-                    tableRows.push(<TableRow
+                    filteredRows.push(<TableRow
                         key={rowData.id}
                         rowData={rowData}
                         columns={this.props.columns}
@@ -279,7 +288,7 @@ module.exports = React.createClass({
         }
 
         var table;
-        if(tableRows.length === 0)
+        if(filteredRows.length === 0)
         {
             table = (
                 <div className="table-placeholder shadow-z-1">
@@ -305,7 +314,7 @@ module.exports = React.createClass({
                             />
                         }
                         <tbody>
-                            {tableRows}
+                            {filteredRows}
                         </tbody>
                     </table>
                 </div>

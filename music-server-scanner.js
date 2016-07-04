@@ -121,6 +121,8 @@ var checkForNewFile = function(root, fileStats, next)
             }
             else
             {
+                process.stdout.write("<" + pathRelativeToMusicRoot + ">");
+                next();
                 util.getMetadataAsync(absolutePath, {duration: true}).
                     then(addTrackFromMetadataAsync).
                     then(next);
@@ -273,7 +275,7 @@ var scanAsync = function(fileHandler)
     return new Promise(function(resolve, reject)
     {
         walker = walk.walk(musicServerSettings.files.base_stream_path, {
-            filters: ["New"]
+            filters: [ /\$New/ ]
         });
 
         walker.on("file", fileHandler);

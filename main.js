@@ -149,6 +149,13 @@ function shuffleHandler()
     var shuffleSql = "SELECT rowid AS id, * FROM track " +
         "WHERE (play_count >= 5) AND (duration >= 50) AND (duration < 1000) " +
         "AND (last_play < strftime('%s', 'now') - 180*24*60*60) " +
+        "AND (album = '' OR album NOT IN (" +
+        "    SELECT album FROM (" +
+        "        SELECT album, MIN(play_count) AS play_count " +
+        "        FROM track " +
+        "        GROUP BY album_artist, album" +
+        "    ) WHERE play_count >= 5 " +
+        ")) " +
         "ORDER BY RANDOM() " +
         "LIMIT 100";
 
