@@ -27,7 +27,8 @@
     "react-router": "0.13.3",
     "react-tap-event-plugin": "0.1.7",
     "react-draggable2": "0.5.1",
-    "jsep": "0.3.0"
+    "jsep": "0.3.0",
+    "weighted": "0.3.0",
   },
   "jest": {
     "unmockedModulePathPatterns": [

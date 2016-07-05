@@ -1,4 +1,5 @@
 var Fluxxor = require('fluxxor');
+var weighted = require('weighted');
 var {PlayerState, ScrobbleState, timeStringToSeconds} = require('../../music-lib');
 
 module.exports = Fluxxor.createStore({
@@ -87,19 +88,27 @@ module.exports = Fluxxor.createStore({
 
     onPlayShuffle: function(minutes) {
         $.getJSON("/shuffle", function(tracks) {
-            var tracksToEnqueue = [];
+            //tracks are assumed to be ordered by last_play
+            var weights = {};
+            for(var i = 0; i < tracks.length; i++)
+            {
+                weights[i] = 1.0 / (i + 1);
+            }
 
+            var tracksToEnqueue = [];
             var secondsToFill = minutes * 60;
             var enqueuedSeconds = 0;
 
-            for(var i = 0; i < tracks.length; i++)
+            while(enqueuedSeconds < secondsToFill && tracks.length > 0)
             {
-                tracksToEnqueue.push(tracks[i]);
-                enqueuedSeconds += tracks[i].duration;
-
-                if(enqueuedSeconds >= secondsToFill)
+                var index = weighted.select(weights);
+                if(tracks[index])
                 {
-                    break;
+                    var track = tracks[index];
+                    delete tracks[index];
+                    delete weights[index];
+                    tracksToEnqueue.push(track);
+                    enqueuedSeconds += track.duration;
                 }
             }
 
