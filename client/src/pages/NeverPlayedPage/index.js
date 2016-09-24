@@ -26,7 +26,7 @@ module.exports = React.createClass({
       <div className='never-played-page container-fluid'>
         <div className="row">
           <div className="col-xs-12">
-            <AlbumList albums={albumsNeverPlayed} />
+            <AlbumList albums={albumsNeverPlayed}  initialSortColumnKey="album_artist" />
           </div>
         </div>
       </div>
