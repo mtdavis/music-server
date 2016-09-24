@@ -110,7 +110,7 @@ var Master = React.createClass({
   },
 
   openLastFm: function() {
-    window.open("//last.fm/user/ogreatone43");
+    window.open("http://last.fm/user/ogreatone43");
   },
 
   stopButtonClicked: function(event)
