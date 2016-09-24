@@ -473,7 +473,7 @@ function main()
 
 process.on('uncaughtException', function(err) {
   console.log('Caught exception: ' + err);
-  if(err.code !== "ENOENT")
+  if(err.code !== "ENOENT" && err.code !== "ENOTFOUND")
   {
     throw err;
   }
