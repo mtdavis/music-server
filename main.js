@@ -148,6 +148,7 @@ function shuffleHandler()
 
     var shuffleSql = "SELECT rowid AS id, * FROM track " +
         "WHERE (play_count >= 5) AND (duration >= 50) AND (duration < 1000) " +
+        "AND (last_play < strftime('%s', 'now') - 90*24*60*60) " +
         "AND (album = '' OR album NOT IN (" +
         "    SELECT album FROM (" +
         "        SELECT album, MIN(play_count) AS play_count " +
@@ -473,7 +474,7 @@ function main()
 
 process.on('uncaughtException', function(err) {
   console.log('Caught exception: ' + err);
-  if(err.code !== "ENOENT" && err.code !== "ENOTFOUND")
+  if(err.code !== "ENOENT" && err.code !== "ENOTFOUND" && err.code !== "ETIMEDOUT")
   {
     throw err;
   }
