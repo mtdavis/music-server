@@ -1,7 +1,7 @@
 var React = require('react');
 var mui = require("material-ui");
 var Paper = mui.Paper;
-var Classable = mui.Mixins.Classable;
+//var Classable = mui.Mixins.Classable;
 var Draggable = require('react-draggable2');
 
 var VerticalSlider = React.createClass({
@@ -20,7 +20,7 @@ var VerticalSlider = React.createClass({
     onDragStop: React.PropTypes.func
   },
 
-  mixins: [Classable],
+  //mixins: [Classable],
 
   getDefaultProps: function() {
     return {

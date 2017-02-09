@@ -1,5 +1,6 @@
 var React = require('react');
-var Router = require('react-router');
+var {render} = require('react-dom')
+var {Router, Route, hashHistory} = require('react-router');
 var mui = require('material-ui');
 var injectTapEventPlugin = require("react-tap-event-plugin");
 
@@ -9,11 +10,11 @@ var StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
 var MusicStore = require('./stores/MusicStore');
 var {
-  PlayerState, ScrobbleState, GaplessPlayer, CurrentTimeSlider, VolumeButton,
+  PlayerState, ScrobbleState, GaplessPlayer, CurrentTimeSlider,
   secondsToTimeString
 } = require('./music-lib');
 
-var {Paper, IconButton, MenuItem} = mui;
+var {AppBar, Drawer, Paper, IconButton, MenuItem, MuiThemeProvider} = mui;
 
 // A lot of the code is auto-generated. However, fiddling around with it
 // shouldn't be a catastrophic failure. Just that you'd need to know your way
@@ -29,7 +30,7 @@ var ShufflePage = require('./pages/ShufflePage');
 var ScanPage = require('./pages/ScanPage');
 // endinject
 
-var menuItems = [
+/*var menuItems = [
   // inject:menuitems
   { payload: 'home', text: 'Now Playing' },
   { type: MenuItem.Types.SUBHEADER, text: 'Browse' },
@@ -40,7 +41,7 @@ var menuItems = [
   { type: MenuItem.Types.SUBHEADER, text: 'Tools' },
   { payload: 'scan', text: 'Scan Files and Metadata' },
   // endinject
-];
+];*/
 
 var titles = {
   // inject:titles
@@ -54,18 +55,10 @@ var titles = {
   // endinject
 };
 
-var Route = Router.Route;
-var DefaultRoute = Router.DefaultRoute;
-var RouteHandler = Router.RouteHandler;
-
-var AppCanvas = mui.AppCanvas;
-var AppBar = mui.AppBar;
-var LeftNav = mui.LeftNav;
-
 injectTapEventPlugin();
 
 var LeftNavComponent = React.createClass({
-  mixins: [Router.Navigation],
+  //mixins: [Router.Navigation],
 
   render: function () {
     // Optionally, you may add a header to the left navigation bar, by setting
@@ -73,19 +66,15 @@ var LeftNavComponent = React.createClass({
     //
     //     header={<div className='logo'>Header Title.</div>}
     return (
-      <LeftNav
+      <Drawer
         ref="leftNav"
         header={<div className="logo">{"Mike's Music Player"}</div>}
         docked={false}
-        isInitiallyOpen={false}
+        open={this.props.open}
         menuItems={this.props.menuItems}
         onClick={this._onLeftNavChange}
         onChange={this._onLeftNavChange} />
     );
-  },
-
-  toggle:function () {
-    this.refs.leftNav.toggle();
   },
 
   close: function () {
@@ -99,14 +88,32 @@ var LeftNavComponent = React.createClass({
 });
 
 var Master = React.createClass({
-  mixins: [Router.State, FluxMixin, StoreWatchMixin("MusicStore")],
+  mixins: [FluxMixin, StoreWatchMixin("MusicStore")],
+
+  /*getChildContext: function() {
+    return {
+      flux: this.getFlux()
+    };
+  },
+
+  childContextTypes: {
+    flux: React.PropTypes.object
+  },*/
+
+  getInitialState() {
+    return {
+      leftNavOpen: false
+    };
+  },
 
   getStateFromFlux: function() {
     return this.getFlux().store("MusicStore").getState();
   },
 
   _onMenuIconButtonTouchTap: function () {
-    this.refs.leftNav.toggle();
+    this.setState({
+      leftNavOpen: !this.state.leftNavOpen
+    });
   },
 
   openLastFm: function() {
@@ -161,7 +168,7 @@ var Master = React.createClass({
               disabled={!nextButtonEnabled}
               onClick={this.getFlux().actions.jumpToNextTrack} />
 
-          <VolumeButton />
+          {"volume..."}
 
           <IconButton iconClassName="icon-lastfm"
               className={musicStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED ? "accent" : ""}
@@ -171,40 +178,36 @@ var Master = React.createClass({
     );
 
     return (
-      <AppCanvas predefinedLayout={1}>
+      <MuiThemeProvider>
+        <div>
+          <AppBar
+            className="mui-dark-theme"
+            title="Mike's Music Player" /*{titles[this.getPath()]}*/
+            onLeftIconButtonTouchTap={this._onMenuIconButtonTouchTap}
+            zDepth={1}
+            iconElementRight={toolbar}
+          />
 
-        <AppBar
-          className="mui-dark-theme"
-          title={titles[this.getPath()]}
-          onMenuIconButtonTouchTap={this._onMenuIconButtonTouchTap}
-          zDepth={1}>
-          {toolbar}
-        </AppBar>
+          <LeftNavComponent open={this.state.leftNavOpen} />
 
-        <LeftNavComponent ref='leftNav' menuItems={menuItems} />
-
-        <div className='mui-app-content-canvas'>
-          <RouteHandler />
+          <div className='mui-app-content-canvas'>
+            <Router history={hashHistory}>
+              <Route path='/' component={HomePage}>
+                <Route path='home' component={HomePage} />
+                <Route path='albums' component={AlbumsPage} />
+                <Route path='not-recently-played' component={NotRecentlyPlayedPage} />
+                <Route path='never-played' component={NeverPlayedPage} />
+                <Route path='shuffle' component={ShufflePage} />
+                <Route path='scan' component={ScanPage} />
+                <Route path='*' component={HomePage} />
+              </Route>
+            </Router>
+          </div>
         </div>
-
-      </AppCanvas>
+      </MuiThemeProvider>
     );
   }
 });
-
-var routes = (
-  <Route name='app' path='/' handler={Master}>
-    {/* inject:route */}
-    <Route name='home' handler={HomePage} />
-    <Route name='albums' handler={AlbumsPage} />
-    <Route name='not-recently-played' handler={NotRecentlyPlayedPage} />
-    <Route name='never-played' handler={NeverPlayedPage} />
-    <Route name='shuffle' handler={ShufflePage} />
-    <Route name='scan' handler={ScanPage} />
-    {/* endinject */}
-    <DefaultRoute handler={HomePage} />
-  </Route>
-);
 
 var actions = {
     playAlbum: function(album) {
@@ -274,6 +277,4 @@ var stores = {
 
 var flux = new Fluxxor.Flux(stores, actions);
 
-Router.run(routes, function (Handler) {
-  React.render(<Handler flux={flux} />, document.body);
-});
+render(<Master flux={flux} />, document.getElementById('app'));

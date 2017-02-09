@@ -1,11 +1,12 @@
 var React = require('react');
+var ReactDOM = require('react-dom');
 
 var Fluxxor = require('fluxxor');
 var FluxMixin = Fluxxor.FluxMixin(React);
 
 var mui = require('material-ui');
 var {IconButton, Menu, Slider, Snackbar} = mui;
-var {ClickAwayable} = mui.Mixins;
+//var {ClickAwayable} = mui.Mixins;
 
 var DataTable = require('./material-data-table');
 var VerticalSlider = require('./lib/vertical-slider');
@@ -33,7 +34,7 @@ var GaplessPlayer = React.createClass({
     },
 
     componentDidMount: function() {
-        this.getFlux().actions.initializePlayer(this.getDOMNode());
+        this.getFlux().actions.initializePlayer(ReactDOM.findDOMNode(this));
     },
 
     componentWillUnmount: function() {
@@ -281,7 +282,7 @@ var CurrentTimeSlider = React.createClass({
 });
 
 var VolumeButton = React.createClass({
-    mixins: [ClickAwayable],
+    //mixins: [ClickAwayable],
 
     componentClickAway: function() {
         this.setState({
