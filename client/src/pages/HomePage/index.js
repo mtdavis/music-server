@@ -44,6 +44,10 @@ var AlbumArt = React.createClass({
 module.exports = React.createClass({
   mixins: [FluxMixin],
 
+  contextTypes: {
+    flux: React.PropTypes.object.isRequired
+  },
+
   render: function () {
 
     var content;

@@ -1,12 +1,13 @@
 var React = require('react');
 var {render} = require('react-dom')
-var {Router, Route, hashHistory} = require('react-router');
+var {Router, Route, hashHistory, Link, IndexRoute} = require('react-router');
 var mui = require('material-ui');
 var injectTapEventPlugin = require("react-tap-event-plugin");
 
 var Fluxxor = require('fluxxor');
 var FluxMixin = Fluxxor.FluxMixin(React);
 var StoreWatchMixin = Fluxxor.StoreWatchMixin;
+var FluxProvider = require('./lib/FluxProvider');
 
 var MusicStore = require('./stores/MusicStore');
 var {
@@ -14,106 +15,81 @@ var {
   secondsToTimeString
 } = require('./music-lib');
 
-var {AppBar, Drawer, Paper, IconButton, MenuItem, MuiThemeProvider} = mui;
+var {AppBar, Divider, Drawer, Paper, IconButton, MenuItem, MuiThemeProvider} = mui;
 
-// A lot of the code is auto-generated. However, fiddling around with it
-// shouldn't be a catastrophic failure. Just that you'd need to know your way
-// around a little. However, **BE CAREFUL WHILE DELETING SOME OF THE COMMENTS IN
-// THIS FILE; THE AUTO-GENERATORS RELY ON SOME OF THEM**.
-
-// inject:pagerequire
 var HomePage = require('./pages/HomePage');
 var AlbumsPage = require('./pages/AlbumsPage');
 var NotRecentlyPlayedPage = require('./pages/NotRecentlyPlayedPage');
 var NeverPlayedPage = require('./pages/NeverPlayedPage');
 var ShufflePage = require('./pages/ShufflePage');
 var ScanPage = require('./pages/ScanPage');
-// endinject
-
-/*var menuItems = [
-  // inject:menuitems
-  { payload: 'home', text: 'Now Playing' },
-  { type: MenuItem.Types.SUBHEADER, text: 'Browse' },
-  { payload: 'albums', text: 'All Albums' },
-  { payload: 'not-recently-played', text: 'Not Recently Played' },
-  { payload: 'never-played', text: 'Never Played' },
-  { payload: 'shuffle', text: 'Shuffle' },
-  { type: MenuItem.Types.SUBHEADER, text: 'Tools' },
-  { payload: 'scan', text: 'Scan Files and Metadata' },
-  // endinject
-];*/
-
-var titles = {
-  // inject:titles
-  '/': 'Now Playing',
-  '/home': 'Now Playing',
-  '/albums': 'All Albums',
-  '/not-recently-played': 'Not Recently Played',
-  '/never-played': 'Never Played',
-  '/shuffle': 'Shuffle',
-  '/scan': 'Scan Files and Metadata',
-  // endinject
-};
 
 injectTapEventPlugin();
 
-var LeftNavComponent = React.createClass({
-  //mixins: [Router.Navigation],
-
-  render: function () {
-    // Optionally, you may add a header to the left navigation bar, by setting
-    // the `LeftNav`'s `header` property to a React component, like os:
-    //
-    //     header={<div className='logo'>Header Title.</div>}
+var LinkMenuItem = React.createClass({
+  render: function() {
     return (
-      <Drawer
-        ref="leftNav"
-        header={<div className="logo">{"Mike's Music Player"}</div>}
-        docked={false}
-        open={this.props.open}
-        menuItems={this.props.menuItems}
-        onClick={this._onLeftNavChange}
-        onChange={this._onLeftNavChange} />
+      <MenuItem innerDivStyle={{padding: 0}}>
+        <Link to={this.props.to} onClick={this.props.onClick} style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          padding: '0 16px',
+          textDecoration: 'none',
+          color: 'inherit'
+        }}>
+          {this.props.children}
+        </Link>
+      </MenuItem>
+    )
+  }
+});
+
+var LeftNavComponent = React.createClass({
+  getInitialState() {
+    return {
+      open: false
+    };
+  },
+
+  render: function() {
+    return (
+      <Drawer open={this.state.open} >
+        <AppBar title="Mike's Music Player" />
+        <LinkMenuItem to='/' onClick={this.close}>Now Playing</LinkMenuItem>
+        <Divider />
+        <LinkMenuItem to='/albums' onClick={this.close}>All Albums</LinkMenuItem>
+        <LinkMenuItem to='/not-recently-played' onClick={this.close}>Not Recently Played</LinkMenuItem>
+        <LinkMenuItem to='/never-played' onClick={this.close}>Never Played</LinkMenuItem>
+        <LinkMenuItem to='/shuffle' onClick={this.close}>Shuffle</LinkMenuItem>
+        <Divider />
+        <LinkMenuItem to='/scan' onClick={this.close}>Scan</LinkMenuItem>
+      </Drawer>
     );
   },
 
-  close: function () {
-    this.refs.leftNav.close()
+  open: function() {
+    this.setState({
+      open: true
+    })
   },
 
-  _onLeftNavChange: function(e, selectedIndex, menuItem) {
-    this.transitionTo(menuItem.payload);
-    this.refs.leftNav.close();
+  close: function() {
+    this.setState({
+      open: false
+    });
   }
 });
 
 var Master = React.createClass({
   mixins: [FluxMixin, StoreWatchMixin("MusicStore")],
 
-  /*getChildContext: function() {
-    return {
-      flux: this.getFlux()
-    };
-  },
-
-  childContextTypes: {
-    flux: React.PropTypes.object
-  },*/
-
-  getInitialState() {
-    return {
-      leftNavOpen: false
-    };
+  contextTypes: {
+    flux: React.PropTypes.object.isRequired
   },
 
   getStateFromFlux: function() {
     return this.getFlux().store("MusicStore").getState();
-  },
-
-  _onMenuIconButtonTouchTap: function () {
-    this.setState({
-      leftNavOpen: !this.state.leftNavOpen
-    });
   },
 
   openLastFm: function() {
@@ -183,25 +159,15 @@ var Master = React.createClass({
           <AppBar
             className="mui-dark-theme"
             title="Mike's Music Player" /*{titles[this.getPath()]}*/
-            onLeftIconButtonTouchTap={this._onMenuIconButtonTouchTap}
+            onLeftIconButtonTouchTap={() => this.refs.leftNav.open()}
             zDepth={1}
             iconElementRight={toolbar}
           />
 
-          <LeftNavComponent open={this.state.leftNavOpen} />
+          <LeftNavComponent ref='leftNav' />
 
           <div className='mui-app-content-canvas'>
-            <Router history={hashHistory}>
-              <Route path='/' component={HomePage}>
-                <Route path='home' component={HomePage} />
-                <Route path='albums' component={AlbumsPage} />
-                <Route path='not-recently-played' component={NotRecentlyPlayedPage} />
-                <Route path='never-played' component={NeverPlayedPage} />
-                <Route path='shuffle' component={ShufflePage} />
-                <Route path='scan' component={ScanPage} />
-                <Route path='*' component={HomePage} />
-              </Route>
-            </Router>
+            {this.props.children}
           </div>
         </div>
       </MuiThemeProvider>
@@ -277,4 +243,20 @@ var stores = {
 
 var flux = new Fluxxor.Flux(stores, actions);
 
-render(<Master flux={flux} />, document.getElementById('app'));
+var router = (
+  <FluxProvider flux={flux}>
+    <Router history={hashHistory}>
+      <Route path='/' component={Master}>
+        <IndexRoute component={HomePage} />
+        <Route path='albums' component={AlbumsPage} />
+        <Route path='not-recently-played' component={NotRecentlyPlayedPage} />
+        <Route path='never-played' component={NeverPlayedPage} />
+        <Route path='shuffle' component={ShufflePage} />
+        <Route path='scan' component={ScanPage} />
+        <Route path='*' component={HomePage} />
+      </Route>
+    </Router>
+  </FluxProvider>
+);
+
+render(router, document.getElementById('app'));

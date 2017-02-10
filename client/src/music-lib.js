@@ -110,6 +110,10 @@ var AlbumList = React.createClass({
 var Playlist = React.createClass({
     mixins: [FluxMixin],
 
+      contextTypes: {
+          flux: React.PropTypes.object
+      },
+
     render: function() {
         var musicStore = this.getFlux().store("MusicStore");
 
