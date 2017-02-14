@@ -15,7 +15,8 @@ var {
   secondsToTimeString
 } = require('./music-lib');
 
-var {AppBar, Divider, Drawer, Paper, IconButton, MenuItem, MuiThemeProvider} = mui;
+var {AppBar, Divider, Drawer, FontIcon, Paper, IconButton, MenuItem} = mui;
+var {colors, getMuiTheme, MuiThemeProvider} = require('material-ui/styles');
 
 var HomePage = require('./pages/HomePage');
 var AlbumsPage = require('./pages/AlbumsPage');
@@ -28,13 +29,15 @@ injectTapEventPlugin();
 
 var LinkMenuItem = React.createClass({
   render: function() {
+    let icon = <FontIcon className={this.props.iconClassName} />;
+
     return (
-      <MenuItem innerDivStyle={{padding: 0}}>
+      <MenuItem innerDivStyle={{padding: 0}} leftIcon={icon}>
         <Link to={this.props.to} onClick={this.props.onClick} style={{
           position: 'absolute',
           left: 0,
           right: 0,
-          padding: '0 16px',
+          padding: '0px 16px 0px 56px',
           textDecoration: 'none',
           color: 'inherit'
         }}>
@@ -54,18 +57,24 @@ var LeftNavComponent = React.createClass({
 
   render: function() {
     return (
-      <Drawer open={this.state.open} >
-        <AppBar title="Mike's Music Player" />
-        <LinkMenuItem to='/' onClick={this.close}>Now Playing</LinkMenuItem>
+      <Drawer open={this.state.open} onRequestChange={this.onRequestChange} docked={false} width={320}>
+        <AppBar title="Mike's Music Player" onLeftIconButtonTouchTap={this.close} />
+        <LinkMenuItem to='/' iconClassName={'icon-music'} onClick={this.close}>Now Playing</LinkMenuItem>
         <Divider />
-        <LinkMenuItem to='/albums' onClick={this.close}>All Albums</LinkMenuItem>
-        <LinkMenuItem to='/not-recently-played' onClick={this.close}>Not Recently Played</LinkMenuItem>
-        <LinkMenuItem to='/never-played' onClick={this.close}>Never Played</LinkMenuItem>
-        <LinkMenuItem to='/shuffle' onClick={this.close}>Shuffle</LinkMenuItem>
+        <LinkMenuItem to='/albums' iconClassName='icon-album' onClick={this.close}>All Albums</LinkMenuItem>
+        <LinkMenuItem to='/not-recently-played' iconClassName='icon-album' onClick={this.close}>Not Recently Played</LinkMenuItem>
+        <LinkMenuItem to='/never-played' iconClassName='icon-album' onClick={this.close}>Never Played</LinkMenuItem>
+        <LinkMenuItem to='/shuffle' iconClassName='icon-shuffle' onClick={this.close}>Shuffle</LinkMenuItem>
         <Divider />
-        <LinkMenuItem to='/scan' onClick={this.close}>Scan</LinkMenuItem>
+        <LinkMenuItem to='/scan' iconClassName='icon-search' onClick={this.close}>Scan</LinkMenuItem>
       </Drawer>
     );
+  },
+
+  onRequestChange: function(open) {
+    this.setState({
+      open: open
+    });
   },
 
   open: function() {
@@ -83,6 +92,23 @@ var LeftNavComponent = React.createClass({
 
 var Master = React.createClass({
   mixins: [FluxMixin, StoreWatchMixin("MusicStore")],
+
+  muiTheme: getMuiTheme({
+    palette: {
+      primary1Color: colors.lightBlue500,
+      primary2Color: colors.lightBlue700,
+      primary3Color: colors.grey400,
+      accent1Color: colors.deepOrange200,
+      accent2Color: colors.grey100,
+      accent3Color: colors.grey500,
+    },
+    slider: {
+      trackColor: colors.grey500,
+      trackColorSelected: colors.grey300,
+      selectionColor: colors.white,
+      rippleColor: colors.white,
+    }
+  }),
 
   contextTypes: {
     flux: React.PropTypes.object.isRequired
@@ -125,7 +151,7 @@ var Master = React.createClass({
     scrobbleTooltip[ScrobbleState.SCROBBLE_FAILED] = "Scrobble failed!";
 
     var toolbar = (
-      <div className="app-bar-toolbar">
+      <div className='app-bar-toolbar'>
           <GaplessPlayer />
 
           <CurrentTimeSlider />
@@ -154,7 +180,7 @@ var Master = React.createClass({
     );
 
     return (
-      <MuiThemeProvider>
+      <MuiThemeProvider muiTheme={this.muiTheme}>
         <div>
           <AppBar
             className="mui-dark-theme"
@@ -162,6 +188,13 @@ var Master = React.createClass({
             onLeftIconButtonTouchTap={() => this.refs.leftNav.open()}
             zDepth={1}
             iconElementRight={toolbar}
+            iconStyleRight={{
+              margin: 0,
+              flex: 1
+            }}
+            titleStyle={{
+              flex: 'none'
+            }}
           />
 
           <LeftNavComponent ref='leftNav' />

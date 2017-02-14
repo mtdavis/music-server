@@ -11,10 +11,11 @@ var ShuffleButton = React.createClass({
 
   render: function() {
     return (
-      <RaisedButton onClick={this.onClick}>
-        <FontIcon className="icon-shuffle"/>
-        <span className="mui-raised-button-label">{this.props.minutes} Minutes</span>
-      </RaisedButton>
+      <RaisedButton
+        primary={true}
+        onClick={this.onClick} 
+        label={this.props.minutes + ' Minutes'}
+        icon={<FontIcon className="icon-shuffle"/>} />
     );
   },
 
@@ -41,5 +42,4 @@ module.exports = React.createClass({
       </div>
     );
   }
-
 });
