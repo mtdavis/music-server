@@ -1,13 +1,13 @@
 var React = require('react');
 var mui = require('material-ui');
-var {TextField, FontIcon} = mui;
+var {Paper, TextField, FontIcon, Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn} = mui;
 var jsep = require('jsep');
 var deepEqual = require('deep-equal');
 
 jsep.addBinaryOp(":", 10);
 jsep.addBinaryOp("~=", 6);
 
-var TableCell = React.createClass({
+var MTableCell = React.createClass({
     getDefaultProps: function() {
         return {
             renderer: x => x,
@@ -43,20 +43,20 @@ var TableCell = React.createClass({
         }
 
         return (
-            <td data-title={this.props.header} style={style}>
+            <TableRowColumn style={style}>
                 {content}
-            </td>
+            </TableRowColumn>
         );
     }
 })
 
-var TableRow = React.createClass({
+var MTableRow = React.createClass({
     getDefaultProps: function() {
         return {
             columns: [],
             value: null,
-            onRowClick: null,
-            onRowCtrlClick: null
+            // onRowClick: null,
+            // onRowCtrlClick: null
         };
     },
 
@@ -65,7 +65,7 @@ var TableRow = React.createClass({
         {
             var value = this.props.rowData[column.key];
             return (
-                <TableCell
+                <MTableCell
                     key={column.key}
                     value={value}
                     header={column.header}
@@ -75,17 +75,17 @@ var TableRow = React.createClass({
         }.bind(this));
 
         var style;
-        if(this.props.onRowClick)
-        {
-            style = {cursor: "pointer"}
-        }
+        // if(this.props.onRowClick)
+        // {
+        //     style = {cursor: "pointer"}
+        // }
 
         return (
-            <tr onClick={this.onClick} style={style}>
+            <TableRow /*onClick={this.onClick}*/ style={style}>
                 {tds}
-            </tr>
+            </TableRow>
         );
-    },
+    }/*,
 
     onClick: function(event) {
         if((event.ctrlKey || event.metaKey) && this.props.onRowCtrlClick)
@@ -97,10 +97,10 @@ var TableRow = React.createClass({
         {
             this.props.onRowClick(this.props.rowData);
         }
-    }
+    }*/
 });
 
-var TableHeader = React.createClass({
+var MTableHeaderRow = React.createClass({
     getDefaultProps: function() {
         return {
             columns: [],
@@ -117,18 +117,16 @@ var TableHeader = React.createClass({
             }.bind(this);
 
             return (
-                <th key={column.key} onClick={setSortColumnKey} style={{textAlign:column.textAlign}}>
+                <TableHeaderColumn key={column.key} onClick={setSortColumnKey} style={{textAlign:column.textAlign||'left'}}>
                     {column.header}
-                </th>
+                </TableHeaderColumn>
             );
         }.bind(this));
 
         return (
-            <thead>
-                <tr>
-                    {ths}
-                </tr>
-            </thead>
+            <TableRow>
+                {ths}
+            </TableRow>
         );
     }
 });
@@ -228,8 +226,8 @@ module.exports = React.createClass({
             placeholderText:"Nothing to see here!",
             columns: [],
             rows: [],
-            onRowClick: null,
-            onRowCtrlClick: null,
+            // onRowClick: null,
+            // onRowCtrlClick: null,
             showHeader: true,
             showFilter: true,
             responsive: true,
@@ -272,12 +270,12 @@ module.exports = React.createClass({
 
                 if(rowPassesFilter(rowData, this.state.filterText, this.props.columns))
                 {
-                    filteredRows.push(<TableRow
+                    filteredRows.push(<MTableRow
                         key={rowData.id}
                         rowData={rowData}
                         columns={this.props.columns}
-                        onRowClick={this.props.onRowClick}
-                        onRowCtrlClick={this.props.onRowCtrlClick}
+                        /*onRowClick={this.props.onRowClick}*/
+                        /*onRowCtrlClick={this.props.onRowCtrlClick}*/
                     />);
                 }
             }
@@ -291,9 +289,15 @@ module.exports = React.createClass({
         if(filteredRows.length === 0)
         {
             table = (
-                <div className="table-placeholder shadow-z-1">
-                    {this.props.placeholderText}
-                </div>
+                <Table selectable={false}>
+                    <TableBody displayRowCheckbox={false}>
+                        <TableRow>
+                            <TableRowColumn>
+                                {this.props.placeholderText}
+                            </TableRowColumn>
+                        </TableRow>
+                    </TableBody>
+                </Table>
             );
         }
         else
@@ -306,26 +310,33 @@ module.exports = React.createClass({
 
             table = (
                 <div className={wrapperClassName}>
-                    <table className={tableClassName}>
+                    <Table
+                        className={tableClassName}
+                        onCellClick={this.onCellClick}
+                        fixedHeader={false}
+                        style={{tableLayout:'auto'}}>
+
                         {this.props.showHeader &&
-                            <TableHeader
-                                columns={this.props.columns}
-                                setSortColumnKey={this.setSortColumnKey}
-                            />
+                            <TableHeader>
+                                <MTableHeaderRow
+                                    columns={this.props.columns}
+                                    setSortColumnKey={this.setSortColumnKey} />
+                            </TableHeader>
                         }
-                        <tbody>
+                        <TableBody showRowHover={true}>
                             {filteredRows}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                 </div>
             );
         }
 
         var filter = (
-            <div className="table-filter shadow-z-1">
+            <div className="table-filter">
                 <TextField
                     hintText="Filter..."
                     errorText={filterTextValid ? "" : "Error!"}
+                    errorStyle={{display: 'none'}}
                     onChange={this.onFilterChange}
                     onKeyUp={this.onFilterChange} />
             </div>
@@ -333,10 +344,19 @@ module.exports = React.createClass({
 
         return (
             <div>
-                {this.props.showFilter && filter}
-                {table}
+                <Paper>
+                    {this.props.showFilter && filter}
+                </Paper>
+
+                <Paper>
+                    {table}
+                </Paper>
             </div>
         );
+    },
+
+    onCellClick: function(rowNumber, colNumber, event) {
+        console.log(rowNumber);
     },
 
     onFilterChange: function(event)
