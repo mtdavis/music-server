@@ -7,129 +7,83 @@ var deepEqual = require('deep-equal');
 jsep.addBinaryOp(":", 10);
 jsep.addBinaryOp("~=", 6);
 
-var MTableCell = React.createClass({
-    getDefaultProps: function() {
-        return {
-            renderer: x => x,
-            value: null,
-            header: "",
-            //default textAlign value is undefined so that responsive mode works
-            //(since in small screens, all text-align = right)
-            textAlign: undefined
-        };
-    },
-
-    render: function() {
-        var style = {};
-        if(this.props.textAlign)
-        {
-            style.textAlign = this.props.textAlign;
-        }
-
-        var content;
-
-        if(this.props.renderer === "icon")
-        {
-            content = <FontIcon className={this.props.value} />;
-            style.width = "48px";
-        }
-        else if(this.props.value !== null && this.props.value !== undefined)
-        {
-            content = this.props.renderer(this.props.value);
-        }
-        else
-        {
-            content = "-";
-        }
-
-        return (
-            <TableRowColumn style={style}>
-                {content}
-            </TableRowColumn>
-        );
+function renderTableCell({key, value, renderer, textAlign}) {
+    if(!renderer) {
+        renderer = (x) => x;
     }
-})
 
-var MTableRow = React.createClass({
-    getDefaultProps: function() {
-        return {
-            columns: [],
-            value: null,
-            // onRowClick: null,
-            // onRowCtrlClick: null
-        };
-    },
+    if(!textAlign) {
+        textAlign = 'left';
+    }
 
-    render: function() {
-        var tds = this.props.columns.map(function(column)
-        {
-            var value = this.props.rowData[column.key];
-            return (
-                <MTableCell
-                    key={column.key}
-                    value={value}
-                    header={column.header}
-                    renderer={column.renderer}
-                    textAlign={column.textAlign} />
-            );
-        }.bind(this));
+    var content;
+    var style = {};
+    style.textAlign = textAlign;
 
-        var style;
-        // if(this.props.onRowClick)
-        // {
-        //     style = {cursor: "pointer"}
-        // }
+    if(renderer === "icon")
+    {
+        content = <FontIcon className={value} />;
+        style.width = "48px";
+    }
+    else if(value !== null && value !== undefined)
+    {
+        content = renderer(value);
+    }
+    else
+    {
+        content = "-";
+    }
 
-        return (
-            <TableRow /*onClick={this.onClick}*/ style={style}>
-                {tds}
-            </TableRow>
-        );
-    }/*,
+    return (
+        <TableRowColumn key={key} style={style}>
+            {content}
+        </TableRowColumn>
+    );
+}
 
-    onClick: function(event) {
-        if((event.ctrlKey || event.metaKey) && this.props.onRowCtrlClick)
-        {
-            event.preventDefault();
-            this.props.onRowCtrlClick(this.props.rowData);
-        }
-        else if(this.props.onRowClick)
-        {
-            this.props.onRowClick(this.props.rowData);
-        }
-    }*/
-});
+function renderTableRow({key, columns, rowData, cursor}) {
+    var cells = columns.map(column =>
+        renderTableCell({
+            key: column.key,
+            value: rowData[column.key],
+            renderer: column.renderer,
+            textAlign: column.textAlign
+        })
+    );
 
-var MTableHeaderRow = React.createClass({
-    getDefaultProps: function() {
-        return {
-            columns: [],
-            setSortColumnKey: null
-        };
-    },
+    return (
+        <TableRow key={key} style={{cursor: cursor}}>
+            {cells}
+        </TableRow>
+    );
+}
 
-    render: function() {
-        var ths = this.props.columns.map(function(column)
-        {
-            var setSortColumnKey = function()
-            {
-                this.props.setSortColumnKey(column.key);
-            }.bind(this);
+function renderTableHeader({columns, setSortColumnKey}) {
+    var cells = columns.map(column =>
+        <TableHeaderColumn key={column.key} style={{
+                padding: 0
+            }}>
+            <div onClick={() => setSortColumnKey(column.key)} style={{
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 24px',
+                    cursor: 'pointer',
+                    justifyContent: column.textAlign==='right' ? 'flex-end' : 'flex-start',
+                }}>
+                {column.header}
+            </div>
+        </TableHeaderColumn>
+    );
 
-            return (
-                <TableHeaderColumn key={column.key} onClick={setSortColumnKey} style={{textAlign:column.textAlign||'left'}}>
-                    {column.header}
-                </TableHeaderColumn>
-            );
-        }.bind(this));
-
-        return (
+    return (
+        <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
             <TableRow>
-                {ths}
+                {cells}
             </TableRow>
-        );
-    }
-});
+        </TableHeader>
+    );
+}
 
 function rowContainsText(rowData, text, columns)
 {
@@ -220,175 +174,12 @@ function rowPassesFilter(rowData, filterText, columns)
     }
 }
 
-module.exports = React.createClass({
-    getDefaultProps: function() {
-        return {
-            placeholderText:"Nothing to see here!",
-            columns: [],
-            rows: [],
-            // onRowClick: null,
-            // onRowCtrlClick: null,
-            showHeader: true,
-            showFilter: true,
-            responsive: true,
-            condensed: false,
-            initialSortColumnKey:null,
-            initialSortOrder:1
-        };
-    },
-
-    getInitialState: function() {
-        return {
-            filterText:"",
-            sortColumnKey:this.props.initialSortColumnKey,
-            sortOrder:this.props.initialSortOrder
-        };
-    },
-
-    shouldComponentUpdate(nextProps, nextState) {
-        return !deepEqual(this.props, nextProps) ||
-            !deepEqual(this.state, nextState);
-    },
-
-    render: function() {
-        console.log("rendering");
-        var sortedRows = this.props.rows.slice();
-
-        if(this.state.sortColumnKey !== null)
-        {
-            sortedRows.sort(this.compareRows);
-        }
-
-        var filterTextValid = true;
-        var filteredRows = [];
-
-        try
-        {
-            for(var i = 0; i < sortedRows.length; i++)
-            {
-                var rowData = sortedRows[i];
-
-                if(rowPassesFilter(rowData, this.state.filterText, this.props.columns))
-                {
-                    filteredRows.push(<MTableRow
-                        key={rowData.id}
-                        rowData={rowData}
-                        columns={this.props.columns}
-                        /*onRowClick={this.props.onRowClick}*/
-                        /*onRowCtrlClick={this.props.onRowCtrlClick}*/
-                    />);
-                }
-            }
-        }
-        catch(ex)
-        {
-            filterTextValid = false;
-        }
-
-        var table;
-        if(filteredRows.length === 0)
-        {
-            table = (
-                <Table selectable={false}>
-                    <TableBody displayRowCheckbox={false}>
-                        <TableRow>
-                            <TableRowColumn>
-                                {this.props.placeholderText}
-                            </TableRowColumn>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            );
-        }
-        else
-        {
-            var wrapperClassName = "shadow-z-1";
-            wrapperClassName += this.props.responsive ? " table-responsive-vertical" : "";
-
-            var tableClassName = "table table-hover"
-            tableClassName += this.props.condensed ? " table-condensed" : "";
-
-            table = (
-                <div className={wrapperClassName}>
-                    <Table
-                        className={tableClassName}
-                        onCellClick={this.onCellClick}
-                        fixedHeader={false}
-                        style={{tableLayout:'auto'}}>
-
-                        {this.props.showHeader &&
-                            <TableHeader>
-                                <MTableHeaderRow
-                                    columns={this.props.columns}
-                                    setSortColumnKey={this.setSortColumnKey} />
-                            </TableHeader>
-                        }
-                        <TableBody showRowHover={true}>
-                            {filteredRows}
-                        </TableBody>
-                    </Table>
-                </div>
-            );
-        }
-
-        var filter = (
-            <div className="table-filter">
-                <TextField
-                    hintText="Filter..."
-                    errorText={filterTextValid ? "" : "Error!"}
-                    errorStyle={{display: 'none'}}
-                    onChange={this.onFilterChange}
-                    onKeyUp={this.onFilterChange} />
-            </div>
-        );
-
-        return (
-            <div>
-                <Paper>
-                    {this.props.showFilter && filter}
-                </Paper>
-
-                <Paper>
-                    {table}
-                </Paper>
-            </div>
-        );
-    },
-
-    onCellClick: function(rowNumber, colNumber, event) {
-        console.log(rowNumber);
-    },
-
-    onFilterChange: function(event)
-    {
-        this.setState({
-            filterText: event.target.value
-        });
-    },
-
-    setSortColumnKey: function(columnKey) {
-        if(this.state.sortColumnKey === columnKey)
-        {
-            var currentSortOrder = this.state.sortOrder;
-            var newSortOrder = -currentSortOrder;
-            this.setState({
-                sortOrder: newSortOrder
-            });
-        }
-        else
-        {
-            this.setState({
-                sortColumnKey: columnKey,
-                sortOrder: 1
-            });
-        }
-    },
-
-    compareRows: function(rowA, rowB) {
+function getRowComparator(sortColumnKey, sortOrder) {
+    return function(rowA, rowB) {
         var result;
 
-        var valA = rowA[this.state.sortColumnKey];
-        var valB = rowB[this.state.sortColumnKey];
+        var valA = rowA[sortColumnKey];
+        var valB = rowB[sortColumnKey];
 
         if(typeof(valA) === "string" && valA.startsWith("The "))
         {
@@ -413,6 +204,195 @@ module.exports = React.createClass({
             result = 1;
         }
 
-        return result * this.state.sortOrder;
+        return result * sortOrder;
+    }
+}
+
+module.exports = React.createClass({
+    getDefaultProps: function() {
+        return {
+            placeholderText:"Nothing to see here!",
+            columns: [],
+            rows: [],
+            onRowClick: null,
+            onRowCtrlClick: null,
+            showHeader: true,
+            showFilter: true,
+            condensed: false,
+            initialSortColumnKey: null,
+            initialSortOrder: 1
+        };
+    },
+
+    getInitialState: function() {
+        var sortedRows = this.props.rows.slice();
+
+        if(this.props.initialSortColumnKey !== null)
+        {
+            sortedRows.sort(getRowComparator(
+                this.props.initialSortColumnKey, this.props.initialSortOrder));
+        }
+
+        // no filter initially.
+
+        return {
+            sortedFilteredRows: sortedRows,
+            filterText: "",
+            filterTextValid: true,
+            sortColumnKey: this.props.initialSortColumnKey,
+            sortOrder: this.props.initialSortOrder
+        };
+    },
+
+    componentWillReceiveProps(nextProps) {
+        this.resortAndFilterRows(nextProps.rows);
+    },
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return !deepEqual(this.props, nextProps) ||
+            !deepEqual(this.state, nextState);
+    },
+
+    render: function() {
+        console.log("rendering");
+
+        var rowNodes = this.state.sortedFilteredRows.map(rowData =>
+            renderTableRow({
+                key: rowData.id,
+                rowData: rowData,
+                columns: this.props.columns,
+                cursor: this.props.onRowClick ? 'pointer' : 'auto',
+            })
+        );
+
+        var table;
+        if(rowNodes.length === 0)
+        {
+            table = (
+                <Table selectable={false}>
+                    <TableBody displayRowCheckbox={false}>
+                        <TableRow>
+                            <TableRowColumn>
+                                {this.props.placeholderText}
+                            </TableRowColumn>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            );
+        }
+        else
+        {
+            table = (
+                <Table
+                    onCellClick={this.onCellClick}
+                    fixedHeader={false}
+                    selectable={false}
+                    style={{tableLayout:'auto'}}>
+
+                    {this.props.showHeader &&
+                        renderTableHeader({
+                            columns: this.props.columns,
+                            setSortColumnKey: this.setSortColumnKey
+                        })
+                    }
+                    <TableBody showRowHover={true} displayRowCheckbox={false}>
+                        {rowNodes}
+                    </TableBody>
+                </Table>
+            );
+        }
+
+        var filter = (
+            <div className="table-filter">
+                <TextField
+                    hintText="Filter..."
+                    errorText={this.state.filterTextValid ? "" : "Error!"}
+                    errorStyle={{display: 'none'}}
+                    onChange={this.onFilterChange}
+                    onKeyUp={this.onFilterChange} />
+            </div>
+        );
+
+        return (
+            <div>
+                <Paper>
+                    {this.props.showFilter && filter}
+                </Paper>
+
+                <Paper>
+                    {table}
+                </Paper>
+            </div>
+        );
+    },
+
+    onCellClick: function(rowNumber, colNumber, event) {
+        var rowData = this.state.sortedFilteredRows[rowNumber];
+
+        if((event.ctrlKey || event.metaKey) && this.props.onRowCtrlClick) {
+            event.preventDefault();
+            this.props.onRowCtrlClick(rowData);
+        }
+        else if(this.props.onRowClick) {
+            this.props.onRowClick(rowData);
+        }
+    },
+
+    onFilterChange: function(event)
+    {
+        this.setState({
+            filterText: event.target.value
+        });
+
+        this.resortAndFilterRows(this.props.rows);
+    },
+
+    setSortColumnKey: function(columnKey) {
+        if(this.state.sortColumnKey === columnKey)
+        {
+            var currentSortOrder = this.state.sortOrder;
+            var newSortOrder = -currentSortOrder;
+            this.setState({
+                sortOrder: newSortOrder
+            });
+        }
+        else
+        {
+            this.setState({
+                sortColumnKey: columnKey,
+                sortOrder: 1
+            });
+        }
+
+        this.resortAndFilterRows(this.props.rows);
+    },
+
+    resortAndFilterRows: function(rows) {
+        var filteredRows = [];
+
+        this.setState({filterTextValid: true});
+
+        try {
+            for(var i = 0; i < rows.length; i++)
+            {
+                var rowData = rows[i];
+
+                if(rowPassesFilter(rowData, this.state.filterText, this.props.columns))
+                {
+                    filteredRows.push(rowData);
+                }
+            }
+        }
+        catch(ex) {
+            this.setState({filterTextValid: false});
+        }
+
+        if(this.state.sortColumnKey !== null) {
+            filteredRows.sort(getRowComparator(
+                this.state.sortColumnKey, this.state.sortOrder));
+        }
+
+
+        this.setState({sortedFilteredRows: filteredRows})
     }
 });

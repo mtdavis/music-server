@@ -5,7 +5,9 @@ var Fluxxor = require('fluxxor');
 var FluxMixin = Fluxxor.FluxMixin(React);
 
 var mui = require('material-ui');
-var {IconButton, Menu, Slider, Snackbar} = mui;
+var {IconButton, Menu, Slider, Snackbar, AppBar} = mui;
+var {muiThemeable} = require('material-ui/styles');
+var getAppBarStyles = require('material-ui/AppBar').getStyles;
 //var {ClickAwayable} = mui.Mixins;
 
 var DataTable = require('./material-data-table');
@@ -60,6 +62,12 @@ var AlbumList = React.createClass({
         };
     },
 
+    getInitialState: function() {
+        return {
+            enqueueSnackbarOpen: false
+        };
+    },
+
     render: function() {
         var columns = [
             {key:"album_artist", header:"Album Artist"},
@@ -83,9 +91,8 @@ var AlbumList = React.createClass({
                 />
 
                 <Snackbar
-                    ref="snackbar"
                     message="Album enqueued."
-                    open={false}
+                    open={this.state.enqueueSnackbarOpen}
                 />
             </div>
         );
@@ -98,13 +105,12 @@ var AlbumList = React.createClass({
 
     onAlbumCtrlClick: function(album)
     {
-        this.refs.snackbar.show();
+        this.setState({enqueueSnackbarOpen: true});
         this.getFlux().actions.enqueueAlbum(album);
 
-        setTimeout(function()
-        {
-            this.refs.snackbar.dismiss();
-        }.bind(this), 2000);
+        setTimeout(() => {
+            this.setState({enqueueSnackbarOpen: false});
+        }, 2000);
     }
 });
 
@@ -190,7 +196,7 @@ var Playlist = React.createClass({
     }
 });
 
-var CurrentTimeSlider = React.createClass({
+var CurrentTimeSlider = muiThemeable()(React.createClass({
     mixins: [FluxMixin],
 
     getInitialState: function() {
@@ -235,6 +241,8 @@ var CurrentTimeSlider = React.createClass({
             sliderDisabled = false;
         }
 
+        //var timeLabelStyles = getAppBarStyles(this.props, this.context).title;
+
         return (
             <div className="time-wrapper">
                 <Slider
@@ -249,9 +257,9 @@ var CurrentTimeSlider = React.createClass({
                     onDragStop={this.onSliderDragStop}
                 />
 
-                <div className={timeLabelClassName}>
+                <h1 className={timeLabelClassName}>
                     {timeString}
-                </div>
+                </h1>
             </div>
         );
     },
@@ -284,7 +292,7 @@ var CurrentTimeSlider = React.createClass({
             draggingValue: 0
         });
     }
-});
+}));
 
 var VolumeButton = React.createClass({
     //mixins: [ClickAwayable],
