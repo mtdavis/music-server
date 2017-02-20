@@ -7,63 +7,78 @@ var deepEqual = require('deep-equal');
 jsep.addBinaryOp(":", 10);
 jsep.addBinaryOp("~=", 6);
 
-function renderTableCell({key, value, renderer, textAlign, wrap}) {
-    if(!renderer) {
-        renderer = (x) => x;
+var MTableRowColumn = React.createClass({
+    render: function() {
+        var {value, renderer, textAlign, wrap, style, ...props} = this.props;
+
+        if(!renderer) {
+            renderer = (x) => x;
+        }
+
+        if(!textAlign) {
+            textAlign = 'left';
+        }
+
+        if(wrap === undefined) {
+            wrap = true;
+        }
+
+        var content;
+        style.textAlign = textAlign;
+        style.whiteSpace = wrap ? 'normal' : 'nowrap';
+        style.padding = '0 12px';
+
+        if(renderer === "icon")
+        {
+            content = <FontIcon className={value} />;
+            style.width = "48px";
+        }
+        else if(value !== null && value !== undefined)
+        {
+            content = renderer(value);
+        }
+        else
+        {
+            content = "-";
+        }
+
+        return (
+            <TableRowColumn {...props} style={style}>
+                {content}
+            </TableRowColumn>
+        );
     }
+});
 
-    if(!textAlign) {
-        textAlign = 'left';
+var MTableRow = React.createClass({
+    shouldComponentUpdate: function(nextProps, nextState) {
+        return !deepEqual(this.props.columns, nextProps.columns) ||
+            !deepEqual(this.props.rowData, nextProps.rowData) ||
+            !deepEqual(this.props.displayBorder, nextProps.displayBorder);
+    },
+
+    render: function() {
+        var {columns, rowData, cursor, style, ...props} = this.props;
+
+        var cells = columns.map(column =>
+            <MTableRowColumn
+                key={column.key}
+                value={rowData[column.key]}
+                renderer={column.renderer}
+                textAlign={column.textAlign}
+                wrap={column.wrap} />
+        );
+
+        style = style || {};
+        style.cursor = cursor;
+
+        return (
+            <TableRow {...props} style={style}>
+                {cells}
+            </TableRow>
+        )
     }
-
-    if(wrap === undefined) {
-        wrap = true;
-    }
-
-    var content;
-    var style = {};
-    style.textAlign = textAlign;
-    style.whiteSpace = wrap ? 'normal' : 'nowrap';
-    style.padding = '0 12px';
-
-    if(renderer === "icon")
-    {
-        content = <FontIcon className={value} />;
-        style.width = "48px";
-    }
-    else if(value !== null && value !== undefined)
-    {
-        content = renderer(value);
-    }
-    else
-    {
-        content = "-";
-    }
-
-    return (
-        <TableRowColumn key={key} style={style}>
-            {content}
-        </TableRowColumn>
-    );
-}
-
-function renderTableRow({key, columns, rowData, cursor}) {
-    var cells = columns.map(column =>
-        renderTableCell({
-            key: column.key,
-            value: rowData[column.key],
-            renderer: column.renderer,
-            textAlign: column.textAlign,
-            wrap: column.wrap
-        })
-    );
-
-    return (
-        <TableRow key={key} style={{cursor: cursor}}>
-            {cells}
-        </TableRow>
-    );
-}
+});
 
 function renderTableHeader({columns, setSortColumnKey}) {
     var cells = columns.map(column =>
@@ -258,18 +273,17 @@ module.exports = React.createClass({
     },
 
     shouldComponentUpdate(nextProps, nextState) {
-        return !deepEqual(this.props, nextProps) ||
-            !deepEqual(this.state, nextState);
+        return !deepEqual(this.state.sortedFilteredRows, nextState.sortedFilteredRows);
     },
 
     render: function() {
         var rowNodes = this.state.sortedFilteredRows.map(rowData =>
-            renderTableRow({
-                key: rowData.id,
-                rowData: rowData,
-                columns: this.props.columns,
-                cursor: this.props.onRowClick ? 'pointer' : 'auto',
-            })
+            <MTableRow
+                key={rowData.id}
+                rowData={rowData}
+                columns={this.props.columns}
+                cursor={this.props.onRowClick ? 'pointer' : 'auto'}
+            />
         );
 
         var table;
@@ -352,7 +366,6 @@ module.exports = React.createClass({
     },
 
     setSortColumnKey: function(columnKey) {
-
         if(this.state.sortColumnKey === columnKey)
         {
             var currentSortOrder = this.state.sortOrder;

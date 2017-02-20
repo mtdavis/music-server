@@ -2,7 +2,7 @@ var gulp = require('gulp');
 var bower = require('gulp-bower');
 var browserify = require('browserify');
 var del = require('del');
-var reactify = require('reactify');
+var babelify = require('babelify');
 var source = require('vinyl-source-stream');
 var webserver = require('gulp-webserver');
 var less = require('gulp-less');
@@ -78,7 +78,10 @@ gulp.task('style', function () {
  */
 gulp.task('js', function() {
   return browserify(paths.appjs, {debug: true})
-    .transform(reactify)
+    .transform("babelify", {
+      presets: ["es2015", "react"],
+      plugins: ["transform-object-rest-spread"]
+    })
     .bundle()
     .on('error', function (err) {
       gutil.log(err.message);
