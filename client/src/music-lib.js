@@ -74,9 +74,9 @@ var AlbumList = React.createClass({
             {key:"album", header:"Album"},
             {key:"year", header:"Year", textAlign:"right"},
             {key:"tracks", header:"Tracks", textAlign:"right"},
-            {key:"duration", header:"Duration", renderer:secondsToTimeString, textAlign:"right"},
+            {key:"duration", header:"Duration", renderer:secondsToTimeString, textAlign:"right", wrap:false},
             {key:"play_count", header:"Play Count", textAlign:"right"},
-            {key:"last_play", header:"Last Play", renderer:unixTimestampToDateString, textAlign:"right"}
+            {key:"last_play", header:"Last Play", renderer:unixTimestampToDateString, textAlign:"right", wrap:false}
         ];
 
         return (

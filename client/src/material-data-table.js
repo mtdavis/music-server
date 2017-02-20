@@ -7,7 +7,7 @@ var deepEqual = require('deep-equal');
 jsep.addBinaryOp(":", 10);
 jsep.addBinaryOp("~=", 6);
 
-function renderTableCell({key, value, renderer, textAlign}) {
+function renderTableCell({key, value, renderer, textAlign, wrap}) {
     if(!renderer) {
         renderer = (x) => x;
     }
@@ -16,9 +16,15 @@ function renderTableCell({key, value, renderer, textAlign}) {
         textAlign = 'left';
     }
 
+    if(wrap === undefined) {
+        wrap = true;
+    }
+
     var content;
     var style = {};
     style.textAlign = textAlign;
+    style.whiteSpace = wrap ? 'normal' : 'nowrap';
+    style.padding = '0 12px';
 
     if(renderer === "icon")
     {
@@ -47,7 +53,8 @@ function renderTableRow({key, columns, rowData, cursor}) {
             key: column.key,
             value: rowData[column.key],
             renderer: column.renderer,
-            textAlign: column.textAlign
+            textAlign: column.textAlign,
+            wrap: column.wrap
         })
     );
 
@@ -67,7 +74,7 @@ function renderTableHeader({columns, setSortColumnKey}) {
                     height: '100%',
                     display: 'flex',
                     alignItems: 'center',
-                    padding: '0 24px',
+                    padding: '0 12px',
                     cursor: 'pointer',
                     justifyContent: column.textAlign==='right' ? 'flex-end' : 'flex-start',
                 }}>
@@ -245,7 +252,9 @@ module.exports = React.createClass({
     },
 
     componentWillReceiveProps(nextProps) {
-        this.resortAndFilterRows(nextProps.rows);
+        if(!deepEqual(this.props.rows, nextProps.rows)) {
+            this.resortAndFilterRows(nextProps.rows);
+        }
     },
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -254,8 +263,6 @@ module.exports = React.createClass({
     },
 
     render: function() {
-        console.log("rendering");
-
         var rowNodes = this.state.sortedFilteredRows.map(rowData =>
             renderTableRow({
                 key: rowData.id,
@@ -338,36 +345,36 @@ module.exports = React.createClass({
         }
     },
 
-    onFilterChange: function(event)
-    {
+    onFilterChange: function(event) {
         this.setState({
             filterText: event.target.value
-        });
-
-        this.resortAndFilterRows(this.props.rows);
+        }, this.resortAndFilterRows);
     },
 
     setSortColumnKey: function(columnKey) {
+
         if(this.state.sortColumnKey === columnKey)
         {
             var currentSortOrder = this.state.sortOrder;
             var newSortOrder = -currentSortOrder;
             this.setState({
                 sortOrder: newSortOrder
-            });
+            }, this.resortAndFilterRows);
         }
         else
         {
             this.setState({
                 sortColumnKey: columnKey,
                 sortOrder: 1
-            });
+            }, this.resortAndFilterRows);
         }
-
-        this.resortAndFilterRows(this.props.rows);
     },
 
     resortAndFilterRows: function(rows) {
+        if(rows === undefined) {
+            rows = this.props.rows;
+        }
+
         var filteredRows = [];
 
         this.setState({filterTextValid: true});
