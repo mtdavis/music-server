@@ -1,6 +1,6 @@
 var React = require('react');
 var {render} = require('react-dom')
-var {Router, Route, hashHistory, Link, IndexRoute} = require('react-router');
+var {Router, Route, hashHistory, Link, IndexRoute, withRouter} = require('react-router');
 var mui = require('material-ui');
 var injectTapEventPlugin = require("react-tap-event-plugin");
 
@@ -15,7 +15,7 @@ var {
   secondsToTimeString, VolumeButton, AppBarIconButton
 } = require('./music-lib');
 
-var {AppBar, Divider, Drawer, FontIcon, Paper, IconButton, MenuItem} = mui;
+var {AppBar, Divider, Drawer, FontIcon, Paper, IconButton, MenuItem, Snackbar} = mui;
 var {colors, getMuiTheme, MuiThemeProvider} = require('material-ui/styles');
 
 var HomePage = require('./pages/HomePage');
@@ -47,6 +47,15 @@ var LinkMenuItem = React.createClass({
     )
   }
 });
+
+var titles = {
+  '/': "Now Playing",
+  '/albums': "All Albums",
+  '/not-recently-played': "Not Recently Played",
+  '/never-played': "Never Played",
+  '/shuffle': "Shuffle",
+  '/scan': "Scan",
+}
 
 var LeftNavComponent = React.createClass({
   getInitialState() {
@@ -90,7 +99,7 @@ var LeftNavComponent = React.createClass({
   }
 });
 
-var Master = React.createClass({
+var Master = withRouter(React.createClass({
   mixins: [FluxMixin, StoreWatchMixin("MusicStore")],
 
   muiTheme: getMuiTheme({
@@ -103,10 +112,12 @@ var Master = React.createClass({
       accent3Color: colors.grey500,
     },
     slider: {
-      trackColor: colors.grey500,
-      trackColorSelected: colors.grey300,
-      selectionColor: colors.white,
-      rippleColor: colors.white,
+      trackColor: colors.minBlack,
+      trackColorSelected: colors.faintBlack,
+      selectionColor: colors.lightBlue200,
+      rippleColor: colors.lightBlue200,
+      handleColorZero: colors.faintBlack,
+      handleFillColor: colors.white,
     }
   }),
 
@@ -173,17 +184,18 @@ var Master = React.createClass({
           <VolumeButton />
 
           <AppBarIconButton iconClassName="icon-lastfm"
-              className={musicStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED ? "accent" : ""}
               tooltip={scrobbleTooltip[musicStore.scrobbleState]}
               onClick={this.openLastFm} />
       </div>
     );
 
+    var title = titles[this.props.router.getCurrentLocation().pathname] || 'Now Playing';
+
     return (
       <MuiThemeProvider muiTheme={this.muiTheme}>
         <div>
           <AppBar
-            title="Mike's Music Player" /*{titles[this.getPath()]}*/
+            title={title}
             onLeftIconButtonTouchTap={() => this.refs.leftNav.open()}
             zDepth={1}
             iconElementRight={toolbar}
@@ -204,11 +216,14 @@ var Master = React.createClass({
           <div className='mui-app-content-canvas' style={{position: 'relative', top: 64}}>
             {this.props.children}
           </div>
+
+          <Snackbar open={musicStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED}
+            message='Scrobble failed.' />
         </div>
       </MuiThemeProvider>
     );
   }
-});
+}));
 
 var actions = {
     playAlbum: function(album) {
