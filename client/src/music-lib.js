@@ -5,10 +5,9 @@ var Fluxxor = require('fluxxor');
 var FluxMixin = Fluxxor.FluxMixin(React);
 
 var mui = require('material-ui');
-var {IconButton, Menu, Slider, Snackbar, AppBar} = mui;
+var {IconButton, Menu, Slider, Snackbar, AppBar, Popover} = mui;
 var {muiThemeable} = require('material-ui/styles');
-var getAppBarStyles = require('material-ui/AppBar').getStyles;
-//var {ClickAwayable} = mui.Mixins;
+var {PopoverAnimationVertical} = require('material-ui/Popover');
 
 var DataTable = require('./material-data-table');
 var VerticalSlider = require('./lib/vertical-slider');
@@ -209,16 +208,28 @@ var CurrentTimeSlider = muiThemeable()(React.createClass({
     render: function() {
         var musicStore = this.getFlux().store("MusicStore");
 
-        var timeLabelClassName = "time-label";
         var timeString = "0:00";
         var sliderValue = 0;
         var sliderMax = 1;
         var sliderDisabled = true;
 
+        var timeLabelStyles = {
+            color: this.props.muiTheme.palette.disabledColor,
+            fontWeight: this.props.muiTheme.appBar.titleFontWeight,
+            height: this.props.muiTheme.appBar.height,
+            lineHeight: this.props.muiTheme.appBar.height + 'px',
+            paddingTop: 0,
+            paddingRight: this.props.muiTheme.padding,
+            paddingBottom: 0,
+            paddingLeft: this.props.muiTheme.padding,
+            margin: 0,
+            fontSize: 24
+        };
+
         if(musicStore.playerState !== PlayerState.STOPPED)
         {
             var currentTrackDuration = musicStore.playlist[musicStore.nowPlaying].duration;
-            timeLabelClassName += " playing"
+            timeLabelStyles.color = this.props.muiTheme.appBar.textColor;
 
             if(this.state.dragging)
             {
@@ -241,8 +252,6 @@ var CurrentTimeSlider = muiThemeable()(React.createClass({
             sliderDisabled = false;
         }
 
-        //var timeLabelStyles = getAppBarStyles(this.props, this.context).title;
-
         return (
             <div className="time-wrapper">
                 <Slider
@@ -257,7 +266,7 @@ var CurrentTimeSlider = muiThemeable()(React.createClass({
                     onDragStop={this.onSliderDragStop}
                 />
 
-                <h1 className={timeLabelClassName}>
+                <h1 className={'time-label'} style={timeLabelStyles}>
                     {timeString}
                 </h1>
             </div>
@@ -294,102 +303,90 @@ var CurrentTimeSlider = muiThemeable()(React.createClass({
     }
 }));
 
-var VolumeButton = React.createClass({
-    //mixins: [ClickAwayable],
+var AppBarIconButton = muiThemeable()(React.createClass({
+  render: function() {
+    var color = this.props.disabled ?
+      this.props.muiTheme.palette.disabledColor :
+      this.props.muiTheme.appBar.textColor;
+    var {muiTheme, ...props} = this.props;
+    return (
+      <IconButton
+        style={{marginTop: 8}}
+        iconStyle={{color: color}}
+        {...props} />
+    );
+  }
+}));
 
-    componentClickAway: function() {
-        this.setState({
-            volumeSliderVisible: false
-        });
-    },
+var VolumeButton = React.createClass({
+    mixins: [FluxMixin],
 
     getInitialState: function() {
         return {
             volume: .5,
-            volumeSliderVisible: false
+            volumePopoverVisible: false
         };
     },
 
     render: function() {
-        var className = "volume-slider mui-paper mui-z-depth-2";
-        if(this.state.volumeSliderVisible)
-        {
-            className += " open"
-        }
-
         var iconClassName;
-        if(this.state.volume < .01)
-        {
+        if(this.state.volume < .01) {
             iconClassName = "icon-volume-mute";
         }
-        else if(this.state.volume < .33)
-        {
+        else if(this.state.volume < .33) {
             iconClassName = "icon-volume-low";
         }
-        else if(this.state.volume < .67)
-        {
+        else if(this.state.volume < .67) {
             iconClassName = "icon-volume-medium";
         }
-        else
-        {
+        else {
             iconClassName = "icon-volume-high";
         }
 
         return (
-            <div className="volume-button-wrapper">
-                <IconButton iconClassName={iconClassName} onClick={this.toggleVolumeSlider} />
-                <div className={className}>
-                    <IconButton iconClassName={iconClassName} onClick={this.toggleVolumeSlider} />
-                    <VolumeSlider onVolumeChange={this.onVolumeChange} />
+            <div>
+                <div ref='button'>
+                    <AppBarIconButton
+                        iconClassName={iconClassName}
+                        onClick={this.toggleVolumePopover} />
                 </div>
+
+                <Popover
+                    open={this.state.volumePopoverVisible}
+                    onRequestClose={this.handleRequestClose}
+                    anchorEl={this.refs.button}
+                    animation={PopoverAnimationVertical}
+                    anchorOrigin={{horizontal:"middle", vertical:"bottom"}}
+                    targetOrigin={{horizontal:"middle", vertical:"top"}}
+                    style={{transformOrigin: 'center top'}}
+                    zDepth={2}>
+                    <Slider
+                        style={{height: 100, margin: '24px 12px'}}
+                        axis='y'
+                        value={this.state.volume}
+                        onChange={this.onVolumeChange} />
+                </Popover>
             </div>
         );
     },
 
-    toggleVolumeSlider: function() {
+    toggleVolumePopover: function() {
         this.setState({
-            volumeSliderVisible: !this.state.volumeSliderVisible
+            volumePopoverVisible: !this.state.volumePopoverVisible
         });
     },
 
-    onVolumeChange: function(volume) {
+    handleRequestClose: function() {
         this.setState({
-            volume: volume
+            volumePopoverVisible: false
         });
-    }
-});
-
-var VolumeSlider = React.createClass({
-    mixins: [FluxMixin],
-
-    getDefaultProps: function()
-    {
-        return {
-            name: "bob"
-        };
     },
 
-    render: function()
-    {
-        return (
-            <VerticalSlider
-                name={this.props.name}
-                min={0}
-                max={1}
-                defaultValue={.5}
-                height={200}
-                onChange={this.onSliderChange}
-            />
-        );
-    },
-
-    onSliderChange(event, value)
-    {
-        this.getFlux().actions.setVolume(value);
-        if(this.props.onVolumeChange)
-        {
-            this.props.onVolumeChange(value);
-        }
+    onVolumeChange: function(event, newVolume) {
+        this.getFlux().actions.setVolume(newVolume);
+        this.setState({
+            volume: newVolume
+        });
     }
 });
 
@@ -437,8 +434,8 @@ module.exports = {
     AlbumList: AlbumList,
     Playlist: Playlist,
     CurrentTimeSlider: CurrentTimeSlider,
+    AppBarIconButton: AppBarIconButton,
     VolumeButton: VolumeButton,
-    VolumeSlider: VolumeSlider,
     secondsToTimeString: secondsToTimeString,
     timeStringToSeconds: timeStringToSeconds
 };

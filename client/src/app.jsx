@@ -12,7 +12,7 @@ var FluxProvider = require('./lib/FluxProvider');
 var MusicStore = require('./stores/MusicStore');
 var {
   PlayerState, ScrobbleState, GaplessPlayer, CurrentTimeSlider,
-  secondsToTimeString
+  secondsToTimeString, VolumeButton, AppBarIconButton
 } = require('./music-lib');
 
 var {AppBar, Divider, Drawer, FontIcon, Paper, IconButton, MenuItem} = mui;
@@ -156,23 +156,23 @@ var Master = React.createClass({
 
           <CurrentTimeSlider />
 
-          <IconButton iconClassName="icon-previous"
+          <AppBarIconButton iconClassName="icon-previous"
               disabled={!prevButtonEnabled}
               onClick={this.getFlux().actions.jumpToPreviousTrack} />
-          <IconButton iconClassName={playOrPause}
+          <AppBarIconButton iconClassName={playOrPause}
               disabled={!playButtonEnabled}
               onClick={this.getFlux().actions.playOrPause} />
-          <IconButton iconClassName="icon-stop"
+          <AppBarIconButton iconClassName="icon-stop"
               className={musicStore.willStopAfterCurrent ? "pulsate" : ""}
               disabled={!stopButtonEnabled}
               onClick={this.stopButtonClicked} />
-          <IconButton iconClassName="icon-next"
+          <AppBarIconButton iconClassName="icon-next"
               disabled={!nextButtonEnabled}
               onClick={this.getFlux().actions.jumpToNextTrack} />
 
-          {"volume..."}
+          <VolumeButton />
 
-          <IconButton iconClassName="icon-lastfm"
+          <AppBarIconButton iconClassName="icon-lastfm"
               className={musicStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED ? "accent" : ""}
               tooltip={scrobbleTooltip[musicStore.scrobbleState]}
               onClick={this.openLastFm} />
@@ -183,7 +183,6 @@ var Master = React.createClass({
       <MuiThemeProvider muiTheme={this.muiTheme}>
         <div>
           <AppBar
-            className="mui-dark-theme"
             title="Mike's Music Player" /*{titles[this.getPath()]}*/
             onLeftIconButtonTouchTap={() => this.refs.leftNav.open()}
             zDepth={1}
@@ -195,11 +194,14 @@ var Master = React.createClass({
             titleStyle={{
               flex: 'none'
             }}
+            style={{
+              position: 'fixed'
+            }}
           />
 
           <LeftNavComponent ref='leftNav' />
 
-          <div className='mui-app-content-canvas'>
+          <div className='mui-app-content-canvas' style={{position: 'relative', top: 64}}>
             {this.props.children}
           </div>
         </div>
