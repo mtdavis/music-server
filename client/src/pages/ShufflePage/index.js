@@ -15,7 +15,7 @@ var ShuffleButton = React.createClass({
         primary={true}
         onClick={this.onClick} 
         label={this.props.minutes + ' Minutes'}
-        icon={<FontIcon className="icon-shuffle"/>} />
+        icon={<FontIcon className="icon-shuffle" style={{top:'-1.5px'}}/>} />
     );
   },
 
