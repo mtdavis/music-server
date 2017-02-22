@@ -296,6 +296,7 @@ var CurrentTimeSlider = muiThemeable()(React.createClass({
 
     onSliderDragStop()
     {
+        this.getFlux().actions.seekToPosition(this.state.draggingValue);
         this.setState({
             dragging: false,
             draggingValue: 0
