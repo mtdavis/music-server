@@ -9,21 +9,21 @@ var FluxMixin = Fluxxor.FluxMixin(React);
 var StoreWatchMixin = Fluxxor.StoreWatchMixin;
 var FluxProvider = require('./lib/FluxProvider');
 
-var MusicStore = require('./stores/MusicStore');
+var MusicStore = require('./stores/MusicStore.js');
 var {
   PlayerState, ScrobbleState, GaplessPlayer, CurrentTimeSlider,
   secondsToTimeString, VolumeButton, AppBarIconButton
-} = require('./music-lib');
+} = require('./lib/music-lib');
 
 var {AppBar, Divider, Drawer, FontIcon, Paper, IconButton, MenuItem, Snackbar} = mui;
 var {colors, getMuiTheme, MuiThemeProvider} = require('material-ui/styles');
 
-var HomePage = require('./pages/HomePage');
-var AlbumsPage = require('./pages/AlbumsPage');
-var NotRecentlyPlayedPage = require('./pages/NotRecentlyPlayedPage');
-var NeverPlayedPage = require('./pages/NeverPlayedPage');
-var ShufflePage = require('./pages/ShufflePage');
-var ScanPage = require('./pages/ScanPage');
+var HomePage = require('./pages/HomePage.js');
+var AlbumsPage = require('./pages/AlbumsPage.js');
+var NotRecentlyPlayedPage = require('./pages/NotRecentlyPlayedPage.js');
+var NeverPlayedPage = require('./pages/NeverPlayedPage.js');
+var ShufflePage = require('./pages/ShufflePage.js');
+var ScanPage = require('./pages/ScanPage.js');
 
 injectTapEventPlugin();
 

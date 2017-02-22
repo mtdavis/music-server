@@ -9,8 +9,7 @@ var {IconButton, Menu, Slider, Snackbar, AppBar, Popover} = mui;
 var {muiThemeable} = require('material-ui/styles');
 var {PopoverAnimationVertical} = require('material-ui/Popover');
 
-var DataTable = require('./material-data-table');
-var VerticalSlider = require('./lib/vertical-slider');
+var DataTable = require('./table/material-data-table');
 
 var PlayerState = {
     STOPPED: "STOPPED",

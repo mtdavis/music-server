@@ -1,6 +1,6 @@
 var Fluxxor = require('fluxxor');
 var weighted = require('weighted');
-var {PlayerState, ScrobbleState, timeStringToSeconds} = require('../../music-lib');
+var {PlayerState, ScrobbleState, timeStringToSeconds} = require('../lib/music-lib');
 
 module.exports = Fluxxor.createStore({
 
