@@ -9,7 +9,7 @@ jsep.addBinaryOp("~=", 6);
 
 var MTableRowColumn = React.createClass({
     render: function() {
-        var {value, renderer, textAlign, wrap, style, ...props} = this.props;
+        var {value, renderer, textAlign, wrap, style, mOnClick, ...props} = this.props;
 
         if(!renderer) {
             renderer = (x) => x;
@@ -24,9 +24,7 @@ var MTableRowColumn = React.createClass({
         }
 
         var content;
-        style.textAlign = textAlign;
-        style.whiteSpace = wrap ? 'normal' : 'nowrap';
-        style.padding = '0 12px';
+        style.padding = 0;
 
         if(renderer === "icon")
         {
@@ -42,9 +40,20 @@ var MTableRowColumn = React.createClass({
             content = "-";
         }
 
+        var divStyle = {
+            padding: '0 12px',
+            display: 'flex',
+            alignItems: 'center',
+            height: '100%',
+            justifyContent: textAlign==='right' ? 'flex-end' : 'flex-start',
+            whiteSpace: wrap ? 'normal' : 'nowrap'
+        };
+
         return (
             <TableRowColumn {...props} style={style}>
-                {content}
+                <div onClick={mOnClick} style={divStyle}>
+                    {content}
+                </div>
             </TableRowColumn>
         );
     }
@@ -58,12 +67,13 @@ var MTableRow = React.createClass({
     },
 
     render: function() {
-        var {columns, rowData, cursor, style, ...props} = this.props;
+        var {columns, rowData, cursor, style, mOnClick, ...props} = this.props;
 
         var cells = columns.map(column =>
             <MTableRowColumn
                 key={column.key}
                 value={rowData[column.key]}
+                mOnClick={this.mOnClick}
                 renderer={column.renderer}
                 textAlign={column.textAlign}
                 wrap={column.wrap} />
@@ -77,6 +87,10 @@ var MTableRow = React.createClass({
                 {cells}
             </TableRow>
         )
+    },
+
+    mOnClick: function(event) {
+        this.props.mOnClick(event, this.props.rowData);
     }
 });
 
@@ -282,6 +296,7 @@ module.exports = React.createClass({
                 key={rowData.id}
                 rowData={rowData}
                 columns={this.props.columns}
+                mOnClick={this.mOnClick}
                 cursor={this.props.onRowClick ? 'pointer' : 'auto'}
             />
         );
@@ -347,9 +362,7 @@ module.exports = React.createClass({
         );
     },
 
-    onCellClick: function(rowNumber, colNumber, event) {
-        var rowData = this.state.sortedFilteredRows[rowNumber];
-
+    mOnClick: function(event, rowData) {
         if((event.ctrlKey || event.metaKey) && this.props.onRowCtrlClick) {
             event.preventDefault();
             this.props.onRowCtrlClick(rowData);
