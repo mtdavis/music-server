@@ -1,8 +1,8 @@
-var React = require('react');
-var {
+import React from 'react';
+import {
     FontIcon,
     TableRowColumn
-} = require('material-ui');
+} from 'material-ui';
 
 export default class MTableRowColumn extends React.Component {
     constructor(props) {

@@ -1,8 +1,16 @@
-var React = require('react');
-var mui = require('material-ui');
-var {Paper, TextField, FontIcon, Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn} = mui;
-var jsep = require('jsep');
-var deepEqual = require('deep-equal');
+import React from 'react';
+import {
+    Paper,
+    Table,
+    TableBody,
+    TableHeader,
+    TableHeaderColumn,
+    TableRow,
+    TableRowColumn,
+    TextField,
+} from 'material-ui';
+import jsep from 'jsep';
+import deepEqual from 'deep-equal';
 import MTableRow from './MTableRow.js';
 
 jsep.addBinaryOp(":", 10);

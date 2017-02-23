@@ -1,14 +1,12 @@
-var React = require('react');
-var {render} = require('react-dom')
-var {Router, Route, hashHistory, IndexRoute, withRouter} = require('react-router');
-var mui = require('material-ui');
-var injectTapEventPlugin = require("react-tap-event-plugin");
+import React from 'react';
+import {render} from 'react-dom';
+import {Router, Route, hashHistory, IndexRoute, withRouter} from 'react-router';
+import injectTapEventPlugin from "react-tap-event-plugin";
 
-var Fluxxor = require('fluxxor');
-var StoreWatchMixin = Fluxxor.StoreWatchMixin;
-var FluxProvider = require('./lib/FluxProvider');
+import Fluxxor, {StoreWatchMixin} from 'fluxxor';
+import FluxProvider from './lib/FluxProvider';
 
-var MusicStore = require('./stores/MusicStore.js');
+import MusicStore from './stores/MusicStore';
 import GaplessPlayer from './lib/GaplessPlayer';
 import CurrentTimeSlider from './lib/CurrentTimeSlider';
 import AppBarIconButton from './lib/AppBarIconButton';
@@ -18,15 +16,15 @@ import ScrobbleState from './lib/ScrobbleState';
 import {secondsToTimeString, FluxMixin} from './lib/util';
 import LinkMenuItem from './lib/LinkMenuItem';
 
-var {AppBar, Divider, Drawer, Snackbar} = mui;
-var {colors, getMuiTheme, MuiThemeProvider} = require('material-ui/styles');
+import {AppBar, Divider, Drawer, Snackbar} from 'material-ui';
+import {colors, getMuiTheme, MuiThemeProvider} from 'material-ui/styles';
 
-var HomePage = require('./pages/HomePage.js');
-var AlbumsPage = require('./pages/AlbumsPage.js');
-var NotRecentlyPlayedPage = require('./pages/NotRecentlyPlayedPage.js');
-var NeverPlayedPage = require('./pages/NeverPlayedPage.js');
-var ShufflePage = require('./pages/ShufflePage.js');
-var ScanPage = require('./pages/ScanPage.js');
+import HomePage from './pages/HomePage';
+import AlbumsPage from './pages/AlbumsPage';
+import NotRecentlyPlayedPage from './pages/NotRecentlyPlayedPage';
+import NeverPlayedPage from './pages/NeverPlayedPage';
+import ShufflePage from './pages/ShufflePage';
+import ScanPage from './pages/ScanPage';
 
 injectTapEventPlugin();
 

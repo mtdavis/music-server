@@ -1,5 +1,5 @@
-var Fluxxor = require('Fluxxor');
-var React = require('react');
+import Fluxxor from 'Fluxxor';
+import React from 'react';
 
 export const FluxMixin = Fluxxor.FluxMixin(React);
 

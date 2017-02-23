@@ -1,5 +1,5 @@
-var Fluxxor = require('fluxxor');
-var weighted = require('weighted');
+import Fluxxor from 'fluxxor';
+import weighted from 'weighted';
 import PlayerState from '../lib/PlayerState';
 import ScrobbleState from '../lib/ScrobbleState';
 import {timeStringToSeconds} from '../lib/util';

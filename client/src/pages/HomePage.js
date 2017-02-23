@@ -1,12 +1,10 @@
-var React = require('react');
-
-var Fluxxor = require('fluxxor');
-var FluxMixin = Fluxxor.FluxMixin(React);
-
+import React from 'react';
 import Playlist from '../lib/Playlist';
-
-var mui = require("material-ui");
-var {Paper, Menu} = mui;
+import {FluxMixin} from '../lib/util';
+import {
+  Menu,
+  Paper,
+} from 'material-ui';
 
 var AlbumArt = React.createClass({
   render: function() {

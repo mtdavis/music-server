@@ -1,6 +1,9 @@
 import React from 'react';
 import {FluxMixin} from './util';
-import {Popover, Slider} from 'material-ui';
+import {
+    Popover,
+    Slider
+} from 'material-ui';
 import {PopoverAnimationVertical} from 'material-ui/Popover';
 import AppBarIconButton from './AppBarIconButton';
 

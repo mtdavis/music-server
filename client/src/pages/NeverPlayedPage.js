@@ -1,9 +1,6 @@
-var React = require('react');
-
-var Fluxxor = require('fluxxor');
-var FluxMixin = Fluxxor.FluxMixin(React);
-
+import React from 'react';
 import AlbumList from '../lib/AlbumList';
+import {FluxMixin} from '../lib/util';
 
 module.exports = React.createClass({
   mixins: [FluxMixin],

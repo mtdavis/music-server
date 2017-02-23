@@ -1,9 +1,9 @@
-var React = require('react');
+import React from 'react';
 import {Snackbar} from 'material-ui';
 import {
+    FluxMixin,
     secondsToTimeString,
     unixTimestampToDateString,
-    FluxMixin
 } from './util';
 import MTable from './table/MTable';
 

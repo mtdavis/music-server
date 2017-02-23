@@ -1,8 +1,8 @@
-var React = require('react');
-var {
+import React from 'react';
+import {
     TableRow
-} = require('material-ui');
-var deepEqual = require('deep-equal');
+} from 'material-ui';
+import deepEqual from 'deep-equal';
 import MTableRowColumn from './MTableRowColumn';
 
 export default class MTableRow extends React.Component {

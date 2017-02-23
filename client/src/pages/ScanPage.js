@@ -1,10 +1,10 @@
-var React = require("react");
-
-var Fluxxor = require('fluxxor');
-var FluxMixin = Fluxxor.FluxMixin(React);
-
-var mui = require("material-ui");
-var {RaisedButton, FontIcon} = mui;
+import React from 'react';
+import AlbumList from '../lib/AlbumList';
+import {FluxMixin} from '../lib/util';
+import {
+  FontIcon,
+  RaisedButton
+} from 'material-ui';
 
 module.exports = React.createClass({
   mixins: [FluxMixin],
