@@ -10,8 +10,8 @@ import {
 } from 'material-ui';
 import deepEqual from 'deep-equal';
 import MTableRow from './MTableRow.js';
-// import Perf from 'react-addons-perf';
-// window.Perf = Perf;
+import Perf from 'react-addons-perf';
+window.Perf = Perf;
 
 function renderTableHeader({columns, setSortColumnKey}) {
     var cells = columns.map(column =>
@@ -82,7 +82,6 @@ module.exports = React.createClass({
             rows: [],
             onRowClick: null,
             onRowCtrlClick: null,
-            rowFilterFunction: (rowData, columns) => true,
             showHeader: true,
             initialSortColumnKey: null,
             initialSortOrder: 1
@@ -90,37 +89,18 @@ module.exports = React.createClass({
     },
 
     getInitialState() {
-        var sortedFilteredRows = this.getSortedFilteredRows({
-            rows: this.props.rows,
-            sortColumnKey: this.props.initialSortColumnKey,
-            sortOrder: this.props.initialSortOrder
-        });
-
         return {
             sortColumnKey: this.props.initialSortColumnKey,
             sortOrder: this.props.initialSortOrder,
-            sortedFilteredRows: sortedFilteredRows
         };
     },
 
-    componentWillReceiveProps(nextProps) {
-        if(!deepEqual(this.props.rows, nextProps.rows)) {
-            var sortedFilteredRows = this.getSortedFilteredRows({
-                rows: nextProps.rows,
-                sortColumnKey: this.state.sortColumnKey,
-                sortOrder: this.state.sortOrder
-            });
-
-            this.setState({sortedFilteredRows});
-        }
-    },
-
-    shouldComponentUpdate(nextProps, nextState) {
-        return !deepEqual(this.state.sortedFilteredRows, nextState.sortedFilteredRows);
-    },
-
     render() {
-        var rowNodes = this.state.sortedFilteredRows.map(rowData =>
+        var sortedRows = this.props.rows.slice();
+        sortedRows.sort(getRowComparator(
+            this.state.sortColumnKey, this.state.sortOrder));
+
+        var rowNodes = sortedRows.map(rowData =>
             <MTableRow
                 key={rowData.id}
                 rowData={rowData}
@@ -179,18 +159,6 @@ module.exports = React.createClass({
         }
     },
 
-    onFilterChange() {
-        var sortedFilteredRows = this.getSortedFilteredRows({
-            rows: this.props.rows,
-            sortColumnKey: this.state.sortColumnKey,
-            sortOrder: this.state.sortOrder
-        });
-
-        this.setState({
-            sortedFilteredRows
-        });
-    },
-
     setSortColumnKey(newSortColumnKey) {
         var newSortOrder;
 
@@ -203,34 +171,9 @@ module.exports = React.createClass({
             newSortOrder = 1;
         }
 
-        var sortedFilteredRows = this.getSortedFilteredRows({
-            rows: this.props.rows,
-            sortColumnKey: newSortColumnKey,
-            sortOrder: newSortOrder
-        });
-
         this.setState({
             sortColumnKey: newSortColumnKey,
             sortOrder: newSortOrder,
-            sortedFilteredRows: sortedFilteredRows
         });
     },
-
-    getSortedFilteredRows({rows, sortColumnKey, sortOrder}) {
-        var filteredRows = [];
-
-        for(var i = 0; i < rows.length; i++) {
-            var rowData = rows[i];
-
-            if(this.props.rowFilterFunction(rowData, this.props.columns)) {
-                filteredRows.push(rowData);
-            }
-        }
-
-        if(sortColumnKey !== null) {
-            filteredRows.sort(getRowComparator(sortColumnKey, sortOrder));
-        }
-
-        return filteredRows;
-    }
 });

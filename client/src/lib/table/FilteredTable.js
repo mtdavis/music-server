@@ -80,32 +80,68 @@ function evaluateFilterExpression(rowData, astNode, columns)
     }
 }
 
+function rowPassesFilter(rowData, filterText, columns) {
+    var result;
+
+    if(filterText === "") {
+        result = true;
+    }
+    else if(filterText[0] === "?") {
+        var astNode = jsep(filterText.substring(1));
+        result = evaluateFilterExpression(rowData, astNode, columns);
+    }
+    else {
+        result = rowContainsText(rowData, filterText, columns);
+    }
+
+    return result;
+}
+
 export default class FilteredTable extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             filterText: '',
-            filterTextValid: true,
         };
     }
 
     render() {
+        var filteredRows = [];
+        var filterTextValid = true;
+
+        try {
+            for(var i = 0; i < this.props.rows.length; i++) {
+                var rowData = this.props.rows[i];
+
+                if(rowPassesFilter(rowData, this.state.filterText, this.props.columns)) {
+                    filteredRows.push(rowData);
+                }
+            }
+        }
+        catch(ex) {
+            filterTextValid = false;
+        }
+
         var table = React.cloneElement(this.props.table, {
-            rowFilterFunction: this.rowPassesFilter.bind(this),
-            ref: 'table'
+            rows: filteredRows,
+            columns: this.props.columns
         });
+
+        var filterField = (
+            <div className="table-filter">
+                <TextField
+                    hintText="Filter..."
+                    errorText={filterTextValid ? "" : "Error!"}
+                    errorStyle={{display: 'none'}}
+                    onChange={this.onFilterChange.bind(this)}
+                    onKeyUp={this.onFilterChange.bind(this)} />
+            </div>
+        );
 
         return (
             <div>
                 <Paper>
-                    <div className="table-filter">
-                        <TextField
-                            hintText="Filter..."
-                            errorText={this.state.filterTextValid ? "" : "Error!"}
-                            errorStyle={{display: 'none'}}
-                            onChange={this.onFilterChange.bind(this)}
-                            onKeyUp={this.onFilterChange.bind(this)} />
-                    </div>
+                    {filterField}
                 </Paper>
 
                 <Paper>
@@ -116,46 +152,8 @@ export default class FilteredTable extends React.Component {
     }
 
     onFilterChange(event) {
-        var filterText = event.target.value;
-        var filterTextValid = true;
-
-        if(filterText[0] === "?") {
-            // test parsing the expression
-            try {
-                jsep(filterText.substring(1));
-            }
-            catch(ex) {
-                filterTextValid = false;
-            }
-        }
-
         this.setState({
-            filterText,
-            filterTextValid
+            filterText: event.target.value
         });
-
-        this.refs.table.onFilterChange();
-    }
-
-    rowPassesFilter(rowData, columns) {
-        var filterText = this.state.filterText;
-        var result;
-        var filterTextValid = true;
-
-        if(filterText === "") {
-            result = true;
-        }
-        else if(filterText[0] === "?" && this.state.filterTextValid) {
-            var astNode = jsep(filterText.substring(1));
-            result = evaluateFilterExpression(rowData, astNode, columns);
-        }
-        else if(filterText[0] === "?" && !this.state.filterTextValid) {
-            result = false;
-        }
-        else {
-            result = rowContainsText(rowData, filterText, columns);
-        }
-
-        return result;
     }
 }

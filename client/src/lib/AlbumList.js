@@ -36,19 +36,15 @@ const AlbumList = React.createClass({
 
         var table = (
             <MTable
-                ref='table'
                 {...this.props}
-                rows={this.props.albums}
-                columns={columns}
                 onRowClick={this.onAlbumClick}
                 onRowCtrlClick={this.onAlbumCtrlClick}
-                condensed={true}
             />
         );
 
         return (
             <div>
-                <FilteredTable table={table} />
+                <FilteredTable table={table} rows={this.props.albums} columns={columns}/>
 
                 <Snackbar
                     message="Album enqueued."
