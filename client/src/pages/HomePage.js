@@ -3,7 +3,7 @@ var React = require('react');
 var Fluxxor = require('fluxxor');
 var FluxMixin = Fluxxor.FluxMixin(React);
 
-var {Playlist} = require('../lib/music-lib');
+import Playlist from '../lib/Playlist';
 
 var mui = require("material-ui");
 var {Paper, Menu} = mui;

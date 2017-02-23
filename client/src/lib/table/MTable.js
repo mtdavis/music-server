@@ -3,96 +3,10 @@ var mui = require('material-ui');
 var {Paper, TextField, FontIcon, Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn} = mui;
 var jsep = require('jsep');
 var deepEqual = require('deep-equal');
+import MTableRow from './MTableRow.js';
 
 jsep.addBinaryOp(":", 10);
 jsep.addBinaryOp("~=", 6);
-
-var MTableRowColumn = React.createClass({
-    render: function() {
-        var {value, renderer, textAlign, wrap, style, mOnClick, ...props} = this.props;
-
-        if(!renderer) {
-            renderer = (x) => x;
-        }
-
-        if(!textAlign) {
-            textAlign = 'left';
-        }
-
-        if(wrap === undefined) {
-            wrap = true;
-        }
-
-        var content;
-        style.padding = 0;
-
-        if(renderer === "icon")
-        {
-            content = <FontIcon className={value} />;
-            style.width = "48px";
-        }
-        else if(value !== null && value !== undefined)
-        {
-            content = renderer(value);
-        }
-        else
-        {
-            content = "-";
-        }
-
-        var divStyle = {
-            padding: '0 12px',
-            display: 'flex',
-            alignItems: 'center',
-            height: '100%',
-            justifyContent: textAlign==='right' ? 'flex-end' : 'flex-start',
-            whiteSpace: wrap ? 'normal' : 'nowrap'
-        };
-
-        return (
-            <TableRowColumn {...props} style={style}>
-                <div onClick={mOnClick} style={divStyle}>
-                    {content}
-                </div>
-            </TableRowColumn>
-        );
-    }
-});
-
-var MTableRow = React.createClass({
-    shouldComponentUpdate: function(nextProps, nextState) {
-        return !deepEqual(this.props.columns, nextProps.columns) ||
-            !deepEqual(this.props.rowData, nextProps.rowData) ||
-            !deepEqual(this.props.displayBorder, nextProps.displayBorder);
-    },
-
-    render: function() {
-        var {columns, rowData, cursor, style, mOnClick, ...props} = this.props;
-
-        var cells = columns.map(column =>
-            <MTableRowColumn
-                key={column.key}
-                value={rowData[column.key]}
-                mOnClick={this.mOnClick}
-                renderer={column.renderer}
-                textAlign={column.textAlign}
-                wrap={column.wrap} />
-        );
-
-        style = style || {};
-        style.cursor = cursor;
-
-        return (
-            <TableRow {...props} style={style}>
-                {cells}
-            </TableRow>
-        )
-    },
-
-    mOnClick: function(event) {
-        this.props.mOnClick(event, this.props.rowData);
-    }
-});
 
 function renderTableHeader({columns, setSortColumnKey}) {
     var cells = columns.map(column =>
@@ -320,7 +234,6 @@ module.exports = React.createClass({
         {
             table = (
                 <Table
-                    onCellClick={this.onCellClick}
                     fixedHeader={false}
                     selectable={false}
                     style={{tableLayout:'auto'}}>

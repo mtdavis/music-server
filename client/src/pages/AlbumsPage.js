@@ -3,7 +3,7 @@ var React = require('react');
 var Fluxxor = require('fluxxor');
 var FluxMixin = Fluxxor.FluxMixin(React);
 
-var {AlbumList} = require('../lib/music-lib');
+import AlbumList from '../lib/AlbumList';
 
 module.exports = React.createClass({
   mixins: [FluxMixin],

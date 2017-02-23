@@ -1,21 +1,24 @@
 var React = require('react');
 var {render} = require('react-dom')
-var {Router, Route, hashHistory, Link, IndexRoute, withRouter} = require('react-router');
+var {Router, Route, hashHistory, IndexRoute, withRouter} = require('react-router');
 var mui = require('material-ui');
 var injectTapEventPlugin = require("react-tap-event-plugin");
 
 var Fluxxor = require('fluxxor');
-var FluxMixin = Fluxxor.FluxMixin(React);
 var StoreWatchMixin = Fluxxor.StoreWatchMixin;
 var FluxProvider = require('./lib/FluxProvider');
 
 var MusicStore = require('./stores/MusicStore.js');
-var {
-  PlayerState, ScrobbleState, GaplessPlayer, CurrentTimeSlider,
-  secondsToTimeString, VolumeButton, AppBarIconButton
-} = require('./lib/music-lib');
+import GaplessPlayer from './lib/GaplessPlayer';
+import CurrentTimeSlider from './lib/CurrentTimeSlider';
+import AppBarIconButton from './lib/AppBarIconButton';
+import VolumeButton from './lib/VolumeButton';
+import PlayerState from './lib/PlayerState';
+import ScrobbleState from './lib/ScrobbleState';
+import {secondsToTimeString, FluxMixin} from './lib/util';
+import LinkMenuItem from './lib/LinkMenuItem';
 
-var {AppBar, Divider, Drawer, FontIcon, Paper, IconButton, MenuItem, Snackbar} = mui;
+var {AppBar, Divider, Drawer, Snackbar} = mui;
 var {colors, getMuiTheme, MuiThemeProvider} = require('material-ui/styles');
 
 var HomePage = require('./pages/HomePage.js');
@@ -26,27 +29,6 @@ var ShufflePage = require('./pages/ShufflePage.js');
 var ScanPage = require('./pages/ScanPage.js');
 
 injectTapEventPlugin();
-
-var LinkMenuItem = React.createClass({
-  render: function() {
-    let icon = <FontIcon className={this.props.iconClassName} />;
-
-    return (
-      <MenuItem innerDivStyle={{padding: 0}} leftIcon={icon}>
-        <Link to={this.props.to} onClick={this.props.onClick} style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          padding: '0px 16px 0px 56px',
-          textDecoration: 'none',
-          color: 'inherit'
-        }}>
-          {this.props.children}
-        </Link>
-      </MenuItem>
-    )
-  }
-});
 
 var titles = {
   '/': "Now Playing",
