@@ -1,5 +1,5 @@
-var React = require('react');
-
+import React from 'react';
+import {Paper} from 'material-ui';
 import MTable from './table/MTable';
 import PlayerState from './PlayerState';
 import {
@@ -66,16 +66,18 @@ const Playlist = React.createClass({
         ];
 
         return (
-            <MTable
-                rows={playlistItems}
-                showHeader={false}
-                showFilter={false}
-                responsive={false}
-                condensed={true}
-                columns={columns}
-                onRowClick={this.onTrackClick}
-                placeholderText={"The playlist is empty!"}
-            />
+            <Paper>
+                <MTable
+                    rows={playlistItems}
+                    showHeader={false}
+                    showFilter={false}
+                    responsive={false}
+                    condensed={true}
+                    columns={columns}
+                    onRowClick={this.onTrackClick}
+                    placeholderText={"The playlist is empty!"}
+                />
+            </Paper>
         );
     },
 
