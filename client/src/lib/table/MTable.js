@@ -10,35 +10,9 @@ import {
 } from 'material-ui';
 import deepEqual from 'deep-equal';
 import MTableRow from './MTableRow.js';
+import MTableHeader from './MTableHeader.js';
 import Perf from 'react-addons-perf';
 window.Perf = Perf;
-
-function renderTableHeader({columns, setSortColumnKey}) {
-    var cells = columns.map(column =>
-        <TableHeaderColumn key={column.key} style={{
-                padding: 0
-            }}>
-            <div onClick={() => setSortColumnKey(column.key)} style={{
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0 12px',
-                    cursor: 'pointer',
-                    justifyContent: column.textAlign==='right' ? 'flex-end' : 'flex-start',
-                }}>
-                {column.header}
-            </div>
-        </TableHeaderColumn>
-    );
-
-    return (
-        <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
-            <TableRow>
-                {cells}
-            </TableRow>
-        </TableHeader>
-    );
-}
 
 function getRowComparator(sortColumnKey, sortOrder) {
     return function(rowA, rowB) {
@@ -133,11 +107,12 @@ module.exports = React.createClass({
                     selectable={false}
                     style={{tableLayout:'auto'}}>
 
-                    {this.props.showHeader &&
-                        renderTableHeader({
-                            columns: this.props.columns,
-                            setSortColumnKey: this.setSortColumnKey
-                        })
+                    {
+                        this.props.showHeader &&
+                        <MTableHeader
+                            columns={this.props.columns}
+                            setSortColumnKey={this.setSortColumnKey}
+                        />
                     }
                     <TableBody showRowHover={true} displayRowCheckbox={false}>
                         {rowNodes}
