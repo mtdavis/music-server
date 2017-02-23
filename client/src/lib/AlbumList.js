@@ -6,6 +6,7 @@ import {
     unixTimestampToDateString,
 } from './util';
 import MTable from './table/MTable';
+import FilteredTable from './table/FilteredTable';
 
 const AlbumList = React.createClass({
     mixins: [FluxMixin],
@@ -33,16 +34,21 @@ const AlbumList = React.createClass({
             {key:"last_play", header:"Last Play", renderer:unixTimestampToDateString, textAlign:"right", wrap:false}
         ];
 
+        var table = (
+            <MTable
+                ref='table'
+                {...this.props}
+                rows={this.props.albums}
+                columns={columns}
+                onRowClick={this.onAlbumClick}
+                onRowCtrlClick={this.onAlbumCtrlClick}
+                condensed={true}
+            />
+        );
+
         return (
             <div>
-                <MTable
-                    {...this.props}
-                    rows={this.props.albums}
-                    columns={columns}
-                    onRowClick={this.onAlbumClick}
-                    onRowCtrlClick={this.onAlbumCtrlClick}
-                    condensed={true}
-                />
+                <FilteredTable table={table} />
 
                 <Snackbar
                     message="Album enqueued."

@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-    Paper,
     Table,
     TableBody,
     TableHeader,
@@ -9,12 +8,10 @@ import {
     TableRowColumn,
     TextField,
 } from 'material-ui';
-import jsep from 'jsep';
 import deepEqual from 'deep-equal';
 import MTableRow from './MTableRow.js';
-
-jsep.addBinaryOp(":", 10);
-jsep.addBinaryOp("~=", 6);
+// import Perf from 'react-addons-perf';
+// window.Perf = Perf;
 
 function renderTableHeader({columns, setSortColumnKey}) {
     var cells = columns.map(column =>
@@ -41,95 +38,6 @@ function renderTableHeader({columns, setSortColumnKey}) {
             </TableRow>
         </TableHeader>
     );
-}
-
-function rowContainsText(rowData, text, columns)
-{
-    text = text.toLowerCase();
-
-    for(var i = 0; i < columns.length; i++)
-    {
-        var column = columns[i];
-        var cellValue = rowData[column.key];
-
-        if(column.renderer)
-        {
-            if(column.renderer(cellValue).toLowerCase().indexOf(text) > -1)
-            {
-                return true;
-            }
-        }
-        else if(cellValue !== null && cellValue.toString().toLowerCase().indexOf(text) > -1)
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-var binops =
-{
-    "+" : function(a, b) { return a + b; },
-    "-" : function(a, b) { return a - b; },
-    "*" : function(a, b) { return a * b; },
-    "/" : function(a, b) { return a / b; },
-    ":" : function(a, b) { return a * 60 + b; },
-    "<" : function(a, b) { return a < b; },
-    "<=" : function(a, b) { return a <= b; },
-    "==" : function(a, b) { return a == b; },
-    ">=" : function(a, b) { return a >= b; },
-    ">" : function(a, b) { return a > b; },
-    "!=" : function(a, b) { return a != b; },
-    "~=" : function(a, b) { return a.toString().toLowerCase().indexOf(b.toString().toLowerCase()) > -1; },
-    "&&" : function(a, b) { return a && b; },
-    "||" : function(a, b) { return a || b; },
-};
-
-var unops = {
-    "-" : function(a) { return -a; },
-    "+" : function(a) { return +a; }
-};
-
-function evaluateFilterExpression(rowData, astNode, columns)
-{
-    if(astNode.type === "BinaryExpression" ||
-        astNode.type === "LogicalExpression")
-    {
-        return binops[astNode.operator](
-            evaluateFilterExpression(rowData, astNode.left, columns),
-            evaluateFilterExpression(rowData, astNode.right, columns));
-    }
-    else if(astNode.type === "UnaryExpression")
-    {
-        return unops[astNode.operator](
-            evaluateFilterExpression(rowData, astNode.argument, columns));
-    }
-    else if(astNode.type === "Literal")
-    {
-        return astNode.value;
-    }
-    else if(astNode.type === "Identifier")
-    {
-        return rowData[astNode.name];
-    }
-}
-
-function rowPassesFilter(rowData, filterText, columns)
-{
-    if(filterText === "")
-    {
-        return true;
-    }
-    else if(filterText[0] === "?")
-    {
-        var astNode = jsep(filterText.substring(1));
-        return evaluateFilterExpression(rowData, astNode, columns);
-    }
-    else
-    {
-        return rowContainsText(rowData, filterText, columns);
-    }
 }
 
 function getRowComparator(sortColumnKey, sortOrder) {
@@ -167,44 +75,43 @@ function getRowComparator(sortColumnKey, sortOrder) {
 }
 
 module.exports = React.createClass({
-    getDefaultProps: function() {
+    getDefaultProps() {
         return {
-            placeholderText:"Nothing to see here!",
+            placeholderText: "Nothing to see here!",
             columns: [],
             rows: [],
             onRowClick: null,
             onRowCtrlClick: null,
+            rowFilterFunction: (rowData, columns) => true,
             showHeader: true,
-            showFilter: true,
-            condensed: false,
             initialSortColumnKey: null,
             initialSortOrder: 1
         };
     },
 
-    getInitialState: function() {
-        var sortedRows = this.props.rows.slice();
-
-        if(this.props.initialSortColumnKey !== null)
-        {
-            sortedRows.sort(getRowComparator(
-                this.props.initialSortColumnKey, this.props.initialSortOrder));
-        }
-
-        // no filter initially.
-
-        return {
-            sortedFilteredRows: sortedRows,
-            filterText: "",
-            filterTextValid: true,
+    getInitialState() {
+        var sortedFilteredRows = this.getSortedFilteredRows({
+            rows: this.props.rows,
             sortColumnKey: this.props.initialSortColumnKey,
             sortOrder: this.props.initialSortOrder
+        });
+
+        return {
+            sortColumnKey: this.props.initialSortColumnKey,
+            sortOrder: this.props.initialSortOrder,
+            sortedFilteredRows: sortedFilteredRows
         };
     },
 
     componentWillReceiveProps(nextProps) {
         if(!deepEqual(this.props.rows, nextProps.rows)) {
-            this.resortAndFilterRows(nextProps.rows);
+            var sortedFilteredRows = this.getSortedFilteredRows({
+                rows: nextProps.rows,
+                sortColumnKey: this.state.sortColumnKey,
+                sortOrder: this.state.sortOrder
+            });
+
+            this.setState({sortedFilteredRows});
         }
     },
 
@@ -212,7 +119,7 @@ module.exports = React.createClass({
         return !deepEqual(this.state.sortedFilteredRows, nextState.sortedFilteredRows);
     },
 
-    render: function() {
+    render() {
         var rowNodes = this.state.sortedFilteredRows.map(rowData =>
             <MTableRow
                 key={rowData.id}
@@ -259,31 +166,10 @@ module.exports = React.createClass({
             );
         }
 
-        var filter = (
-            <div className="table-filter">
-                <TextField
-                    hintText="Filter..."
-                    errorText={this.state.filterTextValid ? "" : "Error!"}
-                    errorStyle={{display: 'none'}}
-                    onChange={this.onFilterChange}
-                    onKeyUp={this.onFilterChange} />
-            </div>
-        );
-
-        return (
-            <div>
-                <Paper>
-                    {this.props.showFilter && filter}
-                </Paper>
-
-                <Paper>
-                    {table}
-                </Paper>
-            </div>
-        );
+        return table;
     },
 
-    mOnClick: function(event, rowData) {
+    mOnClick(event, rowData) {
         if((event.ctrlKey || event.metaKey) && this.props.onRowCtrlClick) {
             event.preventDefault();
             this.props.onRowCtrlClick(rowData);
@@ -293,60 +179,58 @@ module.exports = React.createClass({
         }
     },
 
-    onFilterChange: function(event) {
+    onFilterChange() {
+        var sortedFilteredRows = this.getSortedFilteredRows({
+            rows: this.props.rows,
+            sortColumnKey: this.state.sortColumnKey,
+            sortOrder: this.state.sortOrder
+        });
+
         this.setState({
-            filterText: event.target.value
-        }, this.resortAndFilterRows);
+            sortedFilteredRows
+        });
     },
 
-    setSortColumnKey: function(columnKey) {
-        if(this.state.sortColumnKey === columnKey)
+    setSortColumnKey(newSortColumnKey) {
+        var newSortOrder;
+
+        if(this.state.sortColumnKey === newSortColumnKey)
         {
-            var currentSortOrder = this.state.sortOrder;
-            var newSortOrder = -currentSortOrder;
-            this.setState({
-                sortOrder: newSortOrder
-            }, this.resortAndFilterRows);
+            newSortOrder = -this.state.sortOrder;
         }
         else
         {
-            this.setState({
-                sortColumnKey: columnKey,
-                sortOrder: 1
-            }, this.resortAndFilterRows);
+            newSortOrder = 1;
         }
+
+        var sortedFilteredRows = this.getSortedFilteredRows({
+            rows: this.props.rows,
+            sortColumnKey: newSortColumnKey,
+            sortOrder: newSortOrder
+        });
+
+        this.setState({
+            sortColumnKey: newSortColumnKey,
+            sortOrder: newSortOrder,
+            sortedFilteredRows: sortedFilteredRows
+        });
     },
 
-    resortAndFilterRows: function(rows) {
-        if(rows === undefined) {
-            rows = this.props.rows;
-        }
-
+    getSortedFilteredRows({rows, sortColumnKey, sortOrder}) {
         var filteredRows = [];
 
-        this.setState({filterTextValid: true});
+        for(var i = 0; i < rows.length; i++) {
+            var rowData = rows[i];
 
-        try {
-            for(var i = 0; i < rows.length; i++)
-            {
-                var rowData = rows[i];
-
-                if(rowPassesFilter(rowData, this.state.filterText, this.props.columns))
-                {
-                    filteredRows.push(rowData);
-                }
+            if(this.props.rowFilterFunction(rowData, this.props.columns)) {
+                filteredRows.push(rowData);
             }
         }
-        catch(ex) {
-            this.setState({filterTextValid: false});
+
+        if(sortColumnKey !== null) {
+            filteredRows.sort(getRowComparator(sortColumnKey, sortOrder));
         }
 
-        if(this.state.sortColumnKey !== null) {
-            filteredRows.sort(getRowComparator(
-                this.state.sortColumnKey, this.state.sortOrder));
-        }
-
-
-        this.setState({sortedFilteredRows: filteredRows})
+        return filteredRows;
     }
 });
