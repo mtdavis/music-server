@@ -42,13 +42,20 @@ module.exports = React.createClass({
         return {
             sortColumnKey: this.props.initialSortColumnKey,
             sortOrder: this.props.initialSortOrder,
+            clickCount: 0,
         };
+    },
+
+    componentWillUnmount() {
+        clearTimeout(this._doubleClickTimeout);
     },
 
     render() {
         var sortedRows = this.props.rows.slice();
-        sortedRows.sort(getRowComparator(
-            this.state.sortColumnKey, this.state.sortOrder));
+        if(this.state.sortColumnKey !== null) {
+            sortedRows.sort(getRowComparator(
+                this.state.sortColumnKey, this.state.sortOrder));
+        }
 
         var rowNodes = sortedRows.map(rowData =>
             <MTableRow
@@ -119,7 +126,18 @@ module.exports = React.createClass({
             this.props.onRowCtrlClick(rowData);
         }
         else if(this.props.onRowClick) {
-            this.props.onRowClick(rowData);
+            if(this.state.clickCount === 0) {
+                this.setState({clickCount: 1});
+                this._doubleClickTimeout = setTimeout(
+                    () => this.setState({clickCount: 0}), 250
+                );
+            }
+            else {
+                this.setState({clickCount: 0});
+                clearTimeout(this._doubleClickTimeout);
+
+                this.props.onRowClick(rowData);
+            }
         }
     },
 

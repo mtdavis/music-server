@@ -47,7 +47,8 @@ export default class MTableRowColumn extends React.Component {
             alignItems: 'center',
             height: '100%',
             justifyContent: textAlign==='right' ? 'flex-end' : 'flex-start',
-            whiteSpace: wrap ? 'normal' : 'nowrap'
+            whiteSpace: wrap ? 'normal' : 'nowrap',
+            userSelect: 'none', //prevent double-click from selecting text
         };
 
         return (
