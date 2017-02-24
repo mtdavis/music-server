@@ -11,40 +11,15 @@ import {
 import deepEqual from 'deep-equal';
 import MTableRow from './MTableRow.js';
 import MTableHeader from './MTableHeader.js';
+import {compare} from '../util';
 import Perf from 'react-addons-perf';
 window.Perf = Perf;
 
 function getRowComparator(sortColumnKey, sortOrder) {
     return function(rowA, rowB) {
-        var result;
-
         var valA = rowA[sortColumnKey];
         var valB = rowB[sortColumnKey];
-
-        if(typeof(valA) === "string" && valA.startsWith("The "))
-        {
-            valA = valA.substring(4);
-        }
-
-        if(typeof(valB) === "string" && valB.startsWith("The "))
-        {
-            valB = valB.substring(4);
-        }
-
-        if(valA < valB)
-        {
-            result = -1;
-        }
-        else if(valA === valB)
-        {
-            result = 0;
-        }
-        else
-        {
-            result = 1;
-        }
-
-        return result * sortOrder;
+        return compare(valA, valB) * sortOrder;
     }
 }
 
@@ -58,7 +33,8 @@ module.exports = React.createClass({
             onRowCtrlClick: null,
             showHeader: true,
             initialSortColumnKey: null,
-            initialSortOrder: 1
+            initialSortOrder: 1,
+            rowLimit: Infinity
         };
     },
 
@@ -93,6 +69,19 @@ module.exports = React.createClass({
                         <TableRow>
                             <TableRowColumn>
                                 {this.props.placeholderText}
+                            </TableRowColumn>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            );
+        }
+        else if(rowNodes.length > this.props.rowLimit) {
+            table = (
+                <Table selectable={false}>
+                    <TableBody displayRowCheckbox={false}>
+                        <TableRow>
+                            <TableRowColumn>
+                                {rowNodes.length} rows; specify some filter criteria.
                             </TableRowColumn>
                         </TableRow>
                     </TableBody>

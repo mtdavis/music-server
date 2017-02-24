@@ -49,3 +49,25 @@ export function withFlux(Component) {
         }
     });
 }
+
+export function compare(valA, valB) {
+    if(typeof(valA) === "string" && valA.startsWith("The "))
+    {
+        valA = valA.substring(4);
+    }
+
+    if(typeof(valB) === "string" && valB.startsWith("The "))
+    {
+        valB = valB.substring(4);
+    }
+
+    if(valA < valB) {
+        return -1;
+    }
+    else if(valA === valB) {
+        return 0;
+    }
+    else {
+        return 1;
+    }
+}

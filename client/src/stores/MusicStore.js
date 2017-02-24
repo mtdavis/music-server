@@ -4,10 +4,12 @@ import PlayerState from '../lib/PlayerState';
 import ScrobbleState from '../lib/ScrobbleState';
 import {timeStringToSeconds} from '../lib/util';
 
+
 module.exports = Fluxxor.createStore({
 
     initialize: function() {
         this.albums = [];
+        this.tracks = [];
         this.api = null;
         this.playerState = PlayerState.STOPPED;
         this.playlist = [];
@@ -23,9 +25,16 @@ module.exports = Fluxxor.createStore({
             this.emit("change");
         }.bind(this));
 
+        $.getJSON("/tracks", function(tracks) {
+            this.tracks = tracks;
+            this.emit("change");
+        }.bind(this));
+
         this.bindActions(
             "PLAY_ALBUM", this.onPlayAlbum,
             "ENQUEUE_ALBUM", this.onEnqueueAlbum,
+            "PLAY_TRACK", this.onPlayTrack,
+            "ENQUEUE_TRACK", this.onEnqueueTrack,
             "PLAY_SHUFFLE", this.onPlayShuffle,
             "INITIALIZE_PLAYER", this.onInitializePlayer,
             "PLAY_OR_PAUSE_PLAYBACK", this.onPlayOrPausePlayback,
@@ -45,6 +54,7 @@ module.exports = Fluxxor.createStore({
     getState: function() {
         return {
             albums: this.albums,
+            tracks: this.tracks,
             playerState: this.playerState,
             willStopAfterCurrent: this.willStopAfterCurrent,
             scrobbleState: this.scrobbleState,
@@ -64,7 +74,7 @@ module.exports = Fluxxor.createStore({
             this.onStopPlayback();
             this.setPlaylist(tracks);
             this.onPlayOrPausePlayback();
-            location.hash = "home";
+            location.hash = "/";
             this.emit("change");
         }.bind(this));
     },
@@ -86,6 +96,20 @@ module.exports = Fluxxor.createStore({
 
             this.emit("change");
         }.bind(this));
+    },
+
+    onPlayTrack: function(track) {
+        this.onStopPlayback();
+        this.setPlaylist([track]);
+        this.onPlayOrPausePlayback();
+        this.emit("change");
+    },
+
+    onEnqueueTrack: function(track) {
+        this.playlist.push(track);
+        var path = track.path.replace(/#/, "%23");
+        this.api.addTrack("/stream/" + path);
+        this.emit("change");
     },
 
     onPlayShuffle: function(minutes) {

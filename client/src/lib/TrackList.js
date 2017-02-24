@@ -8,12 +8,12 @@ import {
 import MTable from './table/MTable';
 import FilteredTable from './table/FilteredTable';
 
-const AlbumList = React.createClass({
+const TrackList = React.createClass({
     mixins: [FluxMixin],
 
     getDefaultProps() {
         return {
-            albums: []
+            tracks: []
         };
     },
 
@@ -25,10 +25,11 @@ const AlbumList = React.createClass({
 
     render() {
         var columns = [
-            {key:"album_artist", header:"Album Artist"},
+            {key:"artist", header:"Artist"},
             {key:"album", header:"Album"},
+            {key:"title", header:"Title"},
+            {key:"track_number", header:"#"},
             {key:"year", header:"Year", textAlign:"right"},
-            {key:"tracks", header:"Tracks", textAlign:"right"},
             {key:"duration", header:"Duration", renderer:secondsToTimeString, textAlign:"right", wrap:false},
             {key:"play_count", header:"Play Count", textAlign:"right"},
             {key:"last_play", header:"Last Play", renderer:unixTimestampToDateString, textAlign:"right", wrap:false}
@@ -37,8 +38,9 @@ const AlbumList = React.createClass({
         var table = (
             <MTable
                 {...this.props}
-                onRowClick={this.onAlbumClick}
-                onRowCtrlClick={this.onAlbumCtrlClick}
+                onRowClick={this.onTrackClick}
+                onRowCtrlClick={this.onTrackCtrlClick}
+                rowLimit={500}
             />
         );
 
@@ -46,27 +48,27 @@ const AlbumList = React.createClass({
             <div>
                 <FilteredTable
                     table={table}
-                    rows={this.props.albums}
+                    rows={this.props.tracks}
                     columns={columns}
-                    filterKeys={['genre', 'album_artist']} />
+                    filterKeys={['genre', 'artist', 'album']} />
 
                 <Snackbar
-                    message="Album enqueued."
+                    message="Track enqueued."
                     open={this.state.enqueueSnackbarOpen}
                 />
             </div>
         );
     },
 
-    onAlbumClick(album)
+    onTrackClick(track)
     {
-        this.getFlux().actions.playAlbum(album);
+        this.getFlux().actions.playTrack(track);
     },
 
-    onAlbumCtrlClick(album)
+    onTrackCtrlClick(track)
     {
         this.setState({enqueueSnackbarOpen: true});
-        this.getFlux().actions.enqueueAlbum(album);
+        this.getFlux().actions.enqueueTrack(track);
 
         setTimeout(() => {
             this.setState({enqueueSnackbarOpen: false});
@@ -74,4 +76,4 @@ const AlbumList = React.createClass({
     }
 });
 
-export default AlbumList;
+export default TrackList;

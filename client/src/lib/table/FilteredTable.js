@@ -4,6 +4,8 @@ import {
     Paper,
     TextField,
 } from 'material-ui';
+import MultiSelectAutoComplete from '../MultiSelectAutoComplete';
+import {compare} from '../util';
 
 jsep.addBinaryOp(":", 10);
 jsep.addBinaryOp("~=", 6);
@@ -97,44 +99,96 @@ function rowPassesFilter(rowData, filterText, columns) {
     return result;
 }
 
+function getUniqueValues(objects, key) {
+    var result = []
+    for(var object of objects) {
+        var value = object[key];
+        if(!result.includes(value)) {
+            result.push(value);
+        }
+    }
+    result.sort(compare);
+    return result;
+}
+
 export default class FilteredTable extends React.Component {
     constructor(props) {
         super(props);
+
+        var selectedFilters = {};
+        for(var filterKey of props.filterKeys) {
+            selectedFilters[filterKey] = [];
+        }
+
         this.state = {
+            selectedFilters: selectedFilters,
             filterText: '',
         };
     }
 
     render() {
-        var filteredRows = [];
+        var rows = this.props.rows;
+
+        var filterElems = [];
+
+        for(let filterKey of this.props.filterKeys) {
+            let selectedFilters = this.state.selectedFilters[filterKey];
+
+            //first determine the options that have not already been selected
+            //or filtered out by a previous filter.
+            let filterOptions = getUniqueValues(rows, filterKey).filter(
+                val => !selectedFilters.includes(val));
+
+            let hint = filterKey.charAt(0).toUpperCase() +
+                filterKey.substring(1).replace(/_/g, ' ') +
+                '...';
+
+            filterElems.push(
+                <MultiSelectAutoComplete
+                    key={filterKey}
+                    dataSource={filterOptions}
+                    hintText={hint}
+                    onSelectedItemsUpdate={selectedItems =>
+                        this.onSelectedFilterChange(filterKey, selectedItems)}
+                />
+            );
+
+            //now filter the rows by those selected filters.
+            if(selectedFilters.length > 0) {
+                rows = rows.filter(rowData =>
+                    selectedFilters.includes(rowData[filterKey])
+                );
+            }
+        }
+
+        //filter by the text.
+
         var filterTextValid = true;
 
         try {
-            for(var i = 0; i < this.props.rows.length; i++) {
-                var rowData = this.props.rows[i];
-
-                if(rowPassesFilter(rowData, this.state.filterText, this.props.columns)) {
-                    filteredRows.push(rowData);
-                }
-            }
+            rows = rows.filter(rowData =>
+                rowPassesFilter(rowData, this.state.filterText, this.props.columns)
+            );
         }
         catch(ex) {
             filterTextValid = false;
         }
 
         var table = React.cloneElement(this.props.table, {
-            rows: filteredRows,
+            rows: rows,
             columns: this.props.columns
         });
 
         var filterField = (
             <div className="table-filter">
+                {filterElems}
+
                 <TextField
-                    hintText="Filter..."
+                    hintText="Text..."
                     errorText={filterTextValid ? "" : "Error!"}
                     errorStyle={{display: 'none'}}
-                    onChange={this.onFilterChange.bind(this)}
-                    onKeyUp={this.onFilterChange.bind(this)} />
+                    onChange={this.onTextFilterChange.bind(this)}
+                    onKeyUp={this.onTextFilterChange.bind(this)} />
             </div>
         );
 
@@ -151,9 +205,15 @@ export default class FilteredTable extends React.Component {
         );
     }
 
-    onFilterChange(event) {
+    onTextFilterChange(event) {
         this.setState({
             filterText: event.target.value
         });
+    }
+
+    onSelectedFilterChange(filterKey, selectedItems) {
+        var selectedFilters = Object.assign({}, this.state.selectedFilters);
+        selectedFilters[filterKey] = selectedItems.slice();
+        this.setState({selectedFilters});
     }
 }

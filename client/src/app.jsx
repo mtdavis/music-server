@@ -23,6 +23,7 @@ import HomePage from './pages/HomePage';
 import AlbumsPage from './pages/AlbumsPage';
 import NotRecentlyPlayedPage from './pages/NotRecentlyPlayedPage';
 import NeverPlayedPage from './pages/NeverPlayedPage';
+import AllTracksPage from './pages/AllTracksPage';
 import ShufflePage from './pages/ShufflePage';
 import ScanPage from './pages/ScanPage';
 
@@ -33,6 +34,7 @@ var titles = {
   '/albums': "All Albums",
   '/not-recently-played': "Not Recently Played",
   '/never-played': "Never Played",
+  '/tracks': "All Tracks",
   '/shuffle': "Shuffle",
   '/scan': "Scan",
 }
@@ -53,6 +55,7 @@ var LeftNavComponent = React.createClass({
         <LinkMenuItem to='/albums' iconClassName='icon-album' onClick={this.close}>All Albums</LinkMenuItem>
         <LinkMenuItem to='/not-recently-played' iconClassName='icon-album' onClick={this.close}>Not Recently Played</LinkMenuItem>
         <LinkMenuItem to='/never-played' iconClassName='icon-album' onClick={this.close}>Never Played</LinkMenuItem>
+        <LinkMenuItem to='/tracks' iconClassName='icon-music' onClick={this.close}>All Tracks</LinkMenuItem>
         <LinkMenuItem to='/shuffle' iconClassName='icon-shuffle' onClick={this.close}>Shuffle</LinkMenuItem>
         <Divider />
         <LinkMenuItem to='/scan' iconClassName='icon-search' onClick={this.close}>Scan</LinkMenuItem>
@@ -214,6 +217,14 @@ var actions = {
         this.dispatch("ENQUEUE_ALBUM", album);
     },
 
+    playTrack: function(track) {
+        this.dispatch("PLAY_TRACK", track);
+    },
+
+    enqueueTrack: function(track) {
+        this.dispatch("ENQUEUE_TRACK", track);
+    },
+
     playShuffle: function(minutes) {
         this.dispatch("PLAY_SHUFFLE", minutes);
     },
@@ -281,6 +292,7 @@ var router = (
         <Route path='albums' component={AlbumsPage} />
         <Route path='not-recently-played' component={NotRecentlyPlayedPage} />
         <Route path='never-played' component={NeverPlayedPage} />
+        <Route path='tracks' component={AllTracksPage} />
         <Route path='shuffle' component={ShufflePage} />
         <Route path='scan' component={ScanPage} />
         <Route path='*' component={HomePage} />
