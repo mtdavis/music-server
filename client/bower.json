@@ -13,7 +13,7 @@
     "tests"
   ],
   "dependencies": {
-    "gapless5": "*",
+    "gapless5": "0b537a768df41498b62b1731ebb911147fa9b2f7",
     "jquery": "~2.1.3"
   }
 }

@@ -2,14 +2,14 @@ var gulp = require('gulp');
 var bower = require('gulp-bower');
 var browserify = require('browserify');
 var del = require('del');
-var reactify = require('reactify');
+var babelify = require('babelify');
 var source = require('vinyl-source-stream');
 var webserver = require('gulp-webserver');
 var less = require('gulp-less');
 var path = require('path');
 var rename = require('gulp-rename');
 var inject = require('gulp-inject');
-var runsequence = require('gulp-run-sequence');
+var runsequence = require('run-sequence');
 var ncp = require('ncp').ncp;
 var gutil = require('gulp-util');
 
@@ -39,7 +39,7 @@ function swallowError(error) {
  * Deletes the `build` folder.
  */
 gulp.task('clear-build', function (done) {
-  del(['build'], done);
+  del(['build']).then(() => done());
 });
 
 /*
@@ -77,8 +77,11 @@ gulp.task('style', function () {
  * Bundles the scripts, using Browserify.
  */
 gulp.task('js', function() {
-  return browserify(paths.appjs)
-    .transform(reactify)
+  return browserify(paths.appjs, {debug: true})
+    .transform("babelify", {
+      presets: ["es2015", "react"],
+      plugins: ["transform-object-rest-spread"]
+    })
     .bundle()
     .on('error', function (err) {
       gutil.log(err.message);
@@ -133,7 +136,7 @@ gulp.task('index', function (done) {
 gulp.task('build', function (done) {
   return runsequence(
     'clean',
-    ['copy-material', 'bower'],
+    'bower', //['copy-material', 'bower'],
     ['style', 'less', 'js', 'icons'],
     'bootstrap',
     'index',
@@ -180,7 +183,7 @@ gulp.task('server', function () {
  * Deletes the `src/style/material-ui` folder.
  */
 gulp.task('clear-material', function (done) {
-  del(['src/style/material-ui'], done);
+  del(['src/style/material-ui']).then(() => done());
 });
 
 /*

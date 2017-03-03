@@ -1,26 +1,6 @@
-@import "material-ui/scaffolding.less";
-
-// This is where you would optionally add your styles.
-
-// Feel free to leverage the styles below in order to implement the header in
-// the sidebar.
-
-@accent-1-color: @deep-orange-A200;
-@accent-2-color: @deep-orange-A400;
-@accent-3-color: @deep-orange-A100;
-
-.logo
-{
-  .mui-font-style-headline;
-  color: @app-bar-text-color;
-  line-height: @app-bar-height;
-  background-color: @primary-1-color;
-  padding-left: @desktop-gutter;
-  padding-top: 0;
-  margin-bottom: @desktop-gutter-mini;
+body {
+  margin: 0;
 }
-
-@import "material-ui/components.less";
 
 .container-fluid
 {
@@ -30,29 +10,29 @@
 
 html, body
 {
-  background: @grey-100;
+  background: #f5f5f5;
 }
 
-.mui-raised-button-container .mui-font-icon::before
+/*.mui-raised-button-container .mui-font-icon::before
 {
   vertical-align: middle;
   padding-left: 10px;
-}
+}*/
 
-.pulsate .mui-font-icon
+.pulsate
 {
   @keyframes pulsate {
     0%, 50%, 100% {
-      color: @app-bar-text-color;
+      opacity: 1;
     }
     20%, 30% {
-      color: @accent-3-color;
+      opacity: .5;
     }
   }
   animation: pulsate 2s linear 0s infinite;
 }
 
-.accent .mui-font-icon
+/*.accent .mui-font-icon
 {
   color: @accent-3-color;
   text-shadow:
@@ -60,90 +40,50 @@ html, body
     -2px 2px 2px white, -2px 2px 2px white, -2px 2px 2px white,
     2px -2px 2px white, 2px -2px 2px white, 2px -2px 2px white,
     2px 2px 2px white, 2px 2px 2px white, 2px 2px 2px white;
-}
+}*/
 
-.mui-app-bar
+/*.mui-app-bar
 {
   display: flex;
-}
+}*/
 
 .app-bar-toolbar
 {
-  display:flex;
   justify-content: flex-end;
+  flex: 1;
+  display: flex;
 }
 
 .time-wrapper
 {
-  display:flex;
-  justify-content:flex-end;
-  flex-grow:1;
+  justify-content: flex-end;
+  display: flex;
+  flex: 1;
 }
 
 .time-slider
 {
-  flex-grow:1;
+  flex: 1;
   margin: 0;
-  padding: 20px 24px 20px 24px;
-}
-
-.time-slider .mui-input-bar
-{
-  width:auto;
+  padding: 0 24px;
+  height: 48px;
 }
 
 .time-label
 {
-  .mui-font-style-headline;
-  color: lighten(@body-text-color, 75%);
+  flex: none;
+  /*.mui-font-style-headline;*/
+  /*color: lighten(@body-text-color, 75%);*/
   padding-right: 12px;
 
-  &.playing
+  /*&.playing
   {
     color: @app-bar-text-color;
-  }
+  }*/
 }
 
-.volume-slider
-{
-  position: absolute;
-  top: 0;
-  margin-top: 8px;
-  background: white;
-  height: 0;
-  padding: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: 
-    height 450ms @ease-out-function,
-    padding 450ms @ease-out-function,
-    opacity 450ms @ease-out-function;
-
-  &.open
-  {
-    height: calc(48px + 200px + 12px);
-    padding-bottom: 12px;
-    opacity: 1;
-  }
-
-  > .mui-icon-button
-  {
-    margin-top: 0;
-
-    *
-    {
-      color: @accent-3-color;
-    }
-  }
-
-  > .mui-input
-  {
-    margin: 0 12px;
-  }
-
-  //the "high" volume icon is ever-so-slightly misaligned with the others
-  .icon-volume-high
-  {
-    left:.7px;
-  }
+.table-filter {
+  width: 100%;
+  padding-left: 16px;
+  margin-bottom: 1rem;
 }

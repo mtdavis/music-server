@@ -1,116 +1,114 @@
-var React = require('react');
-var Router = require('react-router');
-var mui = require('material-ui');
-var injectTapEventPlugin = require("react-tap-event-plugin");
+import React from 'react';
+import {render} from 'react-dom';
+import {Router, Route, hashHistory, IndexRoute, withRouter} from 'react-router';
+import injectTapEventPlugin from "react-tap-event-plugin";
 
-var Fluxxor = require('fluxxor');
-var FluxMixin = Fluxxor.FluxMixin(React);
-var StoreWatchMixin = Fluxxor.StoreWatchMixin;
+import Fluxxor, {StoreWatchMixin} from 'fluxxor';
+import FluxProvider from './lib/FluxProvider';
 
-var MusicStore = require('./stores/MusicStore');
-var {
-  PlayerState, ScrobbleState, GaplessPlayer, CurrentTimeSlider, VolumeButton,
-  secondsToTimeString
-} = require('./music-lib');
+import MusicStore from './stores/MusicStore';
+import GaplessPlayer from './lib/GaplessPlayer';
+import CurrentTimeSlider from './lib/CurrentTimeSlider';
+import AppBarIconButton from './lib/AppBarIconButton';
+import VolumeButton from './lib/VolumeButton';
+import PlayerState from './lib/PlayerState';
+import ScrobbleState from './lib/ScrobbleState';
+import {secondsToTimeString, FluxMixin} from './lib/util';
+import LinkMenuItem from './lib/LinkMenuItem';
 
-var {Paper, IconButton, MenuItem} = mui;
+import {AppBar, Divider, Drawer, Snackbar} from 'material-ui';
+import {colors, getMuiTheme, MuiThemeProvider} from 'material-ui/styles';
 
-// A lot of the code is auto-generated. However, fiddling around with it
-// shouldn't be a catastrophic failure. Just that you'd need to know your way
-// around a little. However, **BE CAREFUL WHILE DELETING SOME OF THE COMMENTS IN
-// THIS FILE; THE AUTO-GENERATORS RELY ON SOME OF THEM**.
-
-// inject:pagerequire
-var HomePage = require('./pages/HomePage');
-var AlbumsPage = require('./pages/AlbumsPage');
-var NotRecentlyPlayedPage = require('./pages/NotRecentlyPlayedPage');
-var NeverPlayedPage = require('./pages/NeverPlayedPage');
-var ShufflePage = require('./pages/ShufflePage');
-var ScanPage = require('./pages/ScanPage');
-// endinject
-
-var menuItems = [
-  // inject:menuitems
-  { payload: 'home', text: 'Now Playing' },
-  { type: MenuItem.Types.SUBHEADER, text: 'Browse' },
-  { payload: 'albums', text: 'All Albums' },
-  { payload: 'not-recently-played', text: 'Not Recently Played' },
-  { payload: 'never-played', text: 'Never Played' },
-  { payload: 'shuffle', text: 'Shuffle' },
-  { type: MenuItem.Types.SUBHEADER, text: 'Tools' },
-  { payload: 'scan', text: 'Scan Files and Metadata' },
-  // endinject
-];
-
-var titles = {
-  // inject:titles
-  '/': 'Now Playing',
-  '/home': 'Now Playing',
-  '/albums': 'All Albums',
-  '/not-recently-played': 'Not Recently Played',
-  '/never-played': 'Never Played',
-  '/shuffle': 'Shuffle',
-  '/scan': 'Scan Files and Metadata',
-  // endinject
-};
-
-var Route = Router.Route;
-var DefaultRoute = Router.DefaultRoute;
-var RouteHandler = Router.RouteHandler;
-
-var AppCanvas = mui.AppCanvas;
-var AppBar = mui.AppBar;
-var LeftNav = mui.LeftNav;
+import HomePage from './pages/HomePage';
+import LyricsPage from './pages/LyricsPage';
+import AlbumsPage from './pages/AlbumsPage';
+import NotRecentlyPlayedPage from './pages/NotRecentlyPlayedPage';
+import NeverPlayedPage from './pages/NeverPlayedPage';
+import AllTracksPage from './pages/AllTracksPage';
+import ShufflePage from './pages/ShufflePage';
+import ScanPage from './pages/ScanPage';
 
 injectTapEventPlugin();
 
-var LeftNavComponent = React.createClass({
-  mixins: [Router.Navigation],
+var titles = {
+  '/': "Now Playing",
+  '/lyrics': "Lyrics",
+  '/albums': "All Albums",
+  '/not-recently-played': "Not Recently Played",
+  '/never-played': "Never Played",
+  '/tracks': "All Tracks",
+  '/shuffle': "Shuffle",
+  '/scan': "Scan",
+}
 
-  render: function () {
-    // Optionally, you may add a header to the left navigation bar, by setting
-    // the `LeftNav`'s `header` property to a React component, like os:
-    //
-    //     header={<div className='logo'>Header Title.</div>}
+var LeftNavComponent = React.createClass({
+  getInitialState() {
+    return {
+      open: false
+    };
+  },
+
+  render: function() {
     return (
-      <LeftNav
-        ref="leftNav"
-        header={<div className="logo">{"Mike's Music Player"}</div>}
-        docked={false}
-        isInitiallyOpen={false}
-        menuItems={this.props.menuItems}
-        onClick={this._onLeftNavChange}
-        onChange={this._onLeftNavChange} />
+      <Drawer open={this.state.open} onRequestChange={this.onRequestChange} docked={false} width={320}>
+        <AppBar title="Mike's Music Player" onLeftIconButtonTouchTap={this.close} />
+        <LinkMenuItem to='/' iconClassName={'icon-music'} onClick={this.close}>Now Playing</LinkMenuItem>
+        <LinkMenuItem to='/lyrics' iconClassName={'icon-music'} onClick={this.close}>Lyrics</LinkMenuItem>
+        <Divider />
+        <LinkMenuItem to='/albums' iconClassName='icon-album' onClick={this.close}>All Albums</LinkMenuItem>
+        <LinkMenuItem to='/not-recently-played' iconClassName='icon-album' onClick={this.close}>Not Recently Played</LinkMenuItem>
+        <LinkMenuItem to='/never-played' iconClassName='icon-album' onClick={this.close}>Never Played</LinkMenuItem>
+        <LinkMenuItem to='/tracks' iconClassName='icon-music' onClick={this.close}>All Tracks</LinkMenuItem>
+        <LinkMenuItem to='/shuffle' iconClassName='icon-shuffle' onClick={this.close}>Shuffle</LinkMenuItem>
+        <Divider />
+        <LinkMenuItem to='/scan' iconClassName='icon-search' onClick={this.close}>Scan</LinkMenuItem>
+      </Drawer>
     );
   },
 
-  toggle:function () {
-    this.refs.leftNav.toggle();
+  onRequestChange: function(open) {
+    this.setState({
+      open: open
+    });
   },
 
-  close: function () {
-    this.refs.leftNav.close()
+  open: function() {
+    this.setState({
+      open: true
+    })
   },
 
-  _onLeftNavChange: function(e, selectedIndex, menuItem) {
-    this.transitionTo(menuItem.payload);
-    this.refs.leftNav.close();
+  close: function() {
+    this.setState({
+      open: false
+    });
   }
 });
 
-var Master = React.createClass({
-  mixins: [Router.State, FluxMixin, StoreWatchMixin("MusicStore")],
+var Master = withRouter(React.createClass({
+  mixins: [FluxMixin, StoreWatchMixin("MusicStore")],
+
+  muiTheme: getMuiTheme({
+    palette: {
+      primary1Color: colors.lightBlue500,
+      primary2Color: colors.lightBlue700,
+      primary3Color: colors.grey400,
+      accent1Color: colors.deepOrange200,
+      accent2Color: colors.grey100,
+      accent3Color: colors.grey500,
+    }
+  }),
+
+  contextTypes: {
+    flux: React.PropTypes.object.isRequired
+  },
 
   getStateFromFlux: function() {
     return this.getFlux().store("MusicStore").getState();
   },
 
-  _onMenuIconButtonTouchTap: function () {
-    this.refs.leftNav.toggle();
-  },
-
   openLastFm: function() {
-    window.open("//last.fm/user/ogreatone43");
+    window.open("http://last.fm/user/ogreatone43");
   },
 
   stopButtonClicked: function(event)
@@ -142,69 +140,68 @@ var Master = React.createClass({
     scrobbleTooltip[ScrobbleState.SCROBBLE_FAILED] = "Scrobble failed!";
 
     var toolbar = (
-      <div className="app-bar-toolbar">
+      <div className='app-bar-toolbar'>
           <GaplessPlayer />
 
           <CurrentTimeSlider />
 
-          <IconButton iconClassName="icon-previous"
+          <AppBarIconButton iconClassName="icon-previous"
               disabled={!prevButtonEnabled}
               onClick={this.getFlux().actions.jumpToPreviousTrack} />
-          <IconButton iconClassName={playOrPause}
+          <AppBarIconButton iconClassName={playOrPause}
               disabled={!playButtonEnabled}
               onClick={this.getFlux().actions.playOrPause} />
-          <IconButton iconClassName="icon-stop"
+          <AppBarIconButton iconClassName="icon-stop"
               className={musicStore.willStopAfterCurrent ? "pulsate" : ""}
               disabled={!stopButtonEnabled}
               onClick={this.stopButtonClicked} />
-          <IconButton iconClassName="icon-next"
+          <AppBarIconButton iconClassName="icon-next"
               disabled={!nextButtonEnabled}
               onClick={this.getFlux().actions.jumpToNextTrack} />
 
           <VolumeButton />
 
-          <IconButton iconClassName="icon-lastfm"
-              className={musicStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED ? "accent" : ""}
+          <AppBarIconButton iconClassName="icon-lastfm"
               tooltip={scrobbleTooltip[musicStore.scrobbleState]}
               onClick={this.openLastFm} />
       </div>
     );
 
+    var title = titles[this.props.router.getCurrentLocation().pathname] || 'Now Playing';
+
     return (
-      <AppCanvas predefinedLayout={1}>
+      <MuiThemeProvider muiTheme={this.muiTheme}>
+        <div>
+          <AppBar
+            title={title}
+            onLeftIconButtonTouchTap={() => this.refs.leftNav.open()}
+            zDepth={1}
+            iconElementRight={toolbar}
+            iconStyleRight={{
+              margin: 0,
+              flex: 1
+            }}
+            titleStyle={{
+              flex: 'none'
+            }}
+            style={{
+              position: 'fixed'
+            }}
+          />
 
-        <AppBar
-          className="mui-dark-theme"
-          title={titles[this.getPath()]}
-          onMenuIconButtonTouchTap={this._onMenuIconButtonTouchTap}
-          zDepth={1}>
-          {toolbar}
-        </AppBar>
+          <LeftNavComponent ref='leftNav' />
 
-        <LeftNavComponent ref='leftNav' menuItems={menuItems} />
+          <div className='mui-app-content-canvas' style={{position: 'relative', top: 64}}>
+            {this.props.children}
+          </div>
 
-        <div className='mui-app-content-canvas'>
-          <RouteHandler />
+          <Snackbar open={musicStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED}
+            message='Scrobble failed.' />
         </div>
-
-      </AppCanvas>
+      </MuiThemeProvider>
     );
   }
-});
-
-var routes = (
-  <Route name='app' path='/' handler={Master}>
-    {/* inject:route */}
-    <Route name='home' handler={HomePage} />
-    <Route name='albums' handler={AlbumsPage} />
-    <Route name='not-recently-played' handler={NotRecentlyPlayedPage} />
-    <Route name='never-played' handler={NeverPlayedPage} />
-    <Route name='shuffle' handler={ShufflePage} />
-    <Route name='scan' handler={ScanPage} />
-    {/* endinject */}
-    <DefaultRoute handler={HomePage} />
-  </Route>
-);
+}));
 
 var actions = {
     playAlbum: function(album) {
@@ -213,6 +210,14 @@ var actions = {
 
     enqueueAlbum: function(album) {
         this.dispatch("ENQUEUE_ALBUM", album);
+    },
+
+    playTrack: function(track) {
+        this.dispatch("PLAY_TRACK", track);
+    },
+
+    enqueueTrack: function(track) {
+        this.dispatch("ENQUEUE_TRACK", track);
     },
 
     playShuffle: function(minutes) {
@@ -265,6 +270,10 @@ var actions = {
 
     scanForNewFiles: function() {
         this.dispatch("SCAN_FOR_NEW_FILES");
+    },
+
+    getLyrics: function() {
+        this.dispatch("GET_LYRICS");
     }
 };
 
@@ -274,6 +283,22 @@ var stores = {
 
 var flux = new Fluxxor.Flux(stores, actions);
 
-Router.run(routes, function (Handler) {
-  React.render(<Handler flux={flux} />, document.body);
-});
+var router = (
+  <FluxProvider flux={flux}>
+    <Router history={hashHistory}>
+      <Route path='/' component={Master}>
+        <IndexRoute component={HomePage} />
+        <Route path='lyrics' component={LyricsPage} />
+        <Route path='albums' component={AlbumsPage} />
+        <Route path='not-recently-played' component={NotRecentlyPlayedPage} />
+        <Route path='never-played' component={NeverPlayedPage} />
+        <Route path='tracks' component={AllTracksPage} />
+        <Route path='shuffle' component={ShufflePage} />
+        <Route path='scan' component={ScanPage} />
+        <Route path='*' component={HomePage} />
+      </Route>
+    </Router>
+  </FluxProvider>
+);
+
+render(router, document.getElementById('app'));
