@@ -4,7 +4,6 @@ import PlayerState from '../lib/PlayerState';
 import ScrobbleState from '../lib/ScrobbleState';
 import {timeStringToSeconds} from '../lib/util';
 
-
 module.exports = Fluxxor.createStore({
 
     initialize: function() {
@@ -19,6 +18,7 @@ module.exports = Fluxxor.createStore({
         this.scrobblePlayTimer = null;
         this.scrobbleNowPlayingTimer = null;
         this.willStopAfterCurrent = false;
+        this.lyrics = null;
 
         $.getJSON("/albums", function(albums) {
             this.albums = albums;
@@ -47,7 +47,8 @@ module.exports = Fluxxor.createStore({
             "SET_VOLUME", this.onSetVolume,
             "SCAN_FOR_CHANGED_METADATA", this.onScanForChangedMetadata,
             "SCAN_FOR_MOVED_FILES", this.onScanForMovedFiles,
-            "SCAN_FOR_NEW_FILES", this.onScanForNewFiles
+            "SCAN_FOR_NEW_FILES", this.onScanForNewFiles,
+            "GET_LYRICS", this.onGetLyrics,
         );
     },
 
@@ -60,7 +61,8 @@ module.exports = Fluxxor.createStore({
             scrobbleState: this.scrobbleState,
             playlist: this.playList,
             nowPlaying: this.nowPlaying,
-            currentTrackPosition: this.currentTrackPosition
+            currentTrackPosition: this.currentTrackPosition,
+            lyrics: this.lyrics,
         };
     },
 
@@ -473,6 +475,30 @@ module.exports = Fluxxor.createStore({
         {
             clearTimeout(this.scrobbleNowPlayingTimer);
             this.scrobbleNowPlayingTimer = null;
+            this.emit("change");
+        }
+    },
+
+    onGetLyrics: function() {
+        if(this.playlist.length > 0) {
+            this.lyrics = 'Loading...';
+            this.emit("change");
+
+            let nowPlayingId = this.playlist[this.nowPlaying].id;
+            $.ajax("/lyrics", {
+                data: {id: nowPlayingId},
+                success: function(lyrics) {
+                    this.lyrics = lyrics;
+                    this.emit("change");
+                }.bind(this),
+                error: function(error) {
+                    this.lyrics = 'There was a problem retrieving the lyrics.';
+                    this.emit("change");
+                }.bind(this)
+            });
+        }
+        else if(this.lyrics !== null) {
+            this.lyrics = null;
             this.emit("change");
         }
     },

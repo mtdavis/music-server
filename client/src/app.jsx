@@ -20,6 +20,7 @@ import {AppBar, Divider, Drawer, Snackbar} from 'material-ui';
 import {colors, getMuiTheme, MuiThemeProvider} from 'material-ui/styles';
 
 import HomePage from './pages/HomePage';
+import LyricsPage from './pages/LyricsPage';
 import AlbumsPage from './pages/AlbumsPage';
 import NotRecentlyPlayedPage from './pages/NotRecentlyPlayedPage';
 import NeverPlayedPage from './pages/NeverPlayedPage';
@@ -31,6 +32,7 @@ injectTapEventPlugin();
 
 var titles = {
   '/': "Now Playing",
+  '/lyrics': "Lyrics",
   '/albums': "All Albums",
   '/not-recently-played': "Not Recently Played",
   '/never-played': "Never Played",
@@ -51,6 +53,7 @@ var LeftNavComponent = React.createClass({
       <Drawer open={this.state.open} onRequestChange={this.onRequestChange} docked={false} width={320}>
         <AppBar title="Mike's Music Player" onLeftIconButtonTouchTap={this.close} />
         <LinkMenuItem to='/' iconClassName={'icon-music'} onClick={this.close}>Now Playing</LinkMenuItem>
+        <LinkMenuItem to='/lyrics' iconClassName={'icon-music'} onClick={this.close}>Lyrics</LinkMenuItem>
         <Divider />
         <LinkMenuItem to='/albums' iconClassName='icon-album' onClick={this.close}>All Albums</LinkMenuItem>
         <LinkMenuItem to='/not-recently-played' iconClassName='icon-album' onClick={this.close}>Not Recently Played</LinkMenuItem>
@@ -275,6 +278,10 @@ var actions = {
 
     scanForNewFiles: function() {
         this.dispatch("SCAN_FOR_NEW_FILES");
+    },
+
+    getLyrics: function() {
+        this.dispatch("GET_LYRICS");
     }
 };
 
@@ -289,6 +296,7 @@ var router = (
     <Router history={hashHistory}>
       <Route path='/' component={Master}>
         <IndexRoute component={HomePage} />
+        <Route path='lyrics' component={LyricsPage} />
         <Route path='albums' component={AlbumsPage} />
         <Route path='not-recently-played' component={NotRecentlyPlayedPage} />
         <Route path='never-played' component={NeverPlayedPage} />

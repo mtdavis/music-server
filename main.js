@@ -10,6 +10,8 @@ var bodyParser = require("body-parser");
 var musicServerSettings = require("./music-server-settings.json");
 var fs = Promise.promisifyAll(require("fs"));
 var path = require("path");
+var lyricist = Promise.promisifyAll(require("lyricist")(musicServerSettings.genius.access_token));
+var domain = require("domain");
 
 var db = require("./music-server-db").MusicServerDb();
 var lastfm = require("./music-server-lastfm").MusicServerLastfm();
@@ -25,6 +27,7 @@ function initRouter()
         router.get("/tracks", tracksHandler());
         router.get("/album-art", albumArtHandler());
         router.get("/shuffle", shuffleHandler());
+        router.get("/lyrics", lyricsHandler());
         router.post("/submit-play", submitPlayHandler());
         router.post("/submit-now-playing", submitNowPlayingHandler());
         router.post("/tools/scan-for-changed-metadata", scanForChangedMetadataHandler());
@@ -140,6 +143,37 @@ function tracksHandler()
         lastModifiedSqlParamsBuilder: sqlParamsBuilder,
         selectSqlParamsBuilder: sqlParamsBuilder
     });
+}
+
+function lyricsHandler()
+{
+    return function(req, res, next) {
+        var dom = domain.create();
+
+        dom.on('error', function(err) {
+            res.statusCode = 500;
+            res.end();
+        });
+
+        var query = url.parse(req.url, true)["query"];
+        var trackId = query.id;
+
+        dom.run(function() {
+            db.selectTrackByIdAsync(trackId).then(function(track) {
+                var search = track.artist + ' ' + track.title;
+                return lyricist.songAsync({search: search});
+            }).then(function(song) {
+                res.writeHead(200, {
+                    "Content-Type": 'text/plain'
+                });
+                res.end(song.lyrics.trim());
+            }).catch(function(error) {
+                console.trace(error);
+                res.statusCode = 500;
+                res.end();
+            });
+        });
+    };
 }
 
 function shuffleHandler()
