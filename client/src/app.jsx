@@ -96,14 +96,6 @@ var Master = withRouter(React.createClass({
       accent1Color: colors.deepOrange200,
       accent2Color: colors.grey100,
       accent3Color: colors.grey500,
-    },
-    slider: {
-      trackColor: colors.minBlack,
-      trackColorSelected: colors.faintBlack,
-      selectionColor: colors.lightBlue200,
-      rippleColor: colors.lightBlue200,
-      handleColorZero: colors.faintBlack,
-      handleFillColor: colors.white,
     }
   }),
 

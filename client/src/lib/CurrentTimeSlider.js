@@ -1,13 +1,24 @@
 import React from 'react';
 import {FluxMixin} from './util';
 import {Slider} from 'material-ui';
-import {muiThemeable} from 'material-ui/styles';
+import {colors, getMuiTheme, muiThemeable, MuiThemeProvider} from 'material-ui/styles';
 
 import PlayerState from './PlayerState';
 import {secondsToTimeString} from './util';
 
 const CurrentTimeSlider = muiThemeable()(React.createClass({
     mixins: [FluxMixin],
+
+    muiTheme: getMuiTheme({
+        slider: {
+          trackColor: colors.minBlack,
+          trackColorSelected: colors.lightWhite,
+          selectionColor: colors.white,
+          rippleColor: colors.white,
+          handleColorZero: colors.white,
+          handleFillColor: colors.white,
+        }
+    }),
 
     getInitialState: function() {
         return {
@@ -64,23 +75,25 @@ const CurrentTimeSlider = muiThemeable()(React.createClass({
         }
 
         return (
-            <div className="time-wrapper">
-                <Slider
-                    className="time-slider"
-                    name="currentTime"
-                    min={0}
-                    max={sliderMax}
-                    value={sliderValue}
-                    disabled={sliderDisabled}
-                    onChange={this.onSliderChange}
-                    onDragStart={this.onSliderDragStart}
-                    onDragStop={this.onSliderDragStop}
-                />
+            <MuiThemeProvider muiTheme={this.muiTheme}>
+                <div className="time-wrapper">
+                    <Slider
+                        className="time-slider"
+                        name="currentTime"
+                        min={0}
+                        max={sliderMax}
+                        value={sliderValue}
+                        disabled={sliderDisabled}
+                        onChange={this.onSliderChange}
+                        onDragStart={this.onSliderDragStart}
+                        onDragStop={this.onSliderDragStop}
+                    />
 
-                <h1 className={'time-label'} style={timeLabelStyles}>
-                    {timeString}
-                </h1>
-            </div>
+                    <h1 className={'time-label'} style={timeLabelStyles}>
+                        {timeString}
+                    </h1>
+                </div>
+            </MuiThemeProvider>
         );
     },
 
