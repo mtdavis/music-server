@@ -11,27 +11,13 @@ var AlbumArt = React.createClass({
     var result;
     if(this.props.track.album === "")
     {
-      var menuItems = [
-        {
-          text: "No album art!",
-          iconClassName: "icon-album"
-        }
-      ]
-
-      result = (
-        <div key="album-art" className="hidden-xs col-sm-5">
-          <Menu menuItems={menuItems} autoWidth={false} />
-        </div>
-      );
+      result = null;
     }
-    else
-    {
+    else {
       result = (
-        <div key="album-art" className="col-xs-12 col-sm-5">
-          <Paper rounded={false} style={{width:"100%", lineHeight:"0"}}>
-            <img src={"/album-art?id=" + this.props.track.id} style={{width:"100%"}} />
-          </Paper>
-        </div>
+        <Paper rounded={false} style={{width:"100%", lineHeight:"0"}}>
+          <img src={"/album-art?id=" + this.props.track.id} style={{width:"100%"}} />
+        </Paper>
       );
     }
 
@@ -50,30 +36,32 @@ module.exports = React.createClass({
 
     var content;
     var musicStore = this.getFlux().store("MusicStore");
-    if(musicStore.playlist.length !== 0)
-    {
-        content = [
-          <AlbumArt key="art" track={musicStore.playlist[0]} />,
-
-          <div key="playlist" className="col-xs-12 col-sm-7">
+    if(musicStore.playlist.length === 0 || musicStore.playlist[0].album === '') {
+      content = (
+        <div className="row">
+          <div className="col-xs-12">
             <Playlist />
           </div>
-        ];
-    }
-    else
-    {
-      content = (
-        <div className="col-xs-12">
-          <Playlist />
         </div>
       );
+    }
+    else {
+        content = (
+          <div className="row">
+            <div className="col-xs-12 col-sm-7 col-md-6">
+              <AlbumArt key="art" track={musicStore.playlist[0]} />
+            </div>
+
+            <div className="col-xs-12 col-sm-5 col-md-6">
+              <Playlist />
+            </div>
+          </div>
+        );
     }
 
     return (
       <div className='home-page container-fluid'>
-        <div className="row">
-          {content}
-        </div>
+        {content}
       </div>
     );
   }
