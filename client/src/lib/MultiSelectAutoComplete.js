@@ -50,7 +50,9 @@ class MultiSelectAutoComplete extends React.Component {
         var style = {
             verticalAlign: 'middle',
             display: 'inline-block',
-            marginLeft: 8
+            marginLeft: 8,
+            marginTop: 4,
+            marginBottom: 4,
         };
         var labelStyle = {
             verticalAlign: 'top'

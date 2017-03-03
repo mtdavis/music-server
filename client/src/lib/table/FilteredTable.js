@@ -184,7 +184,7 @@ export default class FilteredTable extends React.Component {
                 {filterElems}
 
                 <TextField
-                    hintText="Text..."
+                    hintText="Text or query..."
                     errorText={filterTextValid ? "" : "Error!"}
                     errorStyle={{display: 'none'}}
                     onChange={this.onTextFilterChange.bind(this)}
