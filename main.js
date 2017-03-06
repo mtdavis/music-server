@@ -236,14 +236,14 @@ function albumArtHandler()
             if(jpgExists)
             {
                 res.writeHead(303, {
-                    "Location":"/stream/" + relativeExpectedArtPathJpg.replace(/\\/g, "/")
+                    "Location":encodeURI("/stream/" + relativeExpectedArtPathJpg.replace(/\\/g, "/"))
                 });
                 res.end();
             }
             else if(pngExists)
             {
                 res.writeHead(303, {
-                    "Location":"/stream/" + relativeExpectedArtPathPng.replace(/\\/g, "/")
+                    "Location":encodeURI("/stream/" + relativeExpectedArtPathPng.replace(/\\/g, "/"))
                 });
                 res.end();
             }
