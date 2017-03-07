@@ -3,7 +3,7 @@ import {FontIcon, MenuItem} from 'material-ui';
 import {Link} from 'react-router';
 
 const LinkMenuItem = React.createClass({
-  render: function() {
+  render() {
     let icon = <FontIcon className={this.props.iconClassName} />;
 
     return (

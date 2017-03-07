@@ -5,16 +5,14 @@ import {FluxMixin} from '../lib/util';
 module.exports = React.createClass({
   mixins: [FluxMixin],
 
-  render: function () {
+  render() {
     var musicStore = this.getFlux().store("MusicStore");
 
     var albumsNeverPlayed = [];
 
-    for(var i = 0; i < musicStore.albums.length; i++)
-    {
+    for(var i = 0; i < musicStore.albums.length; i++) {
         var album = musicStore.albums[i];
-        if(album.play_count === 0)
-        {
+        if(album.play_count === 0) {
             albumsNeverPlayed.push(album);
         }
     }

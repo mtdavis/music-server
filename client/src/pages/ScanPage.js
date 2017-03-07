@@ -9,7 +9,7 @@ import {
 module.exports = React.createClass({
   mixins: [FluxMixin],
 
-  render: function () {
+  render() {
     return (
       <div className='scan-page container-fluid'>
         <div className="row">

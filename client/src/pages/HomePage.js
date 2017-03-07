@@ -7,10 +7,9 @@ import {
 } from 'material-ui';
 
 var AlbumArt = React.createClass({
-  render: function() {
+  render() {
     var result;
-    if(this.props.track.album === "")
-    {
+    if(this.props.track.album === "") {
       result = null;
     }
     else {
@@ -32,7 +31,7 @@ module.exports = React.createClass({
     flux: React.PropTypes.object.isRequired
   },
 
-  render: function () {
+  render() {
 
     var content;
     var musicStore = this.getFlux().store("MusicStore");

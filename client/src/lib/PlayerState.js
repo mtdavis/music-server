@@ -1,5 +1,5 @@
 export default {
-    STOPPED: "STOPPED",
-    PLAYING: "PLAYING",
-    PAUSED: "PAUSED"
+  STOPPED: "STOPPED",
+  PLAYING: "PLAYING",
+  PAUSED: "PAUSED"
 };

@@ -48,7 +48,7 @@ var LeftNavComponent = React.createClass({
     };
   },
 
-  render: function() {
+  render() {
     return (
       <Drawer open={this.state.open} onRequestChange={this.onRequestChange} docked={false} width={320}>
         <AppBar title="Mike's Music Player" onLeftIconButtonTouchTap={this.close} />
@@ -66,19 +66,19 @@ var LeftNavComponent = React.createClass({
     );
   },
 
-  onRequestChange: function(open) {
+  onRequestChange(open) {
     this.setState({
       open: open
     });
   },
 
-  open: function() {
+  open() {
     this.setState({
       open: true
     })
   },
 
-  close: function() {
+  close() {
     this.setState({
       open: false
     });
@@ -103,35 +103,32 @@ var Master = withRouter(React.createClass({
     flux: React.PropTypes.object.isRequired
   },
 
-  getStateFromFlux: function() {
+  getStateFromFlux() {
     return this.getFlux().store("MusicStore").getState();
   },
 
-  openLastFm: function() {
+  openLastFm() {
     window.open("http://last.fm/user/ogreatone43");
   },
 
-  stopButtonClicked: function(event)
-  {
-    if(event.ctrlKey || event.metaKey)
-    {
+  stopButtonClicked(event) {
+    if(event.ctrlKey || event.metaKey) {
       this.getFlux().actions.toggleStopAfterCurrent();
     }
-    else
-    {
+    else {
       this.getFlux().actions.stop();
     }
   },
 
-  render: function () {
+  render() {
     var musicStore = this.getFlux().store("MusicStore");
     var playButtonEnabled = musicStore.playlist.length > 0;
     var playOrPause = musicStore.playerState === PlayerState.PLAYING ? "icon-pause" : "icon-play"
     var stopButtonEnabled = musicStore.playerState !== PlayerState.STOPPED;
     var prevButtonEnabled = musicStore.playlist.length > 1 &&
-        musicStore.nowPlaying > 0;
+      musicStore.nowPlaying > 0;
     var nextButtonEnabled = musicStore.playlist.length > 1 &&
-        musicStore.nowPlaying < musicStore.playlist.length - 1;
+      musicStore.nowPlaying < musicStore.playlist.length - 1;
 
     var scrobbleTooltip = {};
     scrobbleTooltip[ScrobbleState.NO_TRACK] = "last.fm";
@@ -141,29 +138,29 @@ var Master = withRouter(React.createClass({
 
     var toolbar = (
       <div className='app-bar-toolbar'>
-          <GaplessPlayer />
+        <GaplessPlayer />
 
-          <CurrentTimeSlider />
+        <CurrentTimeSlider />
 
-          <AppBarIconButton iconClassName="icon-previous"
-              disabled={!prevButtonEnabled}
-              onClick={this.getFlux().actions.jumpToPreviousTrack} />
-          <AppBarIconButton iconClassName={playOrPause}
-              disabled={!playButtonEnabled}
-              onClick={this.getFlux().actions.playOrPause} />
-          <AppBarIconButton iconClassName="icon-stop"
-              className={musicStore.willStopAfterCurrent ? "pulsate" : ""}
-              disabled={!stopButtonEnabled}
-              onClick={this.stopButtonClicked} />
-          <AppBarIconButton iconClassName="icon-next"
-              disabled={!nextButtonEnabled}
-              onClick={this.getFlux().actions.jumpToNextTrack} />
+        <AppBarIconButton iconClassName="icon-previous"
+          disabled={!prevButtonEnabled}
+          onClick={this.getFlux().actions.jumpToPreviousTrack} />
+        <AppBarIconButton iconClassName={playOrPause}
+          disabled={!playButtonEnabled}
+          onClick={this.getFlux().actions.playOrPause} />
+        <AppBarIconButton iconClassName="icon-stop"
+          className={musicStore.willStopAfterCurrent ? "pulsate" : ""}
+          disabled={!stopButtonEnabled}
+          onClick={this.stopButtonClicked} />
+        <AppBarIconButton iconClassName="icon-next"
+          disabled={!nextButtonEnabled}
+          onClick={this.getFlux().actions.jumpToNextTrack} />
 
-          <VolumeButton />
+        <VolumeButton />
 
-          <AppBarIconButton iconClassName="icon-lastfm"
-              tooltip={scrobbleTooltip[musicStore.scrobbleState]}
-              onClick={this.openLastFm} />
+        <AppBarIconButton iconClassName="icon-lastfm"
+          tooltip={scrobbleTooltip[musicStore.scrobbleState]}
+          onClick={this.openLastFm} />
       </div>
     );
 
@@ -204,77 +201,77 @@ var Master = withRouter(React.createClass({
 }));
 
 var actions = {
-    playAlbum: function(album) {
-        this.dispatch("PLAY_ALBUM", album);
-    },
+  playAlbum(album) {
+    this.dispatch("PLAY_ALBUM", album);
+  },
 
-    enqueueAlbum: function(album) {
-        this.dispatch("ENQUEUE_ALBUM", album);
-    },
+  enqueueAlbum(album) {
+    this.dispatch("ENQUEUE_ALBUM", album);
+  },
 
-    playTrack: function(track) {
-        this.dispatch("PLAY_TRACK", track);
-    },
+  playTrack(track) {
+    this.dispatch("PLAY_TRACK", track);
+  },
 
-    enqueueTrack: function(track) {
-        this.dispatch("ENQUEUE_TRACK", track);
-    },
+  enqueueTrack(track) {
+    this.dispatch("ENQUEUE_TRACK", track);
+  },
 
-    playShuffle: function(minutes) {
-        this.dispatch("PLAY_SHUFFLE", minutes);
-    },
+  playShuffle(minutes) {
+    this.dispatch("PLAY_SHUFFLE", minutes);
+  },
 
-    initializePlayer: function(playerNode) {
-        this.dispatch("INITIALIZE_PLAYER", playerNode);
-    },
+  initializePlayer(playerNode) {
+    this.dispatch("INITIALIZE_PLAYER", playerNode);
+  },
 
-    playOrPause: function() {
-        this.dispatch("PLAY_OR_PAUSE_PLAYBACK");
-    },
+  playOrPause() {
+    this.dispatch("PLAY_OR_PAUSE_PLAYBACK");
+  },
 
-    stop: function() {
-        this.dispatch("STOP_PLAYBACK");
-    },
+  stop() {
+    this.dispatch("STOP_PLAYBACK");
+  },
 
-    toggleStopAfterCurrent: function() {
-        this.dispatch("TOGGLE_STOP_AFTER_CURRENT");
-    },
+  toggleStopAfterCurrent() {
+    this.dispatch("TOGGLE_STOP_AFTER_CURRENT");
+  },
 
-    jumpToPlaylistItem: function(index) {
-        this.dispatch("JUMP_TO_PLAYLIST_ITEM", index);
-    },
+  jumpToPlaylistItem(index) {
+    this.dispatch("JUMP_TO_PLAYLIST_ITEM", index);
+  },
 
-    jumpToPreviousTrack: function() {
-        this.dispatch("JUMP_TO_PREVIOUS_TRACK");
-    },
+  jumpToPreviousTrack() {
+    this.dispatch("JUMP_TO_PREVIOUS_TRACK");
+  },
 
-    jumpToNextTrack: function() {
-        this.dispatch("JUMP_TO_NEXT_TRACK");
-    },
+  jumpToNextTrack() {
+    this.dispatch("JUMP_TO_NEXT_TRACK");
+  },
 
-    seekToPosition: function(position) {
-        this.dispatch("SEEK_TO_POSITION", position);
-    },
+  seekToPosition(position) {
+    this.dispatch("SEEK_TO_POSITION", position);
+  },
 
-    setVolume: function(volume) {
-      this.dispatch("SET_VOLUME", volume);
-    },
+  setVolume(volume) {
+    this.dispatch("SET_VOLUME", volume);
+  },
 
-    scanForChangedMetadata: function() {
-        this.dispatch("SCAN_FOR_CHANGED_METADATA");
-    },
+  scanForChangedMetadata() {
+    this.dispatch("SCAN_FOR_CHANGED_METADATA");
+  },
 
-    scanForMovedFiles: function() {
-        this.dispatch("SCAN_FOR_MOVED_FILES");
-    },
+  scanForMovedFiles() {
+    this.dispatch("SCAN_FOR_MOVED_FILES");
+  },
 
-    scanForNewFiles: function() {
-        this.dispatch("SCAN_FOR_NEW_FILES");
-    },
+  scanForNewFiles() {
+    this.dispatch("SCAN_FOR_NEW_FILES");
+  },
 
-    getLyrics: function() {
-        this.dispatch("GET_LYRICS");
-    }
+  getLyrics() {
+    this.dispatch("GET_LYRICS");
+  }
 };
 
 var stores = {

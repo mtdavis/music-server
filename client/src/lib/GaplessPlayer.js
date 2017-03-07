@@ -3,30 +3,30 @@ import ReactDOM from 'react-dom';
 import {FluxMixin} from './util';
 
 const GaplessPlayer = React.createClass({
-    mixins: [FluxMixin],
+  mixins: [FluxMixin],
 
-    getDefaultProps() {
-        return {
-            id: "player"
-        };
-    },
+  getDefaultProps() {
+    return {
+      id: "player"
+    };
+  },
 
-    componentDidMount() {
-        this.getFlux().actions.initializePlayer(ReactDOM.findDOMNode(this));
-    },
+  componentDidMount() {
+    this.getFlux().actions.initializePlayer(ReactDOM.findDOMNode(this));
+  },
 
-    componentWillUnmount() {
-        console.log("GaplessPlayer unmounting!");
-    },
+  componentWillUnmount() {
+    console.log("GaplessPlayer unmounting!");
+  },
 
-    render() {
-        var musicStore = this.getFlux().store("MusicStore");
+  render() {
+    var musicStore = this.getFlux().store("MusicStore");
 
-        return (
-            <p id={this.props.id} style={{display:"none"}}></p>
-            // <p id={this.props.id} style={{ position:"absolute", right:20, top:120 }}></p>
-        );
-    }
+    return (
+      <p id={this.props.id} style={{display:"none"}}></p>
+      // <p id={this.props.id} style={{ position:"absolute", right:20, top:120 }}></p>
+    );
+  }
 });
 
 export default GaplessPlayer;

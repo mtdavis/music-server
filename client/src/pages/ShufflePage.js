@@ -9,7 +9,7 @@ import {
 var ShuffleButton = React.createClass({
   mixins: [FluxMixin],
 
-  render: function() {
+  render() {
     return (
       <RaisedButton
         primary={true}
@@ -19,13 +19,13 @@ var ShuffleButton = React.createClass({
     );
   },
 
-  onClick: function() {
+  onClick() {
     this.getFlux().actions.playShuffle(this.props.minutes);
   }
 })
 
 module.exports = React.createClass({
-  render: function () {
+  render() {
     return (
       <div className='shuffle-page container-fluid'>
         <div className="row">

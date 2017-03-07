@@ -13,7 +13,7 @@ const LyricsPage = React.createClass({
     this.getFlux().actions.getLyrics();
   },
 
-  render: function () {
+  render() {
     let musicStore = this.getFlux().store("MusicStore");
 
     if(!musicStore.lyrics) {

@@ -5,7 +5,7 @@ import {FluxMixin} from '../lib/util';
 module.exports = React.createClass({
   mixins: [FluxMixin],
 
-  render: function () {
+  render() {
     var musicStore = this.getFlux().store("MusicStore");
 
     var daysAgo = 42; //default == 6 weeks
@@ -14,12 +14,10 @@ module.exports = React.createClass({
 
     var albumsNotRecentlyPlayed = [];
 
-    for(var i = 0; i < musicStore.albums.length; i++)
-    {
+    for(var i = 0; i < musicStore.albums.length; i++) {
         var album = musicStore.albums[i];
-        if(album.play_count === 0 || album.last_play < beforeTimestamp)
-        {
-            albumsNotRecentlyPlayed.push(album);
+        if(album.play_count === 0 || album.last_play < beforeTimestamp) {
+          albumsNotRecentlyPlayed.push(album);
         }
     }
 
