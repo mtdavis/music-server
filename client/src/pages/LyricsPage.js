@@ -1,68 +1,108 @@
 import React from 'react';
+import deepEqual from 'deep-equal';
 import MTable from '../lib/table/MTable';
 import {FluxMixin} from '../lib/util';
+import {StoreWatchMixin} from 'fluxxor';
 import {
+  CircularProgress,
   Paper
 } from 'material-ui';
 import {muiThemeable} from 'material-ui/styles';
+import LyricsState from '../lib/LyricsState';
 
 const LyricsPage = React.createClass({
-  mixins: [FluxMixin],
+  mixins: [FluxMixin, StoreWatchMixin("MusicStore")],
 
-  componentWillMount() {
+  componentDidMount() {
     this.getFlux().actions.getLyrics();
   },
 
-  render() {
-    let musicStore = this.getFlux().store("MusicStore");
+  componentWillUpdate(nextProps, nextState) {
+    if(this.state.nowPlaying !== nextState.nowPlaying ||
+        !deepEqual(this.state.playList, nextState.playList)) {
+      this.getFlux().actions.getLyrics();
+    }
+  },
 
-    if(!musicStore.lyrics) {
-      return (
-        <div className='container-fluid'>
-          <div className="row">
-            <div className="col-xs-12">
-              <Paper>
-                  <MTable
-                      rows={[]}
-                      showHeader={false}
-                      columns={[]}
-                      placeholderText={"Nothing to see here!"}
-                  />
-              </Paper>
-            </div>
-          </div>
-        </div>
+  getStateFromFlux() {
+    let musicStore = this.getFlux().store("MusicStore");
+    return {
+      lyricsState: musicStore.lyricsState,
+      lyrics: musicStore.lyrics,
+      playlist: musicStore.playlist,
+      nowPlaying: musicStore.nowPlaying,
+    };
+  },
+
+  render() {
+    let content;
+
+    if(this.state.lyricsState === LyricsState.NO_TRACK) {
+      content = (
+        <Paper>
+          <MTable
+            rows={[]}
+            showHeader={false}
+            columns={[]}
+            placeholderText={"Nothing to see here!"}
+          />
+        </Paper>
       );
     }
-
-    let track = musicStore.playlist[musicStore.nowPlaying];
-    let header = track.artist + ' – ' + track.title;
-    let lyrics = musicStore.lyrics;
-
-    let headerStyle = {
-      textAlign: 'center',
-      fontSize: '24px',
-      fontWeight: this.props.muiTheme.appBar.titleFontWeight,
-      borderBottom: '1px solid #eee',
-      paddingBottom: '12px',
+    else if(this.state.lyricsState === LyricsState.FAILED) {
+      content = (
+        <Paper>
+          <MTable
+            rows={[]}
+            showHeader={false}
+            columns={[]}
+            placeholderText={"There was a problem loading the lyrics."}
+          />
+        </Paper>
+      );
     }
+    else {
+      let track = this.state.playlist[this.state.nowPlaying];
+      let header = track.artist + ' – ' + track.title;
+      let lyrics;
 
-    let lyricsStyle = {
-      fontFamily: this.props.muiTheme.fontFamily,
-      lineHeight: '1.333',
-      textAlign: 'center'
-    };
+      if(this.state.lyricsState === LyricsState.LOADING) {
+        lyrics = <CircularProgress />;
+      }
+      else if(this.state.lyricsState === LyricsState.SUCCESSFUL) {
+        lyrics = this.state.lyrics;
+      }
+
+      let headerStyle = {
+        textAlign: 'center',
+        fontSize: '24px',
+        fontWeight: this.props.muiTheme.appBar.titleFontWeight,
+        borderBottom: '1px solid #eee',
+        paddingBottom: '12px',
+      }
+
+      let lyricsStyle = {
+        fontFamily: this.props.muiTheme.fontFamily,
+        lineHeight: '1.333',
+        textAlign: 'center',
+        whiteSpace: 'pre',
+      };
+
+      content = (
+        <Paper style={{overflowX: 'hidden', paddingBottom:'12px'}}>
+          <h1 style={headerStyle}>{header}</h1>
+          <div style={lyricsStyle}>
+            {lyrics}
+          </div>
+        </Paper>
+      );
+    }
 
     return (
       <div className='container-fluid'>
         <div className="row">
           <div className="col-xs-12">
-            <Paper style={{overflowX: 'hidden'}}>
-              <h1 style={headerStyle}>{header}</h1>
-              <pre style={lyricsStyle}>
-                {lyrics}
-              </pre>
-            </Paper>
+            {content}
           </div>
         </div>
       </div>

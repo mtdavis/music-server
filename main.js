@@ -151,6 +151,7 @@ function lyricsHandler()
         var dom = domain.create();
 
         dom.on('error', function(err) {
+            console.trace(error);
             res.statusCode = 500;
             res.end();
         });

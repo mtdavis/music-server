@@ -1,5 +1,6 @@
 import Fluxxor from 'fluxxor';
 import weighted from 'weighted';
+import LyricsState from '../lib/LyricsState';
 import PlayerState from '../lib/PlayerState';
 import ScrobbleState from '../lib/ScrobbleState';
 import {timeStringToSeconds} from '../lib/util';
@@ -19,6 +20,8 @@ module.exports = Fluxxor.createStore({
     this.scrobblePlayTimer = null;
     this.scrobbleNowPlayingTimer = null;
     this.willStopAfterCurrent = false;
+    this.lyricsState = LyricsState.NO_TRACK;
+    this.lyricsTrackId = null;
     this.lyrics = null;
 
     $.getJSON("/albums", function(albums) {
@@ -436,26 +439,29 @@ module.exports = Fluxxor.createStore({
   },
 
   onGetLyrics() {
-    if(this.playlist.length > 0) {
-      this.lyrics = 'Loading...';
-      this.emit("change");
-
+    if(this.playlist.length > 0 ) {
       let nowPlayingId = this.playlist[this.nowPlaying].id;
-      $.ajax("/lyrics", {
-        data: {id: nowPlayingId},
-        success: function(lyrics) {
-          this.lyrics = lyrics;
-          this.emit("change");
-        }.bind(this),
-        error: function(error) {
-          this.lyrics = 'There was a problem retrieving the lyrics.';
-          this.emit("change");
-        }.bind(this)
-      });
-    }
-    else if(this.lyrics !== null) {
-      this.lyrics = null;
-      this.emit("change");
+
+      if(nowPlayingId !== this.lyricsTrackId) {
+        this.lyrics = null;
+        this.lyricsState = LyricsState.LOADING;
+        this.lyricsTrackId = nowPlayingId;
+        this.emit("change");
+
+        $.ajax("/lyrics", {
+          data: {id: nowPlayingId},
+          success: function(lyrics) {
+            this.lyrics = lyrics;
+            this.lyricsState = LyricsState.SUCCESSFUL;
+            this.emit("change");
+          }.bind(this),
+          error: function(error) {
+            this.lyrics = null;
+            this.lyricsState = LyricsState.FAILED;
+            this.emit("change");
+          }.bind(this)
+        });
+      }
     }
   },
 });
