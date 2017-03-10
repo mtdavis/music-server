@@ -11,7 +11,7 @@ import {muiThemeable} from 'material-ui/styles';
 import LyricsState from '../lib/LyricsState';
 
 const LyricsPage = React.createClass({
-  mixins: [FluxMixin, StoreWatchMixin("MusicStore")],
+  mixins: [FluxMixin, StoreWatchMixin("MusicStore", "LyricsStore")],
 
   componentDidMount() {
     this.getFlux().actions.getLyrics();
@@ -26,9 +26,10 @@ const LyricsPage = React.createClass({
 
   getStateFromFlux() {
     let musicStore = this.getFlux().store("MusicStore");
+    let lyricsStore = this.getFlux().store("LyricsStore");
     return {
-      lyricsState: musicStore.lyricsState,
-      lyrics: musicStore.lyrics,
+      lyricsState: lyricsStore.lyricsState,
+      lyrics: lyricsStore.lyrics,
       playlist: musicStore.playlist,
       nowPlaying: musicStore.nowPlaying,
     };
@@ -78,6 +79,7 @@ const LyricsPage = React.createClass({
         fontSize: '24px',
         fontWeight: this.props.muiTheme.appBar.titleFontWeight,
         borderBottom: '1px solid #eee',
+        paddingTop: '12px',
         paddingBottom: '12px',
       }
 
@@ -85,11 +87,11 @@ const LyricsPage = React.createClass({
         fontFamily: this.props.muiTheme.fontFamily,
         lineHeight: '1.333',
         textAlign: 'center',
-        whiteSpace: 'pre',
+        whiteSpace: 'pre-wrap',
       };
 
       content = (
-        <Paper style={{overflowX: 'hidden', paddingBottom:'12px'}}>
+        <Paper style={{paddingBottom:'12px'}}>
           <h1 style={headerStyle}>{header}</h1>
           <div style={lyricsStyle}>
             {lyrics}

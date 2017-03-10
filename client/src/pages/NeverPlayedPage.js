@@ -6,12 +6,12 @@ module.exports = React.createClass({
   mixins: [FluxMixin],
 
   render() {
-    var musicStore = this.getFlux().store("MusicStore");
+    var dbStore = this.getFlux().store("DbStore");
 
     var albumsNeverPlayed = [];
 
-    for(var i = 0; i < musicStore.albums.length; i++) {
-        var album = musicStore.albums[i];
+    for(var i = 0; i < dbStore.albums.length; i++) {
+        var album = dbStore.albums[i];
         if(album.play_count === 0) {
             albumsNeverPlayed.push(album);
         }

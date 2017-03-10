@@ -7,6 +7,10 @@ import Fluxxor, {StoreWatchMixin} from 'fluxxor';
 import FluxProvider from './lib/FluxProvider';
 
 import MusicStore from './stores/MusicStore';
+import DbStore from './stores/DbStore';
+import LyricsStore from './stores/LyricsStore';
+import Actions from './stores/Actions';
+
 import GaplessPlayer from './lib/GaplessPlayer';
 import CurrentTimeSlider from './lib/CurrentTimeSlider';
 import AppBarIconButton from './lib/AppBarIconButton';
@@ -86,7 +90,7 @@ var LeftNavComponent = React.createClass({
 });
 
 var Master = withRouter(React.createClass({
-  mixins: [FluxMixin, StoreWatchMixin("MusicStore")],
+  mixins: [FluxMixin, StoreWatchMixin("MusicStore", "DbStore")],
 
   muiTheme: getMuiTheme({
     palette: {
@@ -202,80 +206,82 @@ var Master = withRouter(React.createClass({
 
 var actions = {
   playAlbum(album) {
-    this.dispatch("PLAY_ALBUM", album);
+    this.dispatch(Actions.PLAY_ALBUM, album);
   },
 
   enqueueAlbum(album) {
-    this.dispatch("ENQUEUE_ALBUM", album);
+    this.dispatch(Actions.ENQUEUE_ALBUM, album);
   },
 
   playTrack(track) {
-    this.dispatch("PLAY_TRACK", track);
+    this.dispatch(Actions.PLAY_TRACK, track);
   },
 
   enqueueTrack(track) {
-    this.dispatch("ENQUEUE_TRACK", track);
+    this.dispatch(Actions.ENQUEUE_TRACK, track);
   },
 
   playShuffle(minutes) {
-    this.dispatch("PLAY_SHUFFLE", minutes);
+    this.dispatch(Actions.PLAY_SHUFFLE, minutes);
   },
 
   initializePlayer(playerNode) {
-    this.dispatch("INITIALIZE_PLAYER", playerNode);
+    this.dispatch(Actions.INITIALIZE_PLAYER, playerNode);
   },
 
   playOrPause() {
-    this.dispatch("PLAY_OR_PAUSE_PLAYBACK");
+    this.dispatch(Actions.PLAY_OR_PAUSE_PLAYBACK);
   },
 
   stop() {
-    this.dispatch("STOP_PLAYBACK");
+    this.dispatch(Actions.STOP_PLAYBACK);
   },
 
   toggleStopAfterCurrent() {
-    this.dispatch("TOGGLE_STOP_AFTER_CURRENT");
+    this.dispatch(Actions.TOGGLE_STOP_AFTER_CURRENT);
   },
 
   jumpToPlaylistItem(index) {
-    this.dispatch("JUMP_TO_PLAYLIST_ITEM", index);
+    this.dispatch(Actions.JUMP_TO_PLAYLIST_ITEM, index);
   },
 
   jumpToPreviousTrack() {
-    this.dispatch("JUMP_TO_PREVIOUS_TRACK");
+    this.dispatch(Actions.JUMP_TO_PREVIOUS_TRACK);
   },
 
   jumpToNextTrack() {
-    this.dispatch("JUMP_TO_NEXT_TRACK");
+    this.dispatch(Actions.JUMP_TO_NEXT_TRACK);
   },
 
   seekToPosition(position) {
-    this.dispatch("SEEK_TO_POSITION", position);
+    this.dispatch(Actions.SEEK_TO_POSITION, position);
   },
 
   setVolume(volume) {
-    this.dispatch("SET_VOLUME", volume);
+    this.dispatch(Actions.SET_VOLUME, volume);
   },
 
   scanForChangedMetadata() {
-    this.dispatch("SCAN_FOR_CHANGED_METADATA");
+    this.dispatch(Actions.SCAN_FOR_CHANGED_METADATA);
   },
 
   scanForMovedFiles() {
-    this.dispatch("SCAN_FOR_MOVED_FILES");
+    this.dispatch(Actions.SCAN_FOR_MOVED_FILES);
   },
 
   scanForNewFiles() {
-    this.dispatch("SCAN_FOR_NEW_FILES");
+    this.dispatch(Actions.SCAN_FOR_NEW_FILES);
   },
 
   getLyrics() {
-    this.dispatch("GET_LYRICS");
+    this.dispatch(Actions.GET_LYRICS);
   }
 };
 
 var stores = {
-    MusicStore: new MusicStore()
+    MusicStore: new MusicStore(),
+    DbStore: new DbStore(),
+    LyricsStore: new LyricsStore(),
 };
 
 var flux = new Fluxxor.Flux(stores, actions);

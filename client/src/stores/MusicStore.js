@@ -1,6 +1,6 @@
 import Fluxxor from 'fluxxor';
+import Actions from './Actions';
 import weighted from 'weighted';
-import LyricsState from '../lib/LyricsState';
 import PlayerState from '../lib/PlayerState';
 import ScrobbleState from '../lib/ScrobbleState';
 import {timeStringToSeconds} from '../lib/util';
@@ -8,65 +8,46 @@ import {timeStringToSeconds} from '../lib/util';
 module.exports = Fluxxor.createStore({
 
   initialize() {
-    this.albums = [];
-    this.tracks = [];
+    //player items
     this.api = null;
     this.playerState = PlayerState.STOPPED;
     this.playlist = [];
     this.nowPlaying = 0;
     this.currentTrackPosition = 0;
     this.trackPositionUpdateTimer = null;
+    this.willStopAfterCurrent = false;
+
+    //scrobble items
     this.scrobbleState = ScrobbleState.NO_TRACK;
     this.scrobblePlayTimer = null;
     this.scrobbleNowPlayingTimer = null;
-    this.willStopAfterCurrent = false;
-    this.lyricsState = LyricsState.NO_TRACK;
-    this.lyricsTrackId = null;
-    this.lyrics = null;
-
-    $.getJSON("/albums", function(albums) {
-      this.albums = albums;
-      this.emit("change");
-    }.bind(this));
-
-    $.getJSON("/tracks", function(tracks) {
-      this.tracks = tracks;
-      this.emit("change");
-    }.bind(this));
 
     this.bindActions(
-      "PLAY_ALBUM", this.onPlayAlbum,
-      "ENQUEUE_ALBUM", this.onEnqueueAlbum,
-      "PLAY_TRACK", this.onPlayTrack,
-      "ENQUEUE_TRACK", this.onEnqueueTrack,
-      "PLAY_SHUFFLE", this.onPlayShuffle,
-      "INITIALIZE_PLAYER", this.onInitializePlayer,
-      "PLAY_OR_PAUSE_PLAYBACK", this.onPlayOrPausePlayback,
-      "STOP_PLAYBACK", this.onStopPlayback,
-      "TOGGLE_STOP_AFTER_CURRENT", this.onToggleStopAfterCurrent,
-      "JUMP_TO_PREVIOUS_TRACK", this.onJumpToPreviousTrack,
-      "JUMP_TO_NEXT_TRACK", this.onJumpToNextTrack,
-      "JUMP_TO_PLAYLIST_ITEM", this.onJumpToPlaylistItem,
-      "SEEK_TO_POSITION", this.onSeekToPosition,
-      "SET_VOLUME", this.onSetVolume,
-      "SCAN_FOR_CHANGED_METADATA", this.onScanForChangedMetadata,
-      "SCAN_FOR_MOVED_FILES", this.onScanForMovedFiles,
-      "SCAN_FOR_NEW_FILES", this.onScanForNewFiles,
-      "GET_LYRICS", this.onGetLyrics,
+      Actions.PLAY_ALBUM, this.onPlayAlbum,
+      Actions.ENQUEUE_ALBUM, this.onEnqueueAlbum,
+      Actions.PLAY_TRACK, this.onPlayTrack,
+      Actions.ENQUEUE_TRACK, this.onEnqueueTrack,
+      Actions.PLAY_SHUFFLE, this.onPlayShuffle,
+      Actions.INITIALIZE_PLAYER, this.onInitializePlayer,
+      Actions.PLAY_OR_PAUSE_PLAYBACK, this.onPlayOrPausePlayback,
+      Actions.STOP_PLAYBACK, this.onStopPlayback,
+      Actions.TOGGLE_STOP_AFTER_CURRENT, this.onToggleStopAfterCurrent,
+      Actions.JUMP_TO_PREVIOUS_TRACK, this.onJumpToPreviousTrack,
+      Actions.JUMP_TO_NEXT_TRACK, this.onJumpToNextTrack,
+      Actions.JUMP_TO_PLAYLIST_ITEM, this.onJumpToPlaylistItem,
+      Actions.SEEK_TO_POSITION, this.onSeekToPosition,
+      Actions.SET_VOLUME, this.onSetVolume,
     );
   },
 
   getState() {
     return {
-      albums: this.albums,
-      tracks: this.tracks,
       playerState: this.playerState,
       willStopAfterCurrent: this.willStopAfterCurrent,
       scrobbleState: this.scrobbleState,
       playlist: this.playList,
       nowPlaying: this.nowPlaying,
       currentTrackPosition: this.currentTrackPosition,
-      lyrics: this.lyrics,
     };
   },
 
@@ -146,19 +127,6 @@ module.exports = Fluxxor.createStore({
       this.emit("change");
     }.bind(this));
   },
-
-  onScanForChangedMetadata() {
-    $.post("/tools/scan-for-changed-metadata");
-  },
-
-  onScanForMovedFiles() {
-    $.post("/tools/scan-for-moved-files");
-  },
-
-  onScanForNewFiles() {
-    $.post("/tools/scan-for-new-files");
-  },
-
 
   onInitializePlayer(playerNode) {
     this.api = new Gapless5(playerNode.id);
@@ -435,33 +403,6 @@ module.exports = Fluxxor.createStore({
       clearTimeout(this.scrobbleNowPlayingTimer);
       this.scrobbleNowPlayingTimer = null;
       this.emit("change");
-    }
-  },
-
-  onGetLyrics() {
-    if(this.playlist.length > 0 ) {
-      let nowPlayingId = this.playlist[this.nowPlaying].id;
-
-      if(nowPlayingId !== this.lyricsTrackId) {
-        this.lyrics = null;
-        this.lyricsState = LyricsState.LOADING;
-        this.lyricsTrackId = nowPlayingId;
-        this.emit("change");
-
-        $.ajax("/lyrics", {
-          data: {id: nowPlayingId},
-          success: function(lyrics) {
-            this.lyrics = lyrics;
-            this.lyricsState = LyricsState.SUCCESSFUL;
-            this.emit("change");
-          }.bind(this),
-          error: function(error) {
-            this.lyrics = null;
-            this.lyricsState = LyricsState.FAILED;
-            this.emit("change");
-          }.bind(this)
-        });
-      }
     }
   },
 });

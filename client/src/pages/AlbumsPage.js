@@ -6,13 +6,13 @@ module.exports = React.createClass({
   mixins: [FluxMixin],
 
   render() {
-    var musicStore = this.getFlux().store("MusicStore");
+    var dbStore = this.getFlux().store("DbStore");
 
     return (
       <div className='albums-page container-fluid'>
         <div className="row">
           <div className="col-xs-12">
-            <AlbumList albums={musicStore.albums} initialSortColumnKey="album_artist" />
+            <AlbumList albums={dbStore.albums} initialSortColumnKey="album_artist" />
           </div>
         </div>
       </div>
