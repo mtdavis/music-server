@@ -7,12 +7,16 @@ module.exports = React.createClass({
 
   render() {
     var dbStore = this.getFlux().store("DbStore");
+    var initialSortSpecs = [
+      {columnKey: 'album', order: 1},
+      {columnKey: 'album_artist', order: 1}
+    ];
 
     return (
       <div className='albums-page container-fluid'>
         <div className="row">
           <div className="col-xs-12">
-            <AlbumList albums={dbStore.albums} initialSortColumnKey="album_artist" />
+            <AlbumList albums={dbStore.albums} initialSortSpecs={initialSortSpecs} />
           </div>
         </div>
       </div>

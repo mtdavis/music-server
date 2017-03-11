@@ -20,12 +20,15 @@ module.exports = React.createClass({
           albumsNotRecentlyPlayed.push(album);
         }
     }
+    var initialSortSpecs = [
+      {columnKey: 'last_play', order: -1}
+    ];
 
     return (
       <div className='not-recently-played-page container-fluid'>
         <div className="row">
           <div className="col-xs-12">
-            <AlbumList albums={albumsNotRecentlyPlayed} initialSortColumnKey="last_play" initialSortOrder={-1} />
+            <AlbumList albums={albumsNotRecentlyPlayed} initialSortSpecs={initialSortSpecs} />
           </div>
         </div>
       </div>

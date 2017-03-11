@@ -9,18 +9,31 @@ import {
   TextField,
 } from 'material-ui';
 import deepEqual from 'deep-equal';
+import stable from 'stable';
 import MTableRow from './MTableRow.js';
 import MTableHeader from './MTableHeader.js';
 import {compare} from '../util';
 import Perf from 'react-addons-perf';
 window.Perf = Perf;
 
-function getRowComparator(sortColumnKey, sortOrder) {
+function getRowComparator(columnKey, order) {
   return function(rowA, rowB) {
-    var valA = rowA[sortColumnKey];
-    var valB = rowB[sortColumnKey];
-    return compare(valA, valB) * sortOrder;
+    var valA = rowA[columnKey];
+    var valB = rowB[columnKey];
+    return compare(valA, valB) * order;
   }
+}
+
+function sortBySpecs(rows, sortSpecs) {
+  var sortedRows = rows.slice();
+
+  for(let sortSpec of sortSpecs) {
+    let {columnKey, order} = sortSpec;
+    let comparator = getRowComparator(columnKey, order);
+    sortedRows = stable(sortedRows, comparator);
+  }
+
+  return sortedRows;
 }
 
 module.exports = React.createClass({
@@ -32,16 +45,14 @@ module.exports = React.createClass({
       onRowClick: null,
       onRowCtrlClick: null,
       showHeader: true,
-      initialSortColumnKey: null,
-      initialSortOrder: 1,
+      initialSortSpecs: [],
       rowLimit: Infinity
     };
   },
 
   getInitialState() {
     return {
-      sortColumnKey: this.props.initialSortColumnKey,
-      sortOrder: this.props.initialSortOrder,
+      sortSpecs: this.props.initialSortSpecs,
       clickCount: 0,
     };
   },
@@ -51,11 +62,7 @@ module.exports = React.createClass({
   },
 
   render() {
-    var sortedRows = this.props.rows.slice();
-    if(this.state.sortColumnKey !== null) {
-      sortedRows.sort(getRowComparator(
-        this.state.sortColumnKey, this.state.sortOrder));
-    }
+    var sortedRows = sortBySpecs(this.props.rows, this.state.sortSpecs);
 
     var rowNodes = sortedRows.map(rowData =>
       <MTableRow
@@ -104,8 +111,8 @@ module.exports = React.createClass({
             this.props.showHeader &&
             <MTableHeader
               columns={this.props.columns}
-              sortColumnKey={this.state.sortColumnKey}
-              sortOrder={this.state.sortOrder}
+              sortColumnKey={this.getTopSortSpec().columnKey}
+              sortOrder={this.getTopSortSpec().order}
               setSortColumnKey={this.setSortColumnKey}
             />
           }
@@ -141,18 +148,50 @@ module.exports = React.createClass({
   },
 
   setSortColumnKey(newSortColumnKey) {
-    var newSortOrder;
+    let newSortSpecs = this.state.sortSpecs.slice();
 
-    if(this.state.sortColumnKey === newSortColumnKey) {
-      newSortOrder = -this.state.sortOrder;
+    // check if newSortColumnKey is already in sortSpecs
+    let existingIndex = newSortSpecs.findIndex(
+      spec => spec.columnKey === newSortColumnKey);
+
+    if(existingIndex === -1) {
+      // does not exist, so add it to the top position.
+      newSortSpecs.push({
+        columnKey: newSortColumnKey,
+        order: 1,
+      });
+    }
+    else if(existingIndex === newSortSpecs.length - 1) {
+      // exists in top position, so flip its order.
+      let sortSpec = Object.assign({}, newSortSpecs[existingIndex]);
+      newSortSpecs.splice(existingIndex, 1);
+
+      sortSpec.order = -sortSpec.order;
+      newSortSpecs.push(sortSpec);
     }
     else {
-      newSortOrder = 1;
+      // exists in some other position,
+      // so remove it and re-add to the top position.
+      newSortSpecs.splice(existingIndex, 1);
+
+      newSortSpecs.push({
+        columnKey: newSortColumnKey,
+        order: 1,
+      });
     }
 
-    this.setState({
-      sortColumnKey: newSortColumnKey,
-      sortOrder: newSortOrder,
-    });
+    this.setState({sortSpecs: newSortSpecs});
+  },
+
+  getTopSortSpec() {
+    let {sortSpecs} = this.state;
+    if(sortSpecs.length === 0) {
+      return {
+        columnKey: null,
+        order: 1
+      };
+    }
+
+    return sortSpecs[sortSpecs.length - 1];
   },
 });

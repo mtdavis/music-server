@@ -17,11 +17,16 @@ module.exports = React.createClass({
         }
     }
 
+    var initialSortSpecs = [
+      {columnKey: 'album', order: 1},
+      {columnKey: 'album_artist', order: 1}
+    ];
+
     return (
       <div className='never-played-page container-fluid'>
         <div className="row">
           <div className="col-xs-12">
-            <AlbumList albums={albumsNeverPlayed}  initialSortColumnKey="album_artist" />
+            <AlbumList albums={albumsNeverPlayed} initialSortSpecs={initialSortSpecs} />
           </div>
         </div>
       </div>
