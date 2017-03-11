@@ -28,6 +28,7 @@ import LyricsPage from './pages/LyricsPage';
 import AlbumsPage from './pages/AlbumsPage';
 import NotRecentlyPlayedPage from './pages/NotRecentlyPlayedPage';
 import NeverPlayedPage from './pages/NeverPlayedPage';
+import FavoriteAlbumsPage from './pages/FavoriteAlbumsPage';
 import AllTracksPage from './pages/AllTracksPage';
 import ShufflePage from './pages/ShufflePage';
 import ScanPage from './pages/ScanPage';
@@ -40,6 +41,7 @@ var titles = {
   '/albums': "All Albums",
   '/not-recently-played': "Not Recently Played",
   '/never-played': "Never Played",
+  '/favorite-albums': "Favorite Albums",
   '/tracks': "All Tracks",
   '/shuffle': "Shuffle",
   '/scan': "Scan",
@@ -62,6 +64,8 @@ var LeftNavComponent = React.createClass({
         <LinkMenuItem to='/albums' iconClassName='icon-album' onClick={this.close}>All Albums</LinkMenuItem>
         <LinkMenuItem to='/not-recently-played' iconClassName='icon-album' onClick={this.close}>Not Recently Played</LinkMenuItem>
         <LinkMenuItem to='/never-played' iconClassName='icon-album' onClick={this.close}>Never Played</LinkMenuItem>
+        <LinkMenuItem to='/favorite-albums' iconClassName='icon-album' onClick={this.close}>Favorite Albums</LinkMenuItem>
+        <Divider />
         <LinkMenuItem to='/tracks' iconClassName='icon-music' onClick={this.close}>All Tracks</LinkMenuItem>
         <LinkMenuItem to='/shuffle' iconClassName='icon-shuffle' onClick={this.close}>Shuffle</LinkMenuItem>
         <Divider />
@@ -295,6 +299,7 @@ var router = (
         <Route path='albums' component={AlbumsPage} />
         <Route path='not-recently-played' component={NotRecentlyPlayedPage} />
         <Route path='never-played' component={NeverPlayedPage} />
+        <Route path='favorite-albums' component={FavoriteAlbumsPage} />
         <Route path='tracks' component={AllTracksPage} />
         <Route path='shuffle' component={ShufflePage} />
         <Route path='scan' component={ScanPage} />

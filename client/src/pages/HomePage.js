@@ -7,15 +7,32 @@ import {
 } from 'material-ui';
 
 var AlbumArt = React.createClass({
+  getInitialState() {
+    return {
+      opacity: 0,
+    };
+  },
+
   render() {
     var result;
     if(this.props.track.album === "") {
       result = null;
     }
     else {
+      let paperStyle = {
+        width: '100%',
+        lineHeight: '0',
+        opacity: this.state.opacity,
+        transition: 'opacity 450ms'
+      };
+
       result = (
-        <Paper rounded={false} style={{width:"100%", lineHeight:"0"}}>
-          <img src={"/album-art?id=" + this.props.track.id} style={{width:"100%"}} />
+        <Paper rounded={false} style={paperStyle}>
+          <img
+            src={'/album-art?id=' + this.props.track.id}
+            style={{width: '100%'}}
+            onLoad={() => this.setState({opacity: 1})}
+          />
         </Paper>
       );
     }

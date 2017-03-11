@@ -237,14 +237,14 @@ function albumArtHandler()
             if(jpgExists)
             {
                 res.writeHead(303, {
-                    "Location":encodeURI("/stream/" + relativeExpectedArtPathJpg.replace(/\\/g, "/"))
+                    "Location":encodeURI("/art/" + relativeExpectedArtPathJpg.replace(/\\/g, "/"))
                 });
                 res.end();
             }
             else if(pngExists)
             {
                 res.writeHead(303, {
-                    "Location":encodeURI("/stream/" + relativeExpectedArtPathPng.replace(/\\/g, "/"))
+                    "Location":encodeURI("/art/" + relativeExpectedArtPathPng.replace(/\\/g, "/"))
                 });
                 res.end();
             }
@@ -443,6 +443,9 @@ function startServer(router)
     app.use(connectLimitBandwidth(musicServerSettings.throttleRate));
 
     app.use("/stream", serveStatic(musicServerSettings.files.base_stream_path));
+    app.use("/art", serveStatic(musicServerSettings.files.base_stream_path, {
+        maxAge: '365d'
+    }));
     app.use("/", serveStatic("./client/build"));
     app.use(router);
 
