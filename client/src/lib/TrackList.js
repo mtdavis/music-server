@@ -28,7 +28,7 @@ const TrackList = React.createClass({
       {key:"artist", header:"Artist"},
       {key:"album", header:"Album"},
       {key:"title", header:"Title"},
-      {key:"track_number", header:"#"},
+      {key:"track_number", header:"#", textAlign:"right"},
       {key:"year", header:"Year", textAlign:"right"},
       {key:"duration", header:"Duration", renderer:secondsToTimeString, textAlign:"right", wrap:false},
       {key:"play_count", header:"Play Count", textAlign:"right"},

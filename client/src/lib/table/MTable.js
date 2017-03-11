@@ -104,6 +104,8 @@ module.exports = React.createClass({
             this.props.showHeader &&
             <MTableHeader
               columns={this.props.columns}
+              sortColumnKey={this.state.sortColumnKey}
+              sortOrder={this.state.sortOrder}
               setSortColumnKey={this.setSortColumnKey}
             />
           }
