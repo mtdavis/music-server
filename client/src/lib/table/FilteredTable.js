@@ -77,8 +77,8 @@ function rowPassesFilter(rowData, filterText, columns) {
   if(filterText === "") {
     result = true;
   }
-  else if(filterText[0] === "?") {
-    var astNode = jsep(filterText.substring(1));
+  else if(filterText[filterText.length-1] === "?") {
+    var astNode = jsep(filterText.substring(0, filterText.length-1));
     result = evaluateFilterExpression(rowData, astNode, columns);
   }
   else {

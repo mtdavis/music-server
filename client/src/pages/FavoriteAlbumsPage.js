@@ -1,6 +1,6 @@
 import React from 'react';
 import AlbumList from '../lib/AlbumList';
-import {FluxMixin} from '../lib/util';
+import {compare, FluxMixin} from '../lib/util';
 import {
   Paper,
 } from 'material-ui';
@@ -59,6 +59,9 @@ module.exports = React.createClass({
     var dbStore = this.getFlux().store("DbStore");
 
     var favoriteAlbums = dbStore.albums.filter(album => album.play_count >= 10);
+    favoriteAlbums.sort((a, b) =>
+      compare(a.album_artist, b.album_artist) || compare(a.year, b.year) || compare(a.album, b.album));
+
     var gridTiles = favoriteAlbums.map(album => 
       <AlbumImage key={album.id} album={album} />
     );

@@ -81,7 +81,8 @@ const LyricsPage = React.createClass({
         borderBottom: '1px solid #eee',
         paddingTop: '12px',
         paddingBottom: '12px',
-      }
+        marginTop: 0,
+      };
 
       let lyricsStyle = {
         fontFamily: this.props.muiTheme.fontFamily,
