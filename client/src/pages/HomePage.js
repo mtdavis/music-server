@@ -23,7 +23,7 @@ var AlbumArt = React.createClass({
         width: '100%',
         lineHeight: '0',
         opacity: this.state.opacity,
-        transition: 'opacity 450ms'
+        transition: 'opacity 450ms cubic-bezier(0.23, 1, 0.32, 1)'
       };
 
       result = (
