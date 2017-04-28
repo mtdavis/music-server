@@ -19,6 +19,7 @@ module.exports = React.createClass({
 
     var initialSortSpecs = [
       {columnKey: 'album', order: 1},
+      {columnKey: 'year', order: 1},
       {columnKey: 'album_artist', order: 1}
     ];
 

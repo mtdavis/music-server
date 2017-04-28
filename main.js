@@ -1,5 +1,6 @@
 var Promise = require("bluebird");
 var connect = require("connect");
+var compression = require("compression");
 var http = require("http");
 var https = require("https");
 var serveStatic = require("serve-static");
@@ -150,7 +151,7 @@ function lyricsHandler()
     return function(req, res, next) {
         var dom = domain.create();
 
-        dom.on('error', function(err) {
+        dom.on('error', function(error) {
             console.trace(error);
             res.statusCode = 500;
             res.end();
@@ -441,6 +442,7 @@ function startServer(router)
 
     app.use(bodyParser.urlencoded({extended: false}));
     app.use(connectLimitBandwidth(musicServerSettings.throttleRate));
+    app.use(compression());
 
     app.use("/stream", serveStatic(musicServerSettings.files.base_stream_path));
     app.use("/art", serveStatic(musicServerSettings.files.base_stream_path, {

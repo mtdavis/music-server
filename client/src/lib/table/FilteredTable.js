@@ -49,7 +49,8 @@ var binops = {
 
 var unops = {
   "-" : function(a) { return -a; },
-  "+" : function(a) { return +a; }
+  "+" : function(a) { return +a; },
+  "!" : function(a) { return !a; },
 };
 
 function evaluateFilterExpression(rowData, astNode, columns) {
