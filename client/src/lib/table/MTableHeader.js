@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import {
   TableHeader,
   TableRow
@@ -30,5 +30,19 @@ class MTableHeader extends React.Component {
 }
 
 MTableHeader.muiName = 'TableHeader';
+
+MTableHeader.propTypes = {
+  columns: PropTypes.arrayOf(PropTypes.shape({
+    key: PropTypes.string.isRequired
+  })).isRequired,
+
+  sortColumnKey: PropTypes.string.isRequired,
+
+  sortOrder: PropTypes.oneOf([1, -1]).isRequired,
+
+  setSortColumnKey: PropTypes.func.isRequired,
+
+  ...TableHeader.propTypes
+}
 
 export default MTableHeader;

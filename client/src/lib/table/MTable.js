@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import {
   Table,
   TableBody,
@@ -10,8 +10,8 @@ import {
 } from 'material-ui';
 import deepEqual from 'deep-equal';
 import stable from 'stable';
-import MTableRow from './MTableRow.js';
-import MTableHeader from './MTableHeader.js';
+import MTableRow from './MTableRow';
+import MTableHeader from './MTableHeader';
 import {compare} from '../util';
 import Perf from 'react-addons-perf';
 window.Perf = Perf;
@@ -37,6 +37,37 @@ function sortBySpecs(rows, sortSpecs) {
 }
 
 module.exports = React.createClass({
+  propTypes: {
+    placeholderText: PropTypes.string,
+
+    columns: PropTypes.arrayOf(
+      PropTypes.shape({
+        key: PropTypes.string.isRequired,
+        header: PropTypes.string,
+        textAlign: PropTypes.oneOf(['left', 'right']),
+        renderer: PropTypes.func,
+        wrap: PropTypes.boolean
+      }
+    )),
+
+    rows: PropTypes.array,
+
+    onRowClick: PropTypes.func,
+
+    onRowCtrlClick: PropTypes.func,
+
+    showHeader: PropTypes.bool,
+
+    initialSortSpecs: PropTypes.arrayOf(
+      PropTypes.shape({
+        columnKey: PropTypes.string.isRequired,
+        order: PropTypes.oneOf([1, -1])
+      })
+    ),
+
+    rowLimit: PropTypes.number
+  },
+
   getDefaultProps() {
     return {
       placeholderText: "Nothing to see here!",

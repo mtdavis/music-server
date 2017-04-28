@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import {AutoComplete, Chip} from 'material-ui';
 
 function filter(searchText, key) {
@@ -99,5 +99,11 @@ class MultiSelectAutoComplete extends React.Component {
     }
   }
 }
+
+MultiSelectAutoComplete.propTypes = {
+  hintText: PropTypes.string.isRequired,
+  dataSource: PropTypes.arrayOf(PropTypes.string).isRequired,
+  onSelectedItemsUpdate: PropTypes.func
+};
 
 export default MultiSelectAutoComplete;

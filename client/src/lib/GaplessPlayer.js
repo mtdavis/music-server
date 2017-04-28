@@ -1,9 +1,13 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import ReactDOM from 'react-dom';
 import {FluxMixin} from './util';
 
 const GaplessPlayer = React.createClass({
   mixins: [FluxMixin],
+
+  propTypes: {
+    id: PropTypes.string
+  },
 
   getDefaultProps() {
     return {

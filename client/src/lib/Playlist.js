@@ -1,6 +1,7 @@
 import React from 'react';
 import {Paper} from 'material-ui';
 import MTable from './table/MTable';
+import renderIcon from './table/renderIcon';
 import PlayerState from './PlayerState';
 import {
   FluxMixin,
@@ -53,7 +54,7 @@ const Playlist = React.createClass({
     });
 
     var columns = [
-      {key:"icon", renderer:"icon"},
+      {key:"icon", renderer: renderIcon},
       {key:"text"},
       {key:"duration", renderer:secondsToTimeString, textAlign:"right"}
     ];

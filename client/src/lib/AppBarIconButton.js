@@ -3,6 +3,10 @@ import {IconButton} from 'material-ui';
 import {muiThemeable} from 'material-ui/styles';
 
 const AppBarIconButton = muiThemeable()(React.createClass({
+  propTypes: {
+    ...IconButton.propTypes
+  },
+
   render() {
     var color = this.props.disabled ?
       this.props.muiTheme.palette.disabledColor :

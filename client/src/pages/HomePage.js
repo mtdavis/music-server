@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import Playlist from '../lib/Playlist';
 import {FluxMixin} from '../lib/util';
 import {
@@ -7,6 +7,13 @@ import {
 } from 'material-ui';
 
 var AlbumArt = React.createClass({
+  propTypes: {
+    track: PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      album: PropTypes.string
+    })
+  },
+
   getInitialState() {
     return {
       opacity: 0,

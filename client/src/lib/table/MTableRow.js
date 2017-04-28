@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import {
   TableRow
 } from 'material-ui';
@@ -39,3 +39,22 @@ export default class MTableRow extends React.Component {
     this.props.mOnClick(event, this.props.rowData);
   }
 }
+
+MTableRow.propTypes = {
+  columns: PropTypes.arrayOf(PropTypes.shape({
+    key: PropTypes.string.isRequired,
+    textAlign: PropTypes.oneOf(['left', 'right']),
+    renderer: PropTypes.func,
+    wrap: PropTypes.boolean
+  })),
+
+  rowData: PropTypes.object.isRequired,
+
+  cursor: PropTypes.string,
+
+  style: PropTypes.object,
+
+  mOnClick: PropTypes.func,
+
+  ...TableRow.propTypes
+};

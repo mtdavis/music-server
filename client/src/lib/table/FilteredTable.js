@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import jsep from 'jsep';
 import {
   Paper,
@@ -6,6 +6,7 @@ import {
 } from 'material-ui';
 import MultiSelectAutoComplete from '../MultiSelectAutoComplete';
 import {compare} from '../util';
+import MTable from './MTable'
 
 jsep.addBinaryOp(":", 10);
 jsep.addBinaryOp("~=", 6);
@@ -207,3 +208,13 @@ export default class FilteredTable extends React.Component {
     this.setState({selectedFilters});
   }
 }
+
+FilteredTable.propTypes = {
+  rows: PropTypes.arrayOf(PropTypes.object).isRequired,
+
+  filterKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
+
+  columns: MTable.propTypes.columns,
+
+  table: PropTypes.node.isRequired
+};

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import {Snackbar} from 'material-ui';
 import {
   FluxMixin,
@@ -10,6 +10,22 @@ import FilteredTable from './table/FilteredTable';
 
 const AlbumList = React.createClass({
   mixins: [FluxMixin],
+
+  propTypes: {
+    albums: PropTypes.arrayOf(
+      PropTypes.shape({
+        album_artist: PropTypes.string.isRequired,
+        album: PropTypes.string.isRequired,
+        year: PropTypes.number,
+        tracks: PropTypes.number.isRequired,
+        duration: PropTypes.number.isRequired,
+        play_count: PropTypes.number.isRequired,
+        last_play: PropTypes.number
+      })
+    ),
+
+    ...MTable.propTypes
+  },
 
   getDefaultProps() {
     return {

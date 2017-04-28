@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import AlbumList from '../lib/AlbumList';
 import {FluxMixin} from '../lib/util';
 import {
@@ -8,6 +8,10 @@ import {
 
 var ShuffleButton = React.createClass({
   mixins: [FluxMixin],
+
+  propTypes: {
+    minutes: PropTypes.number.isRequired
+  },
 
   render() {
     return (

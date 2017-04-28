@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import ArrowUpwardIcon from 'material-ui/svg-icons/navigation/arrow-upward';
 import ArrowDownwardIcon from 'material-ui/svg-icons/navigation/arrow-downward';
 
@@ -33,3 +33,11 @@ export default class SortIcon extends React.Component {
     );
   }
 }
+
+SortIcon.propTypes = {
+  sortingActive: PropTypes.bool,
+
+  sortOrder: PropTypes.oneOf([1, -1]),
+
+  hover: PropTypes.bool
+};

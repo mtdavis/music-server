@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import {
   TableHeaderColumn,
 } from 'material-ui';
@@ -61,5 +61,21 @@ class MTableHeaderColumn extends React.Component {
 }
 
 MTableHeaderColumn.muiName = 'TableHeaderColumn';
+
+MTableHeaderColumn.propTypes = {
+  column: PropTypes.shape({
+    key: PropTypes.string.isRequired,
+    header: PropTypes.string,
+    textAlign: PropTypes.oneOf(['left', 'right']),
+  }).isRequired,
+
+  sortingActive: PropTypes.bool.isRequired,
+
+  sortOrder: PropTypes.oneOf([1, -1]).isRequired,
+
+  setSortColumnKey: PropTypes.func.isRequired,
+
+  ...TableHeaderColumn.propTypes
+}
 
 export default MTableHeaderColumn;

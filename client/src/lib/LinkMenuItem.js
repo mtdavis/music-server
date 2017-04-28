@@ -1,8 +1,15 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import {FontIcon, MenuItem} from 'material-ui';
 import {Link} from 'react-router';
 
 const LinkMenuItem = React.createClass({
+  propTypes: {
+    iconClassName: PropTypes.string.isRequired,
+    to: PropTypes.string.isRequired,
+    onClick: PropTypes.func.isRequired,
+    children: PropTypes.node.isRequired
+  },
+
   render() {
     let icon = <FontIcon className={this.props.iconClassName} />;
 

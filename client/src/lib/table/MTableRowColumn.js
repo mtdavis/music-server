@@ -1,8 +1,6 @@
-import React from 'react';
-import {
-  FontIcon,
-  TableRowColumn
-} from 'material-ui';
+import React, {PropTypes} from 'react';
+import {TableRowColumn} from 'material-ui';
+import renderIcon from './renderIcon';
 
 export default class MTableRowColumn extends React.Component {
   constructor(props) {
@@ -27,12 +25,12 @@ export default class MTableRowColumn extends React.Component {
     var content;
     style.padding = 0;
 
-    if(renderer === "icon") {
-      content = <FontIcon className={value} />;
-      style.width = "48px";
-    }
-    else if(value !== null && value !== undefined) {
+    if(value !== null && value !== undefined) {
       content = renderer(value);
+
+      if(renderer === renderIcon) {
+        style.width = "48px";
+      }
     }
     else {
       content = "-";
@@ -57,3 +55,19 @@ export default class MTableRowColumn extends React.Component {
     );
   }
 }
+
+MTableRowColumn.propTypes = {
+  value: PropTypes.node,
+
+  renderer: PropTypes.func,
+
+  textAlign: PropTypes.oneOf(['left', 'right']),
+
+  wrap: PropTypes.bool,
+
+  style: PropTypes.object,
+
+  mOnClick: PropTypes.func,
+
+  ...TableRowColumn.props
+};

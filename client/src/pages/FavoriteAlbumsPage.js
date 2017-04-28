@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import AlbumList from '../lib/AlbumList';
 import {compare, FluxMixin} from '../lib/util';
 import {
@@ -8,6 +8,12 @@ import LazyLoad from 'react-lazy-load';
 
 var AlbumImage = React.createClass({
   mixins: [FluxMixin],
+
+  propTypes: {
+    album: PropTypes.shape({
+      id: PropTypes.number.isRequired
+    })
+  },
 
   getInitialState() {
     return {
