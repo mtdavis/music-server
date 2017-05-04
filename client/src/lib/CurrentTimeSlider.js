@@ -1,10 +1,9 @@
 import React from 'react';
-import {FluxMixin} from './util';
+import {FluxMixin, secondsToTimeString} from './util';
 import {Slider} from 'material-ui';
 import {colors, getMuiTheme, muiThemeable, MuiThemeProvider} from 'material-ui/styles';
 
 import PlayerState from './PlayerState';
-import {secondsToTimeString} from './util';
 
 const CurrentTimeSlider = muiThemeable()(React.createClass({
   mixins: [FluxMixin],
@@ -28,14 +27,14 @@ const CurrentTimeSlider = muiThemeable()(React.createClass({
   },
 
   render() {
-    var musicStore = this.getFlux().store("MusicStore");
+    const musicStore = this.getFlux().store("MusicStore");
 
-    var timeString = "0:00";
-    var sliderValue = 0;
-    var sliderMax = 1;
-    var sliderDisabled = true;
+    let timeString = "0:00";
+    let sliderValue = 0;
+    let sliderMax = 1;
+    let sliderDisabled = true;
 
-    var timeLabelStyles = {
+    const timeLabelStyles = {
       color: this.props.muiTheme.palette.disabledColor,
       fontWeight: this.props.muiTheme.appBar.titleFontWeight,
       height: this.props.muiTheme.appBar.height,
@@ -49,7 +48,7 @@ const CurrentTimeSlider = muiThemeable()(React.createClass({
     };
 
     if(musicStore.playerState !== PlayerState.STOPPED) {
-      var currentTrackDuration = musicStore.playlist[musicStore.nowPlaying].duration;
+      const currentTrackDuration = musicStore.playlist[musicStore.nowPlaying].duration;
       timeLabelStyles.color = this.props.muiTheme.appBar.textColor;
 
       if(this.state.dragging) {
@@ -61,7 +60,7 @@ const CurrentTimeSlider = muiThemeable()(React.createClass({
         timeString = secondsToTimeString(musicStore.currentTrackPosition);
       }
 
-      //strip off decimal
+      // strip off decimal
       if(timeString.indexOf(".") > -1) {
         timeString = timeString.split(".")[0];
       }
@@ -103,7 +102,7 @@ const CurrentTimeSlider = muiThemeable()(React.createClass({
   },
 
   onSliderDragStart() {
-    var musicStore = this.getFlux().store("MusicStore");
+    const musicStore = this.getFlux().store("MusicStore");
     this.setState({
       dragging: true,
       draggingValue: musicStore.currentTrackPosition

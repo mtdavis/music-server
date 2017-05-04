@@ -5,10 +5,10 @@ import PlayerState from '../lib/PlayerState';
 import ScrobbleState from '../lib/ScrobbleState';
 import {timeStringToSeconds} from '../lib/util';
 
-module.exports = Fluxxor.createStore({
+export default Fluxxor.createStore({
 
   initialize() {
-    //player items
+    // player items
     this.api = null;
     this.playerState = PlayerState.STOPPED;
     this.playlist = [];
@@ -17,7 +17,7 @@ module.exports = Fluxxor.createStore({
     this.trackPositionUpdateTimer = null;
     this.willStopAfterCurrent = false;
 
-    //scrobble items
+    // scrobble items
     this.scrobbleState = ScrobbleState.NO_TRACK;
     this.scrobblePlayTimer = null;
     this.scrobbleNowPlayingTimer = null;
@@ -36,7 +36,7 @@ module.exports = Fluxxor.createStore({
       Actions.JUMP_TO_NEXT_TRACK, this.onJumpToNextTrack,
       Actions.JUMP_TO_PLAYLIST_ITEM, this.onJumpToPlaylistItem,
       Actions.SEEK_TO_POSITION, this.onSeekToPosition,
-      Actions.SET_VOLUME, this.onSetVolume,
+      Actions.SET_VOLUME, this.onSetVolume
     );
   },
 
@@ -52,7 +52,7 @@ module.exports = Fluxxor.createStore({
   },
 
   onPlayAlbum(album) {
-    var query = {
+    const query = {
       album_artist: album.album_artist,
       album: album.album
     };
@@ -67,15 +67,15 @@ module.exports = Fluxxor.createStore({
   },
 
   onEnqueueAlbum(album) {
-    var query = {
+    const query = {
       album_artist: album.album_artist,
       album: album.album
     };
 
     $.getJSON("/tracks", query, function(tracks) {
-      for(var i = 0; i < tracks.length; i++) {
+      for(let i = 0; i < tracks.length; i++) {
         this.playlist.push(tracks[i]);
-        var path = tracks[i].path.replace(/#/, "%23");
+        const path = tracks[i].path.replace(/#/, "%23");
         this.api.addTrack("/stream/" + path);
       }
 
@@ -92,27 +92,27 @@ module.exports = Fluxxor.createStore({
 
   onEnqueueTrack(track) {
     this.playlist.push(track);
-    var path = track.path.replace(/#/, "%23");
+    const path = track.path.replace(/#/, "%23");
     this.api.addTrack("/stream/" + path);
     this.emit("change");
   },
 
   onPlayShuffle(minutes) {
     $.getJSON("/shuffle", function(tracks) {
-      //tracks are assumed to be ordered by last_play
-      var weights = {};
-      for(var i = 0; i < tracks.length; i++) {
+      // tracks are assumed to be ordered by last_play
+      const weights = {};
+      for(let i = 0; i < tracks.length; i++) {
         weights[i] = 1.0 / (i + 1);
       }
 
-      var tracksToEnqueue = [];
-      var secondsToFill = minutes * 60;
-      var enqueuedSeconds = 0;
+      const tracksToEnqueue = [];
+      const secondsToFill = minutes * 60;
+      let enqueuedSeconds = 0;
 
       while(enqueuedSeconds < secondsToFill && tracks.length > 0) {
-        var index = weighted.select(weights);
+        const index = weighted.select(weights);
         if(tracks[index]) {
-          var track = tracks[index];
+          const track = tracks[index];
           delete tracks[index];
           delete weights[index];
           tracksToEnqueue.push(track);
@@ -135,7 +135,7 @@ module.exports = Fluxxor.createStore({
     this.api.onplay = function() {
       this.playerState = PlayerState.PLAYING;
 
-      //avoid restarting the scrobble timers, in case of player state moving from paused to play
+      // avoid restarting the scrobble timers, in case of player state moving from paused to play
       if(this.scrobbleState === ScrobbleState.NO_TRACK) {
         this.startScrobbleTimers();
       }
@@ -188,10 +188,10 @@ module.exports = Fluxxor.createStore({
       this.emit("change");
     }.bind(this);
 
-    var currentPositionNode = playerNode.querySelector(".g5position span:nth-child(1)");
+    const currentPositionNode = playerNode.querySelector(".g5position span:nth-child(1)");
 
     this.api.getCurrentTrackPosition = function() {
-      var timeString = currentPositionNode.textContent;
+      const timeString = currentPositionNode.textContent;
 
       if(timeString) {
         return timeStringToSeconds(timeString);
@@ -228,7 +228,7 @@ module.exports = Fluxxor.createStore({
     }
   },
 
-  clearPlaylist(tracks) {
+  clearPlaylist() {
     this.willStopAfterCurrent = false;
     this.nowPlaying = 0;
     this.playlist = [];
@@ -240,9 +240,9 @@ module.exports = Fluxxor.createStore({
     if(this.api) {
       this.clearPlaylist();
 
-      for(var i = 0; i < tracks.length; i++) {
+      for(let i = 0; i < tracks.length; i++) {
         this.playlist.push(tracks[i]);
-        var path = tracks[i].path.replace(/#/, "%23");
+        const path = tracks[i].path.replace(/#/, "%23");
         this.api.addTrack("/stream/" + path);
       }
 
@@ -278,7 +278,7 @@ module.exports = Fluxxor.createStore({
 
   onSeekToPosition(position) {
     if(this.api) {
-      var duration = this.playlist[this.nowPlaying].duration;
+      const duration = this.playlist[this.nowPlaying].duration;
 
       if(position < 0) {
         position = 0;
@@ -288,10 +288,10 @@ module.exports = Fluxxor.createStore({
         position = duration;
       }
 
-      //Gapless5 player has a resolution of 65535 slices.
-      var seekTo = Math.floor(position / duration * 65535);
+      // Gapless5 player has a resolution of 65535 slices.
+      let seekTo = Math.floor(position / duration * 65535);
 
-      //But if you seek to the last slice it will instead go to slice 0.
+      // But if you seek to the last slice it will instead go to slice 0.
       if(seekTo === 65535) {
         seekTo = 65534;
       }
@@ -310,19 +310,19 @@ module.exports = Fluxxor.createStore({
       }
 
       try {
-        //Gapless5 takes a value between 0 and 65535.
+        // Gapless5 takes a value between 0 and 65535.
         this.api.setGain(Math.floor(volume * 65535));
       }
       catch(ex) {
-        //Gapless 5 throws an exception if you set the gain while tracklist is empty;
-        //but it will still work.
+        // Gapless 5 throws an exception if you set the gain while tracklist is empty;
+        // but it will still work.
       }
     }
   },
 
   startTrackPositionUpdateTimer() {
     this.trackPositionUpdateTimer = setInterval(function() {
-      var newTrackPosition = this.api.getCurrentTrackPosition();
+      const newTrackPosition = this.api.getCurrentTrackPosition();
       if(newTrackPosition !== this.currentTrackPosition) {
         this.currentTrackPosition = newTrackPosition;
         this.emit("change");
@@ -343,17 +343,17 @@ module.exports = Fluxxor.createStore({
     if(this.playerState === PlayerState.PLAYING) {
       this.clearScrobbleTimers();
 
-      var trackStartedPlaying = Math.floor(Date.now() / 1000);
-      var trackToScrobble = this.playlist[this.nowPlaying];
+      const trackStartedPlaying = Math.floor(Date.now() / 1000);
+      const trackToScrobble = this.playlist[this.nowPlaying];
 
-      var nowPlayingDelayMs = 5000;
+      const nowPlayingDelayMs = 5000;
 
       if(trackToScrobble.duration * 1000 > nowPlayingDelayMs) {
-        //submit the now-playing update in 5 seconds if it's still playing.
+        // submit the now-playing update in 5 seconds if it's still playing.
         this.scrobbleNowPlayingTimer = setTimeout(function() {
           if(trackToScrobble === this.playlist[this.nowPlaying] &&
             this.playerState !== PlayerState.STOPPED) {
-            var postData = {
+            const postData = {
               id: trackToScrobble.id
             };
             $.post("/submit-now-playing", postData);
@@ -363,12 +363,12 @@ module.exports = Fluxxor.createStore({
         }.bind(this), nowPlayingDelayMs);
       }
 
-      //submit the play in (duration / 2) seconds if it's still playing.
-      var playDelayMs = trackToScrobble.duration / 2.0 * 1000;
+      // submit the play in (duration / 2) seconds if it's still playing.
+      const playDelayMs = trackToScrobble.duration / 2.0 * 1000;
       this.scrobblePlayTimer = setTimeout(function() {
         if(trackToScrobble === this.playlist[this.nowPlaying] &&
           this.playerState !== PlayerState.STOPPED) {
-          var postData = {
+          const postData = {
             id: trackToScrobble.id,
             started_playing: trackStartedPlaying
           };

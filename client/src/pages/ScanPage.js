@@ -1,12 +1,11 @@
 import React from 'react';
-import AlbumList from '../lib/AlbumList';
 import {FluxMixin} from '../lib/util';
 import {
   FontIcon,
   RaisedButton
 } from 'material-ui';
 
-module.exports = React.createClass({
+export default React.createClass({
   mixins: [FluxMixin],
 
   render() {

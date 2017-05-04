@@ -3,4 +3,4 @@ var React = require('react');
 
 // Just a place to dump a few helpers.
 
-module.exports.FluxMixin = Fluxxor.FluxMixin(React);
+export default const FluxMixin = Fluxxor.FluxMixin(React);

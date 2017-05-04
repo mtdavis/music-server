@@ -1,7 +1,7 @@
 import Fluxxor from 'fluxxor';
 import Actions from './Actions';
 
-module.exports = Fluxxor.createStore({
+export default Fluxxor.createStore({
 
   initialize() {
     this.albums = [];
@@ -20,7 +20,7 @@ module.exports = Fluxxor.createStore({
     this.bindActions(
       Actions.SCAN_FOR_CHANGED_METADATA, this.onScanForChangedMetadata,
       Actions.SCAN_FOR_MOVED_FILES, this.onScanForMovedFiles,
-      Actions.SCAN_FOR_NEW_FILES, this.onScanForNewFiles,
+      Actions.SCAN_FOR_NEW_FILES, this.onScanForNewFiles
     );
   },
 

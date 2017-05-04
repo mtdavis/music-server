@@ -36,7 +36,7 @@ function sortBySpecs(rows, sortSpecs) {
   return sortedRows;
 }
 
-module.exports = React.createClass({
+export default React.createClass({
   propTypes: {
     placeholderText: PropTypes.string,
 

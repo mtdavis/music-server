@@ -8,10 +8,10 @@ const AppBarIconButton = muiThemeable()(React.createClass({
   },
 
   render() {
-    var color = this.props.disabled ?
-      this.props.muiTheme.palette.disabledColor :
-      this.props.muiTheme.appBar.textColor;
-    var {muiTheme, ...props} = this.props;
+    const {muiTheme, ...props} = this.props;
+    const color = this.props.disabled ?
+      muiTheme.palette.disabledColor :
+      muiTheme.appBar.textColor;
     return (
       <IconButton
         style={{marginTop: 8}}

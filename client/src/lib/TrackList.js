@@ -41,7 +41,7 @@ const TrackList = React.createClass({
   },
 
   render() {
-    var columns = [
+    const columns = [
       {key:"artist", header:"Artist"},
       {key:"album", header:"Album"},
       {key:"title", header:"Title"},
@@ -52,7 +52,7 @@ const TrackList = React.createClass({
       {key:"last_play", header:"Last Play", renderer:unixTimestampToDateString, textAlign:"right", wrap:false}
     ];
 
-    var table = (
+    const table = (
       <MTable
         {...this.props}
         onRowClick={this.onTrackClick}

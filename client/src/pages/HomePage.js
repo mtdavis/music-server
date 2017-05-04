@@ -2,11 +2,10 @@ import React, {PropTypes} from 'react';
 import Playlist from '../lib/Playlist';
 import {FluxMixin} from '../lib/util';
 import {
-  Menu,
   Paper,
 } from 'material-ui';
 
-var AlbumArt = React.createClass({
+const AlbumArt = React.createClass({
   propTypes: {
     track: PropTypes.shape({
       id: PropTypes.number.isRequired,
@@ -21,12 +20,12 @@ var AlbumArt = React.createClass({
   },
 
   render() {
-    var result;
+    let result;
     if(this.props.track.album === "") {
       result = null;
     }
     else {
-      let paperStyle = {
+      const paperStyle = {
         width: '100%',
         lineHeight: '0',
         opacity: this.state.opacity,
@@ -48,7 +47,7 @@ var AlbumArt = React.createClass({
   }
 });
 
-module.exports = React.createClass({
+export default React.createClass({
   mixins: [FluxMixin],
 
   contextTypes: {
@@ -57,8 +56,8 @@ module.exports = React.createClass({
 
   render() {
 
-    var content;
-    var musicStore = this.getFlux().store("MusicStore");
+    let content;
+    const musicStore = this.getFlux().store("MusicStore");
     if(musicStore.playlist.length === 0 || musicStore.playlist[0].album === '') {
       content = (
         <div className="row">
@@ -69,17 +68,17 @@ module.exports = React.createClass({
       );
     }
     else {
-        content = (
-          <div className="row">
-            <div className="col-xs-12 col-sm-7 col-md-6">
-              <AlbumArt key="art" track={musicStore.playlist[0]} />
-            </div>
-
-            <div className="col-xs-12 col-sm-5 col-md-6">
-              <Playlist />
-            </div>
+      content = (
+        <div className="row">
+          <div className="col-xs-12 col-sm-7 col-md-6">
+            <AlbumArt key="art" track={musicStore.playlist[0]} />
           </div>
-        );
+
+          <div className="col-xs-12 col-sm-5 col-md-6">
+            <Playlist />
+          </div>
+        </div>
+      );
     }
 
     return (

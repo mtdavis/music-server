@@ -11,7 +11,7 @@ const LinkMenuItem = React.createClass({
   },
 
   render() {
-    let icon = <FontIcon className={this.props.iconClassName} />;
+    const icon = <FontIcon className={this.props.iconClassName} />;
 
     return (
       <MenuItem innerDivStyle={{padding: 0}} leftIcon={icon}>
@@ -26,7 +26,7 @@ const LinkMenuItem = React.createClass({
           {this.props.children}
         </Link>
       </MenuItem>
-    )
+    );
   }
 });
 

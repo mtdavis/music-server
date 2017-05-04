@@ -2,12 +2,12 @@ import React from 'react';
 import TrackList from '../lib/TrackList';
 import {FluxMixin} from '../lib/util';
 
-module.exports = React.createClass({
+export default React.createClass({
   mixins: [FluxMixin],
 
   render() {
-    var dbStore = this.getFlux().store("DbStore");
-    var initialSortSpecs = [
+    const dbStore = this.getFlux().store("DbStore");
+    const initialSortSpecs = [
       {columnKey: 'track', order: 1},
       {columnKey: 'album', order: 1},
       {columnKey: 'album_artist', order: 1}

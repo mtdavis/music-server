@@ -1,12 +1,11 @@
 import React, {PropTypes} from 'react';
-import AlbumList from '../lib/AlbumList';
 import {FluxMixin} from '../lib/util';
 import {
   FontIcon,
   RaisedButton
 } from 'material-ui';
 
-var ShuffleButton = React.createClass({
+const ShuffleButton = React.createClass({
   mixins: [FluxMixin],
 
   propTypes: {
@@ -17,7 +16,7 @@ var ShuffleButton = React.createClass({
     return (
       <RaisedButton
         primary={true}
-        onClick={this.onClick} 
+        onClick={this.onClick}
         label={this.props.minutes + ' Minutes'}
         icon={<FontIcon className="icon-shuffle" style={{top:'-1.5px'}}/>} />
     );
@@ -26,9 +25,9 @@ var ShuffleButton = React.createClass({
   onClick() {
     this.getFlux().actions.playShuffle(this.props.minutes);
   }
-})
+});
 
-module.exports = React.createClass({
+export default React.createClass({
   render() {
     return (
       <div className='shuffle-page container-fluid'>

@@ -16,7 +16,7 @@ class MultiSelectAutoComplete extends React.Component {
   }
 
   render() {
-    var chips = this.state.selectedItems.map(this.renderChip.bind(this));
+    const chips = this.state.selectedItems.map(this.renderChip.bind(this));
 
     return (
       <div style={{layout: 'flex'}}>
@@ -39,7 +39,7 @@ class MultiSelectAutoComplete extends React.Component {
 
         {chips}
       </div>
-    )
+    );
   }
 
   handleUpdateInput(searchText) {
@@ -47,16 +47,16 @@ class MultiSelectAutoComplete extends React.Component {
   }
 
   renderChip(item) {
-    var style = {
+    const style = {
       verticalAlign: 'middle',
       display: 'inline-block',
       marginLeft: 8,
       marginTop: 4,
       marginBottom: 4,
     };
-    var labelStyle = {
+    const labelStyle = {
       verticalAlign: 'top'
-    }
+    };
     return (
       <Chip
         key={item}
@@ -65,13 +65,13 @@ class MultiSelectAutoComplete extends React.Component {
         onRequestDelete={() => this.deselectItem(item)}>
         {item || '(None)'}
       </Chip>
-    )
+    );
   }
 
   deselectItem(item) {
-    var index = this.state.selectedItems.indexOf(item);
+    const index = this.state.selectedItems.indexOf(item);
     if(index !== -1) {
-      var selectedItems = this.state.selectedItems.slice();
+      const selectedItems = this.state.selectedItems.slice();
       selectedItems.splice(index, 1);
       this.setState({selectedItems});
 
@@ -86,7 +86,7 @@ class MultiSelectAutoComplete extends React.Component {
     if(this.props.dataSource.includes(item) &&
       !this.state.selectedItems.includes(item)) {
 
-      var selectedItems = this.state.selectedItems.slice();
+      const selectedItems = this.state.selectedItems.slice();
       selectedItems.push(item);
       this.setState({
         selectedItems,

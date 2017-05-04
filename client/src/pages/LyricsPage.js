@@ -25,8 +25,8 @@ const LyricsPage = React.createClass({
   },
 
   getStateFromFlux() {
-    let musicStore = this.getFlux().store("MusicStore");
-    let lyricsStore = this.getFlux().store("LyricsStore");
+    const musicStore = this.getFlux().store("MusicStore");
+    const lyricsStore = this.getFlux().store("LyricsStore");
     return {
       lyricsState: lyricsStore.lyricsState,
       lyrics: lyricsStore.lyrics,
@@ -63,8 +63,8 @@ const LyricsPage = React.createClass({
       );
     }
     else {
-      let track = this.state.playlist[this.state.nowPlaying];
-      let header = track.artist + ' – ' + track.title;
+      const track = this.state.playlist[this.state.nowPlaying];
+      const header = track.artist + ' – ' + track.title;
       let lyrics;
 
       if(this.state.lyricsState === LyricsState.LOADING) {
@@ -74,7 +74,7 @@ const LyricsPage = React.createClass({
         lyrics = this.state.lyrics;
       }
 
-      let headerStyle = {
+      const headerStyle = {
         textAlign: 'center',
         fontSize: '24px',
         fontWeight: this.props.muiTheme.appBar.titleFontWeight,
@@ -84,7 +84,7 @@ const LyricsPage = React.createClass({
         marginTop: 0,
       };
 
-      let lyricsStyle = {
+      const lyricsStyle = {
         fontFamily: this.props.muiTheme.fontFamily,
         lineHeight: '1.333',
         textAlign: 'center',

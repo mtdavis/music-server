@@ -2,7 +2,7 @@ import Fluxxor from 'fluxxor';
 import Actions from './Actions';
 import LyricsState from '../lib/LyricsState';
 
-module.exports = Fluxxor.createStore({
+export default Fluxxor.createStore({
 
   initialize() {
     this.lyricsState = LyricsState.NO_TRACK;
@@ -10,7 +10,7 @@ module.exports = Fluxxor.createStore({
     this.lyrics = null;
 
     this.bindActions(
-      Actions.GET_LYRICS, this.onGetLyrics,
+      Actions.GET_LYRICS, this.onGetLyrics
     );
   },
 
@@ -27,7 +27,7 @@ module.exports = Fluxxor.createStore({
 
   finishOnGetLyrics(musicStore) {
     if(musicStore.playlist.length > 0 ) {
-      let nowPlayingId = musicStore.playlist[musicStore.nowPlaying].id;
+      const nowPlayingId = musicStore.playlist[musicStore.nowPlaying].id;
 
       if(nowPlayingId !== this.lyricsTrackId) {
         this.lyrics = null;
@@ -42,7 +42,7 @@ module.exports = Fluxxor.createStore({
             this.lyricsState = LyricsState.SUCCESSFUL;
             this.emit("change");
           }.bind(this),
-          error: function(error) {
+          error: function() {
             this.lyrics = null;
             this.lyricsState = LyricsState.FAILED;
             this.emit("change");

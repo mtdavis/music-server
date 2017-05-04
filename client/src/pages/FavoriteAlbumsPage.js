@@ -1,12 +1,11 @@
 import React, {PropTypes} from 'react';
-import AlbumList from '../lib/AlbumList';
 import {compare, FluxMixin} from '../lib/util';
 import {
   Paper,
 } from 'material-ui';
 import LazyLoad from 'react-lazy-load';
 
-var AlbumImage = React.createClass({
+const AlbumImage = React.createClass({
   mixins: [FluxMixin],
 
   propTypes: {
@@ -24,7 +23,7 @@ var AlbumImage = React.createClass({
 
   render() {
 
-    let paperStyle = {
+    const paperStyle = {
       margin: '12px',
       width: 250,
       lineHeight: 0,
@@ -58,21 +57,21 @@ var AlbumImage = React.createClass({
   }
 });
 
-module.exports = React.createClass({
+export default React.createClass({
   mixins: [FluxMixin],
 
   render() {
-    var dbStore = this.getFlux().store("DbStore");
+    const dbStore = this.getFlux().store("DbStore");
 
-    var favoriteAlbums = dbStore.albums.filter(album => album.play_count >= 10);
+    const favoriteAlbums = dbStore.albums.filter(album => album.play_count >= 10);
     favoriteAlbums.sort((a, b) =>
       compare(a.album_artist, b.album_artist) || compare(a.year, b.year) || compare(a.album, b.album));
 
-    var gridTiles = favoriteAlbums.map(album => 
+    const gridTiles = favoriteAlbums.map(album =>
       <AlbumImage key={album.id} album={album} />
     );
 
-    let divStyle = {
+    const divStyle = {
       display: 'flex',
       flexWrap: 'wrap',
       justifyContent: 'center',

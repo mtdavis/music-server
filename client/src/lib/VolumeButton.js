@@ -18,7 +18,7 @@ const VolumeButton = React.createClass({
   },
 
   render() {
-    var iconClassName;
+    let iconClassName;
     if(this.state.volume < .01) {
       iconClassName = "icon-volume-mute";
     }

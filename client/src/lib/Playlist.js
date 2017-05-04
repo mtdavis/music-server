@@ -12,12 +12,12 @@ const Playlist = React.createClass({
   mixins: [FluxMixin],
 
   render() {
-    var musicStore = this.getFlux().store("MusicStore");
+    const musicStore = this.getFlux().store("MusicStore");
 
-    //check whether all artists are equal.
-    var allArtistsEqual = true;
-    var artist = null;
-    for(var i = 0; i < musicStore.playlist.length; i++) {
+    // check whether all artists are equal.
+    let allArtistsEqual = true;
+    let artist = null;
+    for(let i = 0; i < musicStore.playlist.length; i++) {
       if(artist === null) {
         artist = musicStore.playlist[i].artist;
       }
@@ -26,8 +26,8 @@ const Playlist = React.createClass({
       }
     }
 
-    var playlistItems = musicStore.playlist.map(function(track, index) {
-      var icon = "icon-music";
+    const playlistItems = musicStore.playlist.map(function(track, index) {
+      let icon = "icon-music";
 
       if(track === musicStore.playlist[musicStore.nowPlaying]) {
         if(musicStore.playerState === PlayerState.PLAYING) {
@@ -41,7 +41,7 @@ const Playlist = React.createClass({
         }
       }
 
-      var text = allArtistsEqual ?
+      const text = allArtistsEqual ?
         (index + 1) + ". " + track.title :
         (index + 1) + ". " + track.artist + " - " + track.title;
 
@@ -53,7 +53,7 @@ const Playlist = React.createClass({
       };
     });
 
-    var columns = [
+    const columns = [
       {key:"icon", renderer: renderIcon},
       {key:"text"},
       {key:"duration", renderer:secondsToTimeString, textAlign:"right"}

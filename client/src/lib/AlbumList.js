@@ -40,7 +40,7 @@ const AlbumList = React.createClass({
   },
 
   render() {
-    var columns = [
+    const columns = [
       {key:"album_artist", header:"Album Artist"},
       {key:"album", header:"Album"},
       {key:"year", header:"Year", textAlign:"right"},
@@ -50,7 +50,7 @@ const AlbumList = React.createClass({
       {key:"last_play", header:"Last Play", renderer:unixTimestampToDateString, textAlign:"right", wrap:false}
     ];
 
-    var table = (
+    const table = (
       <MTable
         {...this.props}
         onRowClick={this.onAlbumClick}
