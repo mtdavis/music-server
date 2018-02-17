@@ -1,70 +1,53 @@
-var Promise = require("bluebird");
-var fs = Promise.promisifyAll(require("fs"));
-var musicmetadata = require("musicmetadata");
+const Promise = require("bluebird");
+const fs = Promise.promisifyAll(require("fs"));
+const musicmetadata = require("musicmetadata");
 
-function fileExistsAsync(filePath)
-{
-    return new Promise(function(resolve, reject)
-    {
-        fs.statAsync(filePath).then(function(stat)
-        {
+function fileExistsAsync(filePath) {
+    return new Promise(function(resolve, reject) {
+        fs.statAsync(filePath).then(function(stat) {
             resolve(true);
-        }).catch(function(error)
-        {
-            if(error.code === "ENOENT")
-            {
+        }).catch(function(error) {
+            if(error.code === "ENOENT") {
                 resolve(false);
             }
-            else
-            {
+            else {
                 reject(error);
             }
         });
     });
-};
+}
 
-function getMetadataAsync(trackPath, options)
-{
-    if(!options)
-    {
+function getMetadataAsync(trackPath, options) {
+    if(!options) {
         options = {};
     }
 
-    return new Promise(function(resolve, reject)
-    {
-        musicmetadata(fs.createReadStream(trackPath), options, function(err, metadata)
-        {
-            if(err)
-            {
+    return new Promise(function(resolve, reject) {
+        musicmetadata(fs.createReadStream(trackPath), options, function(err, metadata) {
+            if(err) {
                 reject(err);
             }
-            else
-            {
+            else {
                 resolve(metadata);
             }
         });
     });
 }
 
-function dummyPromise()
-{
-    return new Promise(function(resolve, reject)
-    {
+function dummyPromise() {
+    return new Promise(function(resolve, reject) {
         resolve();
     });
 }
 
-function escapeForFileSystem(string, options)
-{
-    if(!options)
-    {
+function escapeForFileSystem(string, options) {
+    if(!options) {
         options = {leadingTrailing: true};
     }
 
-    var result = string.replace(/[\\\/:*?"<>|]/g, "-");
+    let result = string.replace(/[\\\/:*?"<>|]/g, "-");
 
-    if(options.leadingTrailing)
-    {
+    if(options.leadingTrailing) {
         result = result.replace(/^[. ]+/, "").replace(/[. ]+$/, "");
     }
 
@@ -76,4 +59,4 @@ module.exports = {
     getMetadataAsync: getMetadataAsync,
     dummyPromise: dummyPromise,
     escapeForFileSystem: escapeForFileSystem
-}
+};

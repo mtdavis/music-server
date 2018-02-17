@@ -1,28 +1,26 @@
-var Promise = require("bluebird");
-var walk = require("walk");
-var path = require("path");
-var fs = Promise.promisifyAll(require("fs"));
+const Promise = require("bluebird");
+const walk = require("walk");
+const path = require("path");
+const fs = Promise.promisifyAll(require("fs"));
 
-var db = require("./music-server-db").MusicServerDb();
-var musicServerSettings = require("./music-server-settings.json");
-var util = require("./music-server-util");
+const db = require("./music-server-db").MusicServerDb();
+const musicServerSettings = require("./music-server-settings.json");
+const util = require("./music-server-util");
 
-var checkForChangedMetadata = function(root, fileStats, next)
-{
-    var absolutePath = path.join(root, fileStats.name);
-    var extension = path.extname(fileStats.name);
-    var pathRelativeToMusicRoot = path.relative(
+function checkForChangedMetadata(root, fileStats, next) {
+    const absolutePath = path.join(root, fileStats.name);
+    const extension = path.extname(fileStats.name);
+    const pathRelativeToMusicRoot = path.relative(
         musicServerSettings.files.base_stream_path, absolutePath).replace(/\\/g, "/");
 
-    var maybeUpdateTrackFromMetadataAsync = function(fileMetadata, dbTrack)
-    {
-        var metadataTitle = fileMetadata.title;
-        var metadataArtist = fileMetadata.artist[0];
-        var metadataAlbumArtist = fileMetadata.albumartist[0];
-        var metadataAlbum = fileMetadata.album;
-        var metadataYear = fileMetadata.year ? Number(fileMetadata.year) : null;
-        var metadataTrackNumber = fileMetadata.track.no ? fileMetadata.track.no : null;
-        var metadataGenre = fileMetadata.genre[0];
+    function maybeUpdateTrackFromMetadataAsync(fileMetadata, dbTrack) {
+        const metadataTitle = fileMetadata.title;
+        const metadataArtist = fileMetadata.artist[0];
+        const metadataAlbumArtist = fileMetadata.albumartist[0];
+        const metadataAlbum = fileMetadata.album;
+        const metadataYear = fileMetadata.year ? Number(fileMetadata.year) : null;
+        const metadataTrackNumber = fileMetadata.track.no ? fileMetadata.track.no : null;
+        const metadataGenre = fileMetadata.genre[0];
 
         if(metadataTitle !== dbTrack.title ||
             metadataArtist !== dbTrack.artist ||
@@ -30,8 +28,7 @@ var checkForChangedMetadata = function(root, fileStats, next)
             metadataAlbum !== dbTrack.album ||
             metadataYear !== dbTrack.year ||
             metadataTrackNumber !== dbTrack.track_number ||
-            metadataGenre !== dbTrack.genre)
-        {
+            metadataGenre !== dbTrack.genre) {
             dbTrack.title = metadataTitle;
             dbTrack.artist = metadataArtist;
             dbTrack.album_artist = metadataAlbumArtist;
@@ -42,60 +39,51 @@ var checkForChangedMetadata = function(root, fileStats, next)
 
             return db.updateTrackFromMetadataAsync(dbTrack);
         }
-        else
-        {
+        else {
             return util.dummyPromise();
         }
     }
 
-    if(extension === ".mp3" || extension === ".m4a")
-    {
+    if(extension === ".mp3" || extension === ".m4a") {
         process.stdout.write(".");
 
         Promise.join(
             util.getMetadataAsync(absolutePath, {duration: false}),
             db.selectTrackByPathAsync(pathRelativeToMusicRoot)
-        ).spread(function(fileMetadata, dbTrack)
-        {
-            if(fileMetadata && dbTrack)
-            {
+        ).spread(function(fileMetadata, dbTrack) {
+            if(fileMetadata && dbTrack) {
                 return maybeUpdateTrackFromMetadataAsync(fileMetadata, dbTrack);
             }
-            else
-            {
-                return util.dummyPromise()
+            else {
+                return util.dummyPromise();
             }
-        }).catch(function(error)
-        {
+        }).catch(function(error) {
             console.error(absolutePath);
             console.error(error);
         }).finally(next);
     }
-    else
-    {
+    else {
         next();
     }
 }
 
-var checkForNewFile = function(root, fileStats, next)
-{
-    var absolutePath = path.join(root, fileStats.name);
-    var extension = path.extname(fileStats.name);
-    var pathRelativeToMusicRoot = path.relative(
+function checkForNewFile(root, fileStats, next) {
+    const absolutePath = path.join(root, fileStats.name);
+    const extension = path.extname(fileStats.name);
+    const pathRelativeToMusicRoot = path.relative(
         musicServerSettings.files.base_stream_path, absolutePath).replace(/\\/g, "/");
 
-    var addTrackFromMetadataAsync = function(fileMetadata)
-    {
-        var metadataTitle = fileMetadata.title;
-        var metadataArtist = fileMetadata.artist[0];
-        var metadataAlbumArtist = fileMetadata.albumartist[0];
-        var metadataAlbum = fileMetadata.album;
-        var metadataYear = fileMetadata.year ? Number(fileMetadata.year) : null;
-        var metadataTrackNumber = fileMetadata.track.no ? fileMetadata.track.no : null;
-        var metadataGenre = fileMetadata.genre[0] || "";
-        var metadataDuration = fileMetadata.duration;
+    function addTrackFromMetadataAsync(fileMetadata) {
+        const metadataTitle = fileMetadata.title;
+        const metadataArtist = fileMetadata.artist[0];
+        const metadataAlbumArtist = fileMetadata.albumartist[0];
+        const metadataAlbum = fileMetadata.album;
+        const metadataYear = fileMetadata.year ? Number(fileMetadata.year) : null;
+        const metadataTrackNumber = fileMetadata.track.no ? fileMetadata.track.no : null;
+        const metadataGenre = fileMetadata.genre[0] || "";
+        const metadataDuration = fileMetadata.duration;
 
-        var dbTrack = {};
+        const dbTrack = {};
         dbTrack.title = metadataTitle;
         dbTrack.artist = metadataArtist;
         dbTrack.album_artist = metadataAlbumArtist;
@@ -109,18 +97,14 @@ var checkForNewFile = function(root, fileStats, next)
         return db.addTrackFromMetadataAsync(dbTrack);
     }
 
-    if(extension === ".mp3" || extension === ".m4a")
-    {
+    if(extension === ".mp3" || extension === ".m4a") {
         process.stdout.write(".");
 
-        db.selectTrackByPathAsync(pathRelativeToMusicRoot).then(function(dbTrack)
-        {
-            if(dbTrack)
-            {
+        db.selectTrackByPathAsync(pathRelativeToMusicRoot).then(function(dbTrack) {
+            if(dbTrack) {
                 next();
             }
-            else
-            {
+            else {
                 process.stdout.write("<" + pathRelativeToMusicRoot + ">");
                 next();
                 util.getMetadataAsync(absolutePath, {duration: true}).
@@ -129,44 +113,35 @@ var checkForNewFile = function(root, fileStats, next)
             }
         });
     }
-    else
-    {
+    else {
         next();
     }
 }
 
-var checkForMovedFile = function(root, fileStats, next)
-{
-    var absolutePath = path.join(root, fileStats.name);
-    var extension = path.extname(fileStats.name);
-    var pathRelativeToMusicRoot = path.relative(
+function checkForMovedFile(root, fileStats, next) {
+    const absolutePath = path.join(root, fileStats.name);
+    const extension = path.extname(fileStats.name);
+    const pathRelativeToMusicRoot = path.relative(
         musicServerSettings.files.base_stream_path, absolutePath).replace(/\\/g, "/");
 
-    var maybeUpdatePathAsync = function(dbTrack)
-    {
-        if(dbTrack && dbTrack.path !== pathRelativeToMusicRoot)
-        {
+    function maybeUpdatePathAsync(dbTrack) {
+        if(dbTrack && dbTrack.path !== pathRelativeToMusicRoot) {
             return db.updateTrackPathAsync(dbTrack.id, pathRelativeToMusicRoot);
         }
-        else
-        {
+        else {
             return util.dummyPromise();
         }
     }
 
-    if(extension === ".mp3" || extension === ".m4a")
-    {
+    if(extension === ".mp3" || extension === ".m4a") {
         process.stdout.write(".");
 
         db.selectTrackByPathAsync(pathRelativeToMusicRoot).then(function(dbTrack) {
-            if(dbTrack)
-            {
+            if(dbTrack) {
                 next();
             }
-            else
-            {
-                util.getMetadataAsync(absolutePath).then(function(fileMetadata)
-                {
+            else {
+                util.getMetadataAsync(absolutePath).then(function(fileMetadata) {
                     return db.selectTrackByInfoAsync({
                         title: fileMetadata.title,
                         artist: fileMetadata.artist[0],
@@ -178,65 +153,55 @@ var checkForMovedFile = function(root, fileStats, next)
             }
         });
     }
-    else
-    {
+    else {
         next();
     }
 }
 
-var checkForRestruction = function(root, fileStats, next)
-{
-    var actualAbsolutePath = path.join(root, fileStats.name);
-    var extension = path.extname(fileStats.name);
-    var pathRelativeToMusicRoot = path.relative(
-        musicServerSettings.files.base_stream_path, actualAbsolutePath);
+function checkForRestruction(root, fileStats, next) {
+    const actualAbsolutePath = path.join(root, fileStats.name);
+    const extension = path.extname(fileStats.name);
 
-    if(extension === ".mp3" || extension === ".m4a")
-    {
+    if(extension === ".mp3" || extension === ".m4a") {
         process.stdout.write(".");
 
-        var expectedRelativeDir;
-        var expectedFilename;
+        let expectedRelativeDir;
+        let expectedFilename;
 
-        util.getMetadataAsync(actualAbsolutePath).then(function(metadata)
-        {
-            if(metadata.album)
-            {
+        util.getMetadataAsync(actualAbsolutePath).then(function(metadata) {
+            if(metadata.album) {
                 expectedRelativeDir = path.join(
                     util.escapeForFileSystem(metadata.artist[0]),
                     util.escapeForFileSystem(metadata.album));
-                expectedFilename = metadata.track.no + ". " + util.escapeForFileSystem(metadata.title, {leadingTrailing: false}) + extension;
+                expectedFilename = metadata.track.no + ". " +
+                    util.escapeForFileSystem(metadata.title, {leadingTrailing: false}) +
+                    extension;
             }
-            else
-            {
+            else {
                 expectedRelativeDir = path.join(
                     util.escapeForFileSystem(metadata.artist[0]),
                     "(No Album)");
                 expectedFilename = util.escapeForFileSystem(metadata.title) + extension;
             }
 
-            var expectedAbsoluteDir = path.join(
+            const expectedAbsoluteDir = path.join(
                 musicServerSettings.files.base_stream_path,
                 expectedRelativeDir);
 
-            var expectedAbsolutePath = path.join(
+            const expectedAbsolutePath = path.join(
                 musicServerSettings.files.base_stream_path,
                 expectedRelativeDir,
                 expectedFilename);
 
-            if(actualAbsolutePath.toLowerCase() !== expectedAbsolutePath.toLowerCase())
-            {
-                try
-                {
+            if(actualAbsolutePath.toLowerCase() !== expectedAbsolutePath.toLowerCase()) {
+                try {
                     console.log(expectedAbsolutePath);
-                    if(!fs.existsSync(expectedAbsoluteDir))
-                    {
+                    if(!fs.existsSync(expectedAbsoluteDir)) {
                         fs.mkdirSync(expectedAbsoluteDir);
                     }
                     fs.renameSync(actualAbsolutePath, expectedAbsolutePath);
                 }
-                catch(error)
-                {
+                catch(error) {
                     console.error(error);
                 }
             }
@@ -244,38 +209,34 @@ var checkForRestruction = function(root, fileStats, next)
             next();
         });
     }
-    else if(extension === ".jpg")
-    {
-        var albumName = path.basename(actualAbsolutePath, ".jpg");
-        var actualDirectory = path.dirname(actualAbsolutePath);
-        var actualDirectoryName = path.basename(actualDirectory);
+    else if(extension === ".jpg") {
+        const albumName = path.basename(actualAbsolutePath, ".jpg");
+        const actualDirectory = path.dirname(actualAbsolutePath);
+        const actualDirectoryName = path.basename(actualDirectory);
 
-        if(albumName !== actualDirectoryName)
-        {
-            var expectedAbsoluteDir = path.join(actualDirectory, util.escapeForFileSystem(albumName));
+        if(albumName !== actualDirectoryName) {
+            const expectedAbsoluteDir = path.join(actualDirectory, util.escapeForFileSystem(albumName));
 
-            if(!fs.existsSync(expectedAbsoluteDir))
-            {
+            if(!fs.existsSync(expectedAbsoluteDir)) {
                 fs.mkdirSync(expectedAbsoluteDir);
             }
 
-            var expectedPath = path.join(expectedAbsoluteDir, util.escapeForFileSystem(albumName) + ".jpg");
+            const expectedPath = path.join(expectedAbsoluteDir, util.escapeForFileSystem(albumName) + ".jpg");
             fs.renameSync(actualAbsolutePath, expectedPath);
         }
         next();
     }
-    else
-    {
+    else {
         next();
     }
 }
 
-var scanAsync = function(fileHandler)
-{
-    return new Promise(function(resolve, reject)
-    {
+function scanAsync(fileHandler) {
+    return new Promise(function(resolve, reject) {
         walker = walk.walk(musicServerSettings.files.base_stream_path, {
-            filters: [ /\$New/ ]
+            filters: [
+                /\$New/
+            ]
         });
 
         walker.on("file", fileHandler);
@@ -283,18 +244,15 @@ var scanAsync = function(fileHandler)
     });
 }
 
-var scanForChangedMetadataAsync = function()
-{
+function scanForChangedMetadataAsync() {
     return scanAsync(checkForChangedMetadata);
 }
 
-var scanForNewFilesAsync = function()
-{
+function scanForNewFilesAsync() {
     return scanAsync(checkForNewFile);
 }
 
-var scanForMovedFilesAsync = function()
-{
+function scanForMovedFilesAsync() {
     return scanAsync(checkForMovedFile);
 }
 
@@ -304,7 +262,6 @@ module.exports = {
     scanForMovedFilesAsync: scanForMovedFilesAsync
 };
 
-var restructureAsync = function()
-{
+function restructureAsync() {
     return scanAsync(checkForRestruction);
 }

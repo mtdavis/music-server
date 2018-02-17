@@ -1,43 +1,33 @@
-var Promise = require("bluebird");
-var SimpleLastfm = require("simple-lastfm");
-var musicServerSettings = require("./music-server-settings.json");
-var http = require("http");
-var url = require("url");
+const Promise = require("bluebird");
+const SimpleLastfm = require("simple-lastfm");
+const musicServerSettings = require("./music-server-settings.json");
+const http = require("http");
+const url = require("url");
 
-var MusicServerLastfm = function()
-{
-    var lastfm = new SimpleLastfm(musicServerSettings.lastfm);
+function MusicServerLastfm() {
+    const lastfm = new SimpleLastfm(musicServerSettings.lastfm);
 
-    if(musicServerSettings.lastfm.session_key === null)
-    {
-        var callback = function(result)
-        {
-            if(result.success)
-            {
+    if(musicServerSettings.lastfm.session_key === null) {
+        function callback(result) {
+            if(result.success) {
                 console.log("got last.fm session key: " + result.session_key);
             }
-            else
-            {
+            else {
                 console.error("could not get last.fm session key");
             }
-        };
+        }
 
         result.getSessionKey(callback);
     }
 
-    this.doScrobbleAsync = function(options)
-    {
-        return new Promise(function(resolve, reject)
-        {
-            options.callback = function(result)
-            {
-                if(result.success)
-                {
+    this.doScrobbleAsync = function(options) {
+        return new Promise(function(resolve, reject) {
+            options.callback = function(result) {
+                if(result.success) {
                     console.log("scrobble success!");
                     resolve(result);
                 }
-                else
-                {
+                else {
                     console.log("scrobble failed.");
                     reject(result.error);
                 }
@@ -48,25 +38,21 @@ var MusicServerLastfm = function()
         });
     };
 
-    this.getAlbumInfoAsync = function(options)
-    {
-        return new Promise(function(resolve, reject)
-        {
+    this.getAlbumInfoAsync = function(options) {
+        return new Promise(function(resolve, reject) {
             console.log("getting album info", options);
 
-            var callback = function(res) {
-                var body = '';
-                res.on('data', function(chunk)
-                {
+            function callback(res) {
+                let body = '';
+                res.on('data', function(chunk) {
                     body += chunk;
                 });
-                res.on('end', function()
-                {
+                res.on('end', function() {
                     resolve(JSON.parse(body));
                 });
-            };
+            }
 
-            var path = url.format({
+            const path = url.format({
                 pathname: "/2.0/",
                 query: {
                     method: "album.getInfo",
@@ -86,7 +72,7 @@ var MusicServerLastfm = function()
     };
 
     return this;
-};
+}
 
 module.exports = {
     MusicServerLastfm: MusicServerLastfm

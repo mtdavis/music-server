@@ -17,7 +17,7 @@ import AppBarIconButton from './lib/AppBarIconButton';
 import VolumeButton from './lib/VolumeButton';
 import PlayerState from './lib/PlayerState';
 import ScrobbleState from './lib/ScrobbleState';
-import {secondsToTimeString, FluxMixin} from './lib/util';
+import {FluxMixin} from './lib/util';
 import LinkMenuItem from './lib/LinkMenuItem';
 
 import {AppBar, Divider, Drawer, Snackbar} from 'material-ui';
@@ -35,7 +35,7 @@ import ScanPage from './pages/ScanPage';
 
 injectTapEventPlugin();
 
-var titles = {
+const titles = {
   '/': "Now Playing",
   '/lyrics': "Lyrics",
   '/albums': "All Albums",
@@ -45,9 +45,9 @@ var titles = {
   '/tracks': "All Tracks",
   '/shuffle': "Shuffle",
   '/scan': "Scan",
-}
+};
 
-var LeftNavComponent = React.createClass({
+const LeftNavComponent = React.createClass({
   getInitialState() {
     return {
       open: false
@@ -58,18 +58,36 @@ var LeftNavComponent = React.createClass({
     return (
       <Drawer open={this.state.open} onRequestChange={this.onRequestChange} docked={false} width={320}>
         <AppBar title="Mike's Music Player" onLeftIconButtonTouchTap={this.close} />
-        <LinkMenuItem to='/' iconClassName={'icon-music'} onClick={this.close}>Now Playing</LinkMenuItem>
-        <LinkMenuItem to='/lyrics' iconClassName={'icon-music'} onClick={this.close}>Lyrics</LinkMenuItem>
+        <LinkMenuItem to='/' iconClassName={'icon-music'} onClick={this.close}>
+          Now Playing
+        </LinkMenuItem>
+        <LinkMenuItem to='/lyrics' iconClassName={'icon-music'} onClick={this.close}>
+          Lyrics
+        </LinkMenuItem>
         <Divider />
-        <LinkMenuItem to='/albums' iconClassName='icon-album' onClick={this.close}>All Albums</LinkMenuItem>
-        <LinkMenuItem to='/not-recently-played' iconClassName='icon-album' onClick={this.close}>Not Recently Played</LinkMenuItem>
-        <LinkMenuItem to='/never-played' iconClassName='icon-album' onClick={this.close}>Never Played</LinkMenuItem>
-        <LinkMenuItem to='/favorite-albums' iconClassName='icon-album' onClick={this.close}>Favorite Albums</LinkMenuItem>
+        <LinkMenuItem to='/albums' iconClassName='icon-album' onClick={this.close}>
+          All Albums
+        </LinkMenuItem>
+        <LinkMenuItem to='/not-recently-played' iconClassName='icon-album' onClick={this.close}>
+          Not Recently Played
+        </LinkMenuItem>
+        <LinkMenuItem to='/never-played' iconClassName='icon-album' onClick={this.close}>
+          Never Played
+        </LinkMenuItem>
+        <LinkMenuItem to='/favorite-albums' iconClassName='icon-album' onClick={this.close}>
+          Favorite Albums
+        </LinkMenuItem>
         <Divider />
-        <LinkMenuItem to='/tracks' iconClassName='icon-music' onClick={this.close}>All Tracks</LinkMenuItem>
-        <LinkMenuItem to='/shuffle' iconClassName='icon-shuffle' onClick={this.close}>Shuffle</LinkMenuItem>
+        <LinkMenuItem to='/tracks' iconClassName='icon-music' onClick={this.close}>
+          All Tracks
+        </LinkMenuItem>
+        <LinkMenuItem to='/shuffle' iconClassName='icon-shuffle' onClick={this.close}>
+          Shuffle
+        </LinkMenuItem>
         <Divider />
-        <LinkMenuItem to='/scan' iconClassName='icon-search' onClick={this.close}>Scan</LinkMenuItem>
+        <LinkMenuItem to='/scan' iconClassName='icon-search' onClick={this.close}>
+          Scan
+        </LinkMenuItem>
       </Drawer>
     );
   },
@@ -83,7 +101,7 @@ var LeftNavComponent = React.createClass({
   open() {
     this.setState({
       open: true
-    })
+    });
   },
 
   close() {
@@ -93,7 +111,7 @@ var LeftNavComponent = React.createClass({
   }
 });
 
-var Master = withRouter(React.createClass({
+const Master = withRouter(React.createClass({
   mixins: [FluxMixin, StoreWatchMixin("MusicStore", "DbStore")],
 
   muiTheme: getMuiTheme({
@@ -129,22 +147,22 @@ var Master = withRouter(React.createClass({
   },
 
   render() {
-    var musicStore = this.getFlux().store("MusicStore");
-    var playButtonEnabled = musicStore.playlist.length > 0;
-    var playOrPause = musicStore.playerState === PlayerState.PLAYING ? "icon-pause" : "icon-play"
-    var stopButtonEnabled = musicStore.playerState !== PlayerState.STOPPED;
-    var prevButtonEnabled = musicStore.playlist.length > 1 &&
+    const musicStore = this.getFlux().store("MusicStore");
+    const playButtonEnabled = musicStore.playlist.length > 0;
+    const playOrPause = musicStore.playerState === PlayerState.PLAYING ? "icon-pause" : "icon-play";
+    const stopButtonEnabled = musicStore.playerState !== PlayerState.STOPPED;
+    const prevButtonEnabled = musicStore.playlist.length > 1 &&
       musicStore.nowPlaying > 0;
-    var nextButtonEnabled = musicStore.playlist.length > 1 &&
+    const nextButtonEnabled = musicStore.playlist.length > 1 &&
       musicStore.nowPlaying < musicStore.playlist.length - 1;
 
-    var scrobbleTooltip = {};
+    const scrobbleTooltip = {};
     scrobbleTooltip[ScrobbleState.NO_TRACK] = "last.fm";
     scrobbleTooltip[ScrobbleState.TRACK_QUEUED] = "Queued";
     scrobbleTooltip[ScrobbleState.TRACK_SCROBBLED] = "Scrobbled";
     scrobbleTooltip[ScrobbleState.SCROBBLE_FAILED] = "Scrobble failed!";
 
-    var toolbar = (
+    const toolbar = (
       <div className='app-bar-toolbar'>
         <GaplessPlayer />
 
@@ -172,7 +190,7 @@ var Master = withRouter(React.createClass({
       </div>
     );
 
-    var title = titles[this.props.router.getCurrentLocation().pathname] || 'Now Playing';
+    const title = titles[this.props.router.getCurrentLocation().pathname] || 'Now Playing';
 
     return (
       <MuiThemeProvider muiTheme={this.muiTheme}>
@@ -208,7 +226,7 @@ var Master = withRouter(React.createClass({
   }
 }));
 
-var actions = {
+const actions = {
   playAlbum(album) {
     this.dispatch(Actions.PLAY_ALBUM, album);
   },
@@ -282,15 +300,15 @@ var actions = {
   }
 };
 
-var stores = {
-    MusicStore: new MusicStore(),
-    DbStore: new DbStore(),
-    LyricsStore: new LyricsStore(),
+const stores = {
+  MusicStore: new MusicStore(),
+  DbStore: new DbStore(),
+  LyricsStore: new LyricsStore(),
 };
 
-var flux = new Fluxxor.Flux(stores, actions);
+const flux = new Fluxxor.Flux(stores, actions);
 
-var router = (
+const router = (
   <FluxProvider flux={flux}>
     <Router history={hashHistory}>
       <Route path='/' component={Master}>

@@ -1,9 +1,8 @@
-var fs = require("fs")
-var plist = require("plist");
-var sqlite3 = require("sqlite3");
+const fs = require("fs");
+const plist = require("plist");
+const sqlite3 = require("sqlite3");
 
-function createTable(db)
-{
+function createTable(db) {
     db.run("CREATE TABLE IF NOT EXISTS track(" +
         "title TEXT NOT NULL, " +
         "artist TEXT NOT NULL, " +
@@ -20,33 +19,31 @@ function createTable(db)
         ")");
 }
 
-function parseXml()
-{
+function parseXml() {
     console.log("Parsing XML...");
-    var xmlLib = plist.parse(fs.readFileSync("lib.apple.xml", "UTF-8"));
+    const xmlLib = plist.parse(fs.readFileSync("lib.apple.xml", "UTF-8"));
     console.log("Done.");
 
     return xmlLib["Tracks"];
 }
 
-function insertTracks(db, tracks)
-{
+function insertTracks(db, tracks) {
     console.log("Inserting tracks...");
 
-    var statement = db.prepare("INSERT INTO track " +
-        "(title, artist, album_artist, album, genre, duration, track_number, year, last_play, play_count, path, row_modified) " + 
+    const statement = db.prepare("INSERT INTO track " +
+        "(title, artist, album_artist, album, genre, duration, track_number, " +
+        " year, last_play, play_count, path, row_modified) " +
         "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-    var currentTime = Math.floor(new Date().getTime() / 1000);
+    const currentTime = Math.floor(new Date().getTime() / 1000);
 
-    for(var key in tracks)
-    {
-        var track = tracks[key];
+    for(const key in tracks) {
+        const track = tracks[key];
 
-        var location = unescape(decodeURI(track["Location"])).
+        const location = unescape(decodeURI(track["Location"])).
             replace(/\\/g, "/").replace(/file:\/\/localhost\/D:\/music\//, "");
 
-        statement.run(track["Name"], 
+        statement.run(track["Name"],
             track["Artist"] || "",
             track["Album Artist"] || "",
             track["Album"] || "",
@@ -65,11 +62,11 @@ function insertTracks(db, tracks)
     console.log("Done.");
 }
 
-var tracks = parseXml();
+const tracks = parseXml();
 
-var db = new sqlite3.Database("db.sqlite");
+const db = new sqlite3.Database("db.sqlite");
 
-db.serialize(function(){
+db.serialize(function() {
     createTable(db);
     insertTracks(db, tracks);
 });
