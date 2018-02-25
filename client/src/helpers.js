@@ -1,4 +1,4 @@
-const Fluxxor = require('Fluxxor');
+const Fluxxor = require('fluxxor');
 const React = require('react');
 
 // Just a place to dump a few helpers.

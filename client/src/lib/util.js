@@ -1,4 +1,4 @@
-import Fluxxor from 'Fluxxor';
+import Fluxxor from 'fluxxor';
 import React from 'react';
 
 export const FluxMixin = Fluxxor.FluxMixin(React);
