@@ -215,8 +215,7 @@ gulp.task('develop', function () {
 });
 
 gulp.task('bower', function() {
-  return bower()
-    .pipe(gulp.dest('build/'))
+  return bower({ directory: './build' });
 });
 
 gulp.task('icons', function(done) {

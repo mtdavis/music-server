@@ -166,7 +166,7 @@ export default React.createClass({
       if(this.state.clickCount === 0) {
         this.setState({clickCount: 1});
         this._doubleClickTimeout = setTimeout(
-          () => this.setState({clickCount: 0}), 250
+          () => this.setState({clickCount: 0}), 500
         );
       }
       else {

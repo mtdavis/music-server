@@ -431,7 +431,11 @@ function main() {
 
 process.on('uncaughtException', function(err) {
     console.log('Caught exception: ' + err);
-    if(err.code !== "ENOENT" && err.code !== "ENOTFOUND" && err.code !== "ETIMEDOUT") {
+    if(err.code !== "ENOENT" &&
+            err.code !== "ENOTFOUND" &&
+            err.code !== "ETIMEDOUT" &&
+            err.code !== "ECONNRESET" &&
+            err.code !== "EAI_AGAIN") {
         throw err;
     }
 });
