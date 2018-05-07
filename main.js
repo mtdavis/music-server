@@ -27,6 +27,8 @@ function initRouter() {
         router.get("/album-art", albumArtHandler());
         router.get("/shuffle", shuffleHandler());
         router.get("/lyrics", lyricsHandler());
+        router.get("/playlists", playlistsHandler());
+        router.get("/playlist-tracks", playlistTracksHandler());
         router.post("/submit-play", submitPlayHandler());
         router.post("/submit-now-playing", submitNowPlayingHandler());
         router.post("/tools/scan-for-changed-metadata", scanForChangedMetadataHandler());
@@ -127,6 +129,58 @@ function tracksHandler() {
     return selectFromDb(lastModifiedSql, tracksSql, {
         lastModifiedSqlParamsBuilder: sqlParamsBuilder,
         selectSqlParamsBuilder: sqlParamsBuilder
+    });
+}
+
+function playlistsHandler() {
+    const lastModifiedSql = "SELECT MAX(track.row_modified) AS last_modified " +
+        "FROM playlist " +
+        "LEFT JOIN playlist_track ON playlist.rowid = playlist_track.playlist_id " +
+        "LEFT JOIN track ON playlist_track.track_id = track.rowid " +
+        "GROUP BY playlist.rowid;";
+
+    const playlistsSql = "SELECT playlist.rowid AS id, playlist.title, " +
+        "COUNT(playlist_track.rowid) AS tracks, " +
+        "SUM(track.duration) AS duration, " +
+        "( " +
+        "   CASE WHEN COUNT(track.last_play) = COUNT(track.rowid) THEN min(track.last_play) ELSE NULL END" +
+        ") AS last_play, " +
+        "MIN(track.play_count) AS play_count " +
+        "FROM playlist " +
+        "LEFT JOIN playlist_track ON playlist.rowid = playlist_track.playlist_id " +
+        "LEFT JOIN track ON playlist_track.track_id = track.rowid " +
+        "GROUP BY playlist.rowid;";
+
+    return selectFromDb(lastModifiedSql, playlistsSql);
+}
+
+function playlistTracksHandler() {
+    const lastModifiedSql = "SELECT $current_time AS last_modified;";
+
+    const tracksSql = "SELECT track.rowid AS id, * " +
+        "FROM track " +
+        "LEFT JOIN playlist_track ON track.rowid = playlist_track.track_id " +
+        "WHERE playlist_track.playlist_id = $playlist_id " +
+        "ORDER BY (" +
+        "   CASE WHEN playlist_track.`order` IS NULL THEN RANDOM() ELSE playlist_track.`order` END" +
+        ");";
+
+    function tracksSqlParamsBuilder(req) {
+        const query = url.parse(req.url, true).query;
+        return {
+            $playlist_id: query.playlist_id,
+        };
+    }
+
+    function lastModifiedSqlParamsBuilder() {
+        return {
+            $current_time: Math.floor(Date.now() / 1000)
+        };
+    }
+
+    return selectFromDb(lastModifiedSql, tracksSql, {
+        lastModifiedSqlParamsBuilder: lastModifiedSqlParamsBuilder,
+        selectSqlParamsBuilder: tracksSqlParamsBuilder
     });
 }
 
