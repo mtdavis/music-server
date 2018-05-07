@@ -31,6 +31,7 @@ import NeverPlayedPage from './pages/NeverPlayedPage';
 import FavoriteAlbumsPage from './pages/FavoriteAlbumsPage';
 import AllTracksPage from './pages/AllTracksPage';
 import ShufflePage from './pages/ShufflePage';
+import PlaylistsPage from './pages/PlaylistsPage';
 import ScanPage from './pages/ScanPage';
 
 injectTapEventPlugin();
@@ -45,6 +46,7 @@ const titles = {
   '/tracks': "All Tracks",
   '/shuffle': "Shuffle",
   '/scan': "Scan",
+  '/playlists': "Playlists",
 };
 
 const LeftNavComponent = React.createClass({
@@ -80,6 +82,9 @@ const LeftNavComponent = React.createClass({
         <Divider />
         <LinkMenuItem to='/tracks' iconClassName='icon-music' onClick={this.close}>
           All Tracks
+        </LinkMenuItem>
+        <LinkMenuItem to='/playlists' iconClassName='icon-music' onClick={this.close}>
+          Playlists
         </LinkMenuItem>
         <LinkMenuItem to='/shuffle' iconClassName='icon-shuffle' onClick={this.close}>
           Shuffle
@@ -235,6 +240,10 @@ const actions = {
     this.dispatch(Actions.ENQUEUE_ALBUM, album);
   },
 
+  playPlaylist(playlist) {
+    this.dispatch(Actions.PLAY_PLAYLIST, playlist);
+  },
+
   playTrack(track) {
     this.dispatch(Actions.PLAY_TRACK, track);
   },
@@ -321,6 +330,7 @@ const router = (
         <Route path='tracks' component={AllTracksPage} />
         <Route path='shuffle' component={ShufflePage} />
         <Route path='scan' component={ScanPage} />
+        <Route path='playlists' component={PlaylistsPage} />
         <Route path='*' component={HomePage} />
       </Route>
     </Router>

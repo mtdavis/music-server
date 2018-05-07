@@ -25,6 +25,7 @@ export default Fluxxor.createStore({
     this.bindActions(
       Actions.PLAY_ALBUM, this.onPlayAlbum,
       Actions.ENQUEUE_ALBUM, this.onEnqueueAlbum,
+      Actions.PLAY_PLAYLIST, this.onPlayPlaylist,
       Actions.PLAY_TRACK, this.onPlayTrack,
       Actions.ENQUEUE_TRACK, this.onEnqueueTrack,
       Actions.PLAY_SHUFFLE, this.onPlayShuffle,
@@ -79,6 +80,20 @@ export default Fluxxor.createStore({
         this.api.addTrack("/stream/" + path);
       }
 
+      this.emit("change");
+    }.bind(this));
+  },
+
+  onPlayPlaylist(playlist) {
+    const query = {
+      playlist_id: playlist.id
+    };
+
+    $.getJSON("/playlist-tracks", query, function(tracks) {
+      this.onStopPlayback();
+      this.setPlaylist(tracks);
+      this.onPlayOrPausePlayback();
+      location.hash = "/";
       this.emit("change");
     }.bind(this));
   },
