@@ -24,10 +24,11 @@ class MultiSelectAutoComplete extends React.Component {
           filter={filter}
           popoverProps={{
             zDepth: 2,
-            useLayerForClickAway: true,
-            style: {
-              overflowY: 'scroll'
-            }
+            useLayerForClickAway: true
+          }}
+          menuStyle={{
+            maxHeight: '60vh',
+            overflowY: 'scroll'
           }}
           hintText={this.props.hintText}
           menuCloseDelay={0}
