@@ -6,6 +6,7 @@ export default Fluxxor.createStore({
   initialize() {
     this.albums = [];
     this.tracks = [];
+    this.playlists = [];
 
     $.getJSON("/albums", function(albums) {
       this.albums = albums;
@@ -14,6 +15,11 @@ export default Fluxxor.createStore({
 
     $.getJSON("/tracks", function(tracks) {
       this.tracks = tracks;
+      this.emit("change");
+    }.bind(this));
+
+    $.getJSON("/playlists", function(playlists) {
+      this.playlists = playlists;
       this.emit("change");
     }.bind(this));
 
@@ -28,6 +34,7 @@ export default Fluxxor.createStore({
     return {
       albums: this.albums,
       tracks: this.tracks,
+      playlists: this.playlists,
     };
   },
 
