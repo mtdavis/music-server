@@ -65,7 +65,8 @@ export default React.createClass({
 
     const favoriteAlbums = dbStore.albums.filter(album => album.play_count >= 10);
     favoriteAlbums.sort((a, b) =>
-      compare(a.album_artist, b.album_artist) || compare(a.year, b.year) || compare(a.album, b.album));
+      compare(a.album_artist, b.album_artist) || compare(a.release_date, b.release_date) ||
+      compare(a.album, b.album));
 
     const gridTiles = favoriteAlbums.map(album =>
       <AlbumImage key={album.id} album={album} />

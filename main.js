@@ -97,6 +97,9 @@ function albumsHandler() {
 
     const albumsSql = "SELECT MIN(rowid) AS id, album_artist, album, genre, SUM(duration) AS duration, " +
         "COUNT(rowid) AS tracks, year, " +
+        "(CASE WHEN release_date IS NULL THEN " +
+        "   CAST(strftime('%s', printf('%d-01-01', year)) AS INT) ELSE " +
+        "   release_date END) as release_date, " +
         "(CASE WHEN COUNT(last_play) = COUNT(rowid) THEN min(last_play) ELSE NULL END) AS last_play, " +
         "MIN(play_count) AS play_count " +
         "FROM track " +
@@ -330,6 +333,11 @@ function submitPlayHandler() {
         const lastPlay = req.body.started_playing || currentTime;
 
         function scrobbleOrQueue(track) {
+            if(track.owner !== 'mike') {
+                console.log('not scrobbling; owner = ' + track.owner);
+                return util.dummyPromise();
+            }
+
             return lastfm.doScrobbleAsync({
                 method: 'track.scrobble',
                 artist: track.artist,

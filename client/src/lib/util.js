@@ -20,19 +20,24 @@ export function timeStringToSeconds(timeString) {
 export function unixTimestampToDateString(timestamp) {
   const dateObj = new Date(timestamp * 1000);
 
-  const year = dateObj.getFullYear();
+  const year = dateObj.getUTCFullYear();
 
-  let month = dateObj.getMonth()+1;
+  let month = dateObj.getUTCMonth()+1;
   if(month < 10) {
     month = "0" + month;
   }
 
-  let date = dateObj.getDate();
+  let date = dateObj.getUTCDate();
   if(date < 10) {
     date = "0" + date;
   }
 
   return year + "-" + month + "-" + date;
+}
+
+export function unixTimestampToYear(timestamp) {
+  const dateObj = new Date(timestamp * 1000);
+  return dateObj.getUTCFullYear();
 }
 
 export function withFlux(Component) {

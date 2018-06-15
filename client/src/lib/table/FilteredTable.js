@@ -69,6 +69,11 @@ function evaluateFilterExpression(rowData, astNode, columns) {
     return astNode.value;
   }
   else if(astNode.type === "Identifier") {
+    if(astNode.name === 'last_play') {
+      const date = new Date(rowData[astNode.name] * 1000);
+      return date.toISOString().substring(0, 10);
+    }
+
     return rowData[astNode.name];
   }
 }
