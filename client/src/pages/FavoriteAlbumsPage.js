@@ -1,25 +1,20 @@
-import React, {PropTypes} from 'react';
-import {compare, FluxMixin} from '../lib/util';
+import React, {Component, PropTypes} from 'react';
+import {inject, observer} from 'mobx-react';
+import {compare} from '../lib/util';
 import {
   Paper,
 } from 'material-ui';
 import LazyLoad from 'react-lazy-load';
 
-const AlbumImage = React.createClass({
-  mixins: [FluxMixin],
-
-  propTypes: {
-    album: PropTypes.shape({
-      id: PropTypes.number.isRequired
-    })
-  },
-
-  getInitialState() {
-    return {
+@inject('musicStore')
+class AlbumImage extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       placeholderHeight: 250,
       opacity: 0,
     };
-  },
+  }
 
   render() {
 
@@ -43,25 +38,31 @@ const AlbumImage = React.createClass({
         </LazyLoad>
       </Paper>
     );
-  },
+  }
 
-  onLoad() {
+  onLoad = () => {
     this.setState({
       placeholderHeight: null,
       opacity: 1,
     });
-  },
-
-  onClick() {
-    this.getFlux().actions.playAlbum(this.props.album);
   }
-});
 
-export default React.createClass({
-  mixins: [FluxMixin],
+  onClick = () => {
+    this.props.musicStore.playAlbum(this.props.album);
+  }
+}
 
+AlbumImage.propTypes = {
+  album: PropTypes.shape({
+    id: PropTypes.number.isRequired
+  })
+};
+
+@inject('dbStore')
+@observer
+export default class FavoriteAlbumsPage extends Component {
   render() {
-    const dbStore = this.getFlux().store("DbStore");
+    const {dbStore} = this.props;
 
     const favoriteAlbums = dbStore.albums.filter(album => album.play_count >= 10);
     favoriteAlbums.sort((a, b) =>
@@ -85,5 +86,4 @@ export default React.createClass({
       </div>
     );
   }
-
-});
+}

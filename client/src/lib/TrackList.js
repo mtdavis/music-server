@@ -1,44 +1,23 @@
-import React, {PropTypes} from 'react';
+import React, {Component, PropTypes} from 'react';
+import {inject, observer} from 'mobx-react';
 import {Snackbar} from 'material-ui';
 import {
-  FluxMixin,
   secondsToTimeString,
   unixTimestampToDateString,
 } from './util';
 import MTable from './table/MTable';
 import FilteredTable from './table/FilteredTable';
 
-const TrackList = React.createClass({
-  mixins: [FluxMixin],
+@inject('musicStore')
+@observer
+export default class TrackList extends Component {
+  constructor(props) {
+    super(props);
 
-  propTypes: {
-    tracks: PropTypes.arrayOf(
-      PropTypes.shape({
-        artist: PropTypes.string.isRequired,
-        album: PropTypes.string.isRequired,
-        title: PropTypes.string.isRequired,
-        track_number: PropTypes.number,
-        year: PropTypes.number,
-        duration: PropTypes.number.isRequired,
-        play_count: PropTypes.number.isRequired,
-        last_play: PropTypes.number
-      })
-    ),
-
-    ...MTable.propTypes
-  },
-
-  getDefaultProps() {
-    return {
-      tracks: []
-    };
-  },
-
-  getInitialState() {
-    return {
+    this.state = {
       enqueueSnackbarOpen: false
     };
-  },
+  }
 
   render() {
     const columns = [
@@ -75,20 +54,39 @@ const TrackList = React.createClass({
         />
       </div>
     );
-  },
+  }
 
-  onTrackClick(track) {
-    this.getFlux().actions.playTrack(track);
-  },
+  onTrackClick = (track) => {
+    this.props.musicStore.playTrack(track);
+  }
 
-  onTrackCtrlClick(track) {
+  onTrackCtrlClick = (track) => {
     this.setState({enqueueSnackbarOpen: true});
-    this.getFlux().actions.enqueueTrack(track);
+    this.props.musicStore.enqueueTrack(track);
 
     setTimeout(() => {
       this.setState({enqueueSnackbarOpen: false});
     }, 2000);
   }
-});
+}
 
-export default TrackList;
+TrackList.propTypes = {
+  tracks: PropTypes.arrayOf(
+    PropTypes.shape({
+      artist: PropTypes.string.isRequired,
+      album: PropTypes.string.isRequired,
+      title: PropTypes.string.isRequired,
+      track_number: PropTypes.number,
+      year: PropTypes.number,
+      duration: PropTypes.number.isRequired,
+      play_count: PropTypes.number.isRequired,
+      last_play: PropTypes.number
+    })
+  ),
+
+  ...MTable.propTypes
+};
+
+TrackList.defaultProps = {
+  tracks: []
+};

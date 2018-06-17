@@ -1,8 +1,6 @@
-import React from 'react';
-import deepEqual from 'deep-equal';
+import React, {Component} from 'react';
+import {inject, observer} from 'mobx-react';
 import MTable from '../lib/table/MTable';
-import {FluxMixin} from '../lib/util';
-import {StoreWatchMixin} from 'fluxxor';
 import {
   CircularProgress,
   Paper
@@ -10,35 +8,45 @@ import {
 import {muiThemeable} from 'material-ui/styles';
 import LyricsState from '../lib/LyricsState';
 
-const LyricsPage = React.createClass({
-  mixins: [FluxMixin, StoreWatchMixin("MusicStore", "LyricsStore")],
+@muiThemeable()
+@inject('musicStore', 'lyricsStore')
+@observer
+export default class LyricsPage extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      displayingTrackId: null
+    };
+  }
 
   componentDidMount() {
-    this.getFlux().actions.getLyrics();
-  },
+    const {musicStore, lyricsStore} = this.props;
+    lyricsStore.getLyrics(musicStore);
 
-  componentWillUpdate(nextProps, nextState) {
-    if(this.state.nowPlaying !== nextState.nowPlaying ||
-        !deepEqual(this.state.playList, nextState.playList)) {
-      this.getFlux().actions.getLyrics();
+    this.setState({
+      displayingTrackId: lyricsStore.lyricsTrackId
+    });
+  }
+
+  componentWillUpdate(nextProps) {
+    const {musicStore, lyricsStore} = nextProps;
+    if(musicStore.playlist.length > 0 &&
+        musicStore.playlist[musicStore.nowPlaying].id !== this.state.displayingTrackId) {
+
+      lyricsStore.getLyrics(musicStore);
+
+      this.setState({
+        displayingTrackId: this.props.lyricsStore.lyricsTrackId
+      });
     }
-  },
-
-  getStateFromFlux() {
-    const musicStore = this.getFlux().store("MusicStore");
-    const lyricsStore = this.getFlux().store("LyricsStore");
-    return {
-      lyricsState: lyricsStore.lyricsState,
-      lyrics: lyricsStore.lyrics,
-      playlist: musicStore.playlist,
-      nowPlaying: musicStore.nowPlaying,
-    };
-  },
+  }
 
   render() {
     let content;
+    const {lyricsStore, musicStore} = this.props;
 
-    if(this.state.lyricsState === LyricsState.NO_TRACK) {
+    if(lyricsStore.lyricsState === LyricsState.NO_TRACK) {
       content = (
         <Paper>
           <MTable
@@ -50,7 +58,7 @@ const LyricsPage = React.createClass({
         </Paper>
       );
     }
-    else if(this.state.lyricsState === LyricsState.FAILED) {
+    else if(lyricsStore.lyricsState === LyricsState.FAILED) {
       content = (
         <Paper>
           <MTable
@@ -63,15 +71,15 @@ const LyricsPage = React.createClass({
       );
     }
     else {
-      const track = this.state.playlist[this.state.nowPlaying];
+      const track = musicStore.playlist[musicStore.nowPlaying];
       const header = track.artist + ' – ' + track.title;
       let lyrics;
 
-      if(this.state.lyricsState === LyricsState.LOADING) {
+      if(lyricsStore.lyricsState === LyricsState.LOADING) {
         lyrics = <CircularProgress />;
       }
-      else if(this.state.lyricsState === LyricsState.SUCCESSFUL) {
-        lyrics = this.state.lyrics;
+      else if(lyricsStore.lyricsState === LyricsState.SUCCESSFUL) {
+        lyrics = lyricsStore.lyrics;
       }
 
       const headerStyle = {
@@ -111,6 +119,4 @@ const LyricsPage = React.createClass({
       </div>
     );
   }
-});
-
-export default muiThemeable()(LyricsPage);
+}

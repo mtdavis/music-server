@@ -1,12 +1,12 @@
-import React from 'react';
+import React, {Component} from 'react';
+import {inject, observer} from 'mobx-react';
 import AlbumList from '../lib/AlbumList';
-import {FluxMixin} from '../lib/util';
 
-export default React.createClass({
-  mixins: [FluxMixin],
-
+@inject('dbStore')
+@observer
+export default class NeverPlayedPage extends Component {
   render() {
-    const dbStore = this.getFlux().store("DbStore");
+    const {dbStore} = this.props;
 
     const albumsNeverPlayed = [];
 
@@ -33,5 +33,4 @@ export default React.createClass({
       </div>
     );
   }
-
-});
+}

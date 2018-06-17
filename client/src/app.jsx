@@ -1,15 +1,12 @@
-import React from 'react';
+import React, {Component} from 'react';
 import {render} from 'react-dom';
 import {Router, Route, hashHistory, IndexRoute, withRouter} from 'react-router';
 import injectTapEventPlugin from "react-tap-event-plugin";
-
-import Fluxxor, {StoreWatchMixin} from 'fluxxor';
-import FluxProvider from './lib/FluxProvider';
+import {inject, observer, Provider} from 'mobx-react';
 
 import MusicStore from './stores/MusicStore';
 import DbStore from './stores/DbStore';
 import LyricsStore from './stores/LyricsStore';
-import Actions from './stores/Actions';
 
 import GaplessPlayer from './lib/GaplessPlayer';
 import CurrentTimeSlider from './lib/CurrentTimeSlider';
@@ -17,7 +14,6 @@ import AppBarIconButton from './lib/AppBarIconButton';
 import VolumeButton from './lib/VolumeButton';
 import PlayerState from './lib/PlayerState';
 import ScrobbleState from './lib/ScrobbleState';
-import {FluxMixin} from './lib/util';
 import LinkMenuItem from './lib/LinkMenuItem';
 
 import {AppBar, Divider, Drawer, Snackbar} from 'material-ui';
@@ -116,43 +112,25 @@ const LeftNavComponent = React.createClass({
   }
 });
 
-const Master = withRouter(React.createClass({
-  mixins: [FluxMixin, StoreWatchMixin("MusicStore", "DbStore")],
+@withRouter
+@inject('musicStore')
+@observer
+class Master extends Component {
+  openLastFm = () => {
+    window.open("https://last.fm/user/ogreatone43");
+  }
 
-  muiTheme: getMuiTheme({
-    palette: {
-      primary1Color: colors.lightBlue500,
-      primary2Color: colors.lightBlue700,
-      primary3Color: colors.grey400,
-      accent1Color: colors.deepOrange200,
-      accent2Color: colors.grey100,
-      accent3Color: colors.grey500,
-    }
-  }),
-
-  contextTypes: {
-    flux: React.PropTypes.object.isRequired
-  },
-
-  getStateFromFlux() {
-    return this.getFlux().store("MusicStore").getState();
-  },
-
-  openLastFm() {
-    window.open("http://last.fm/user/ogreatone43");
-  },
-
-  stopButtonClicked(event) {
+  onStopButtonClick = (event) => {
     if(event.ctrlKey || event.metaKey) {
-      this.getFlux().actions.toggleStopAfterCurrent();
+      this.props.musicStore.toggleStopAfterCurrent();
     }
     else {
-      this.getFlux().actions.stop();
+      this.props.musicStore.stopPlayback();
     }
-  },
+  }
 
   render() {
-    const musicStore = this.getFlux().store("MusicStore");
+    const {musicStore} = this.props;
     const playButtonEnabled = musicStore.playlist.length > 0;
     const playOrPause = musicStore.playerState === PlayerState.PLAYING ? "icon-pause" : "icon-play";
     const stopButtonEnabled = musicStore.playerState !== PlayerState.STOPPED;
@@ -175,17 +153,17 @@ const Master = withRouter(React.createClass({
 
         <AppBarIconButton iconClassName="icon-previous"
           disabled={!prevButtonEnabled}
-          onClick={this.getFlux().actions.jumpToPreviousTrack} />
+          onClick={() => musicStore.jumpToPreviousTrack()} />
         <AppBarIconButton iconClassName={playOrPause}
           disabled={!playButtonEnabled}
-          onClick={this.getFlux().actions.playOrPause} />
+          onClick={() => musicStore.playOrPausePlayback()} />
         <AppBarIconButton iconClassName="icon-stop"
           className={musicStore.willStopAfterCurrent ? "pulsate" : ""}
           disabled={!stopButtonEnabled}
-          onClick={this.stopButtonClicked} />
+          onClick={this.onStopButtonClick} />
         <AppBarIconButton iconClassName="icon-next"
           disabled={!nextButtonEnabled}
-          onClick={this.getFlux().actions.jumpToNextTrack} />
+          onClick={() => musicStore.jumpToNextTrack()} />
 
         <VolumeButton />
 
@@ -198,143 +176,72 @@ const Master = withRouter(React.createClass({
     const title = titles[this.props.router.getCurrentLocation().pathname] || 'Now Playing';
 
     return (
-      <MuiThemeProvider muiTheme={this.muiTheme}>
-        <div>
-          <AppBar
-            title={title}
-            onLeftIconButtonTouchTap={() => this.refs.leftNav.open()}
-            zDepth={1}
-            iconElementRight={toolbar}
-            iconStyleRight={{
-              margin: 0,
-              flex: 1
-            }}
-            titleStyle={{
-              flex: 'none'
-            }}
-            style={{
-              position: 'fixed'
-            }}
-          />
+      <div>
+        <AppBar
+          title={title}
+          onLeftIconButtonTouchTap={() => this.refs.leftNav.open()}
+          zDepth={1}
+          iconElementRight={toolbar}
+          iconStyleRight={{
+            margin: 0,
+            flex: 1
+          }}
+          titleStyle={{
+            flex: 'none'
+          }}
+          style={{
+            position: 'fixed'
+          }}
+        />
 
-          <LeftNavComponent ref='leftNav' />
+        <LeftNavComponent ref='leftNav' />
 
-          <div className='mui-app-content-canvas' style={{position: 'relative', top: 64}}>
-            {this.props.children}
-          </div>
-
-          <Snackbar open={musicStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED}
-            message='Scrobble failed.' />
+        <div className='mui-app-content-canvas' style={{position: 'relative', top: 64}}>
+          {this.props.children}
         </div>
-      </MuiThemeProvider>
+
+        <Snackbar open={musicStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED}
+          message='Scrobble failed.' />
+      </div>
     );
   }
-}));
+}
 
-const actions = {
-  playAlbum(album) {
-    this.dispatch(Actions.PLAY_ALBUM, album);
-  },
+const musicStore = new MusicStore();
+const dbStore = new DbStore();
+const lyricsStore = new LyricsStore();
 
-  enqueueAlbum(album) {
-    this.dispatch(Actions.ENQUEUE_ALBUM, album);
-  },
-
-  playPlaylist(playlist) {
-    this.dispatch(Actions.PLAY_PLAYLIST, playlist);
-  },
-
-  playTrack(track) {
-    this.dispatch(Actions.PLAY_TRACK, track);
-  },
-
-  enqueueTrack(track) {
-    this.dispatch(Actions.ENQUEUE_TRACK, track);
-  },
-
-  playShuffle(minutes) {
-    this.dispatch(Actions.PLAY_SHUFFLE, minutes);
-  },
-
-  initializePlayer(playerNode) {
-    this.dispatch(Actions.INITIALIZE_PLAYER, playerNode);
-  },
-
-  playOrPause() {
-    this.dispatch(Actions.PLAY_OR_PAUSE_PLAYBACK);
-  },
-
-  stop() {
-    this.dispatch(Actions.STOP_PLAYBACK);
-  },
-
-  toggleStopAfterCurrent() {
-    this.dispatch(Actions.TOGGLE_STOP_AFTER_CURRENT);
-  },
-
-  jumpToPlaylistItem(index) {
-    this.dispatch(Actions.JUMP_TO_PLAYLIST_ITEM, index);
-  },
-
-  jumpToPreviousTrack() {
-    this.dispatch(Actions.JUMP_TO_PREVIOUS_TRACK);
-  },
-
-  jumpToNextTrack() {
-    this.dispatch(Actions.JUMP_TO_NEXT_TRACK);
-  },
-
-  seekToPosition(position) {
-    this.dispatch(Actions.SEEK_TO_POSITION, position);
-  },
-
-  setVolume(volume) {
-    this.dispatch(Actions.SET_VOLUME, volume);
-  },
-
-  scanForChangedMetadata() {
-    this.dispatch(Actions.SCAN_FOR_CHANGED_METADATA);
-  },
-
-  scanForMovedFiles() {
-    this.dispatch(Actions.SCAN_FOR_MOVED_FILES);
-  },
-
-  scanForNewFiles() {
-    this.dispatch(Actions.SCAN_FOR_NEW_FILES);
-  },
-
-  getLyrics() {
-    this.dispatch(Actions.GET_LYRICS);
+const muiTheme = getMuiTheme({
+  palette: {
+    primary1Color: colors.lightBlue500,
+    primary2Color: colors.lightBlue700,
+    primary3Color: colors.grey400,
+    accent1Color: colors.deepOrange200,
+    accent2Color: colors.grey100,
+    accent3Color: colors.grey500,
   }
-};
-
-const stores = {
-  MusicStore: new MusicStore(),
-  DbStore: new DbStore(),
-  LyricsStore: new LyricsStore(),
-};
-
-const flux = new Fluxxor.Flux(stores, actions);
+});
 
 const router = (
-  <FluxProvider flux={flux}>
-    <Router history={hashHistory}>
-      <Route path='/' component={Master}>
-        <IndexRoute component={HomePage} />
-        <Route path='lyrics' component={LyricsPage} />
-        <Route path='albums' component={AlbumsPage} />
-        <Route path='not-recently-played' component={NotRecentlyPlayedPage} />
-        <Route path='never-played' component={NeverPlayedPage} />
-        <Route path='favorite-albums' component={FavoriteAlbumsPage} />
-        <Route path='tracks' component={AllTracksPage} />
-        <Route path='shuffle' component={ShufflePage} />
-        <Route path='scan' component={ScanPage} />
-        <Route path='playlists' component={PlaylistsPage} />
-        <Route path='*' component={HomePage} />
-      </Route>
-    </Router>
-  </FluxProvider>
+  <MuiThemeProvider muiTheme={muiTheme}>
+    <Provider musicStore={musicStore} dbStore={dbStore} lyricsStore={lyricsStore}>
+      <Router history={hashHistory}>
+        <Route path='/' component={Master}>
+          <IndexRoute component={HomePage} />
+          <Route path='lyrics' component={LyricsPage} />
+          <Route path='albums' component={AlbumsPage} />
+          <Route path='not-recently-played' component={NotRecentlyPlayedPage} />
+          <Route path='never-played' component={NeverPlayedPage} />
+          <Route path='favorite-albums' component={FavoriteAlbumsPage} />
+          <Route path='tracks' component={AllTracksPage} />
+          <Route path='shuffle' component={ShufflePage} />
+          <Route path='scan' component={ScanPage} />
+          <Route path='playlists' component={PlaylistsPage} />
+          <Route path='*' component={HomePage} />
+        </Route>
+      </Router>
+    </Provider>
+  </MuiThemeProvider>
 );
 
 render(router, document.getElementById('app'));

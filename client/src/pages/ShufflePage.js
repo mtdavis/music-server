@@ -1,17 +1,12 @@
-import React, {PropTypes} from 'react';
-import {FluxMixin} from '../lib/util';
+import React, {Component, PropTypes} from 'react';
+import {inject} from 'mobx-react';
 import {
   FontIcon,
   RaisedButton
 } from 'material-ui';
 
-const ShuffleButton = React.createClass({
-  mixins: [FluxMixin],
-
-  propTypes: {
-    minutes: PropTypes.number.isRequired
-  },
-
+@inject('musicStore')
+class ShuffleButton extends Component {
   render() {
     return (
       <RaisedButton
@@ -20,14 +15,18 @@ const ShuffleButton = React.createClass({
         label={this.props.minutes + ' Minutes'}
         icon={<FontIcon className="icon-shuffle" style={{top:'-1.5px'}}/>} />
     );
-  },
-
-  onClick() {
-    this.getFlux().actions.playShuffle(this.props.minutes);
   }
-});
 
-export default React.createClass({
+  onClick = () => {
+    this.props.musicStore.playShuffle(this.props.minutes);
+  }
+}
+
+ShuffleButton.propTypes = {
+  minutes: PropTypes.number.isRequired
+};
+
+export default class ShufflePage extends Component {
   render() {
     return (
       <div className='shuffle-page container-fluid'>
@@ -45,4 +44,4 @@ export default React.createClass({
       </div>
     );
   }
-});
+}

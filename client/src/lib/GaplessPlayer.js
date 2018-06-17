@@ -1,23 +1,13 @@
-import React, {PropTypes} from 'react';
+import React, {Component, PropTypes} from 'react';
 import ReactDOM from 'react-dom';
-import {FluxMixin} from './util';
+import {inject} from 'mobx-react';
 
-const GaplessPlayer = React.createClass({
-  mixins: [FluxMixin],
-
-  propTypes: {
-    id: PropTypes.string
-  },
-
-  getDefaultProps() {
-    return {
-      id: "player"
-    };
-  },
+@inject('musicStore')
+export default class GaplessPlayer extends Component {
 
   componentDidMount() {
-    this.getFlux().actions.initializePlayer(ReactDOM.findDOMNode(this));
-  },
+    this.props.musicStore.initializePlayer(ReactDOM.findDOMNode(this));
+  }
 
   render() {
     return (
@@ -25,6 +15,12 @@ const GaplessPlayer = React.createClass({
       // <p id={this.props.id} style={{ position:"absolute", right:20, top:120 }}></p>
     );
   }
-});
+}
 
-export default GaplessPlayer;
+GaplessPlayer.propTypes = {
+  id: PropTypes.string
+};
+
+GaplessPlayer.defaultProps = {
+  id: "player"
+};
