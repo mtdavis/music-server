@@ -12,34 +12,12 @@ import LyricsState from '../lib/LyricsState';
 @inject('musicStore', 'lyricsStore')
 @observer
 export default class LyricsPage extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      displayingTrackId: null
-    };
-  }
-
   componentDidMount() {
-    const {musicStore, lyricsStore} = this.props;
-    lyricsStore.getLyrics(musicStore);
-
-    this.setState({
-      displayingTrackId: lyricsStore.lyricsTrackId
-    });
+    this.props.lyricsStore.setLyricsVisible(true);
   }
 
-  componentWillUpdate(nextProps) {
-    const {musicStore, lyricsStore} = nextProps;
-    if(musicStore.playlist.length > 0 &&
-        musicStore.playlist[musicStore.nowPlaying].id !== this.state.displayingTrackId) {
-
-      lyricsStore.getLyrics(musicStore);
-
-      this.setState({
-        displayingTrackId: this.props.lyricsStore.lyricsTrackId
-      });
-    }
+  componentWillUnmount() {
+    this.props.lyricsStore.setLyricsVisible(false);
   }
 
   render() {
@@ -71,14 +49,19 @@ export default class LyricsPage extends Component {
       );
     }
     else {
-      const track = musicStore.playlist[musicStore.nowPlaying];
-      const header = track.artist + ' – ' + track.title;
+      const track = musicStore.currentTrack;
+      let header = track.artist + ' – ' + track.title;
       let lyrics;
 
       if(lyricsStore.lyricsState === LyricsState.LOADING) {
         lyrics = <CircularProgress />;
       }
       else if(lyricsStore.lyricsState === LyricsState.SUCCESSFUL) {
+        header = (
+          <a href={lyricsStore.url} style={{textDecoration: 'none'}} target='_blank'>
+            {header}
+          </a>
+        );
         lyrics = lyricsStore.lyrics;
       }
 

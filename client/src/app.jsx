@@ -4,9 +4,7 @@ import {Router, Route, hashHistory, IndexRoute, withRouter} from 'react-router';
 import injectTapEventPlugin from "react-tap-event-plugin";
 import {inject, observer, Provider} from 'mobx-react';
 
-import MusicStore from './stores/MusicStore';
-import DbStore from './stores/DbStore';
-import LyricsStore from './stores/LyricsStore';
+import {DbStore, LyricsStore, MusicStore, ScrobbleStore} from './stores';
 
 import GaplessPlayer from './lib/GaplessPlayer';
 import CurrentTimeSlider from './lib/CurrentTimeSlider';
@@ -45,12 +43,15 @@ const titles = {
   '/playlists': "Playlists",
 };
 
-const LeftNavComponent = React.createClass({
-  getInitialState() {
-    return {
-      open: false
+class LeftNavComponent extends Component {
+  constructor(props) {
+    super(props);
+
+    // automatically show the menu if the initial page is the home page
+    this.state = {
+      open: window.location.hash === '#/'
     };
-  },
+  }
 
   render() {
     return (
@@ -91,29 +92,29 @@ const LeftNavComponent = React.createClass({
         </LinkMenuItem>
       </Drawer>
     );
-  },
+  }
 
-  onRequestChange(open) {
+  onRequestChange = (open) => {
     this.setState({
       open: open
     });
-  },
+  }
 
-  open() {
+  open = () => {
     this.setState({
       open: true
     });
-  },
+  }
 
-  close() {
+  close = () => {
     this.setState({
       open: false
     });
   }
-});
+}
 
 @withRouter
-@inject('musicStore')
+@inject('musicStore', 'scrobbleStore')
 @observer
 class Master extends Component {
   openLastFm = () => {
@@ -130,14 +131,14 @@ class Master extends Component {
   }
 
   render() {
-    const {musicStore} = this.props;
+    const {musicStore, scrobbleStore} = this.props;
     const playButtonEnabled = musicStore.playlist.length > 0;
     const playOrPause = musicStore.playerState === PlayerState.PLAYING ? "icon-pause" : "icon-play";
     const stopButtonEnabled = musicStore.playerState !== PlayerState.STOPPED;
     const prevButtonEnabled = musicStore.playlist.length > 1 &&
-      musicStore.nowPlaying > 0;
+      musicStore.currentTrackIndex > 0;
     const nextButtonEnabled = musicStore.playlist.length > 1 &&
-      musicStore.nowPlaying < musicStore.playlist.length - 1;
+      musicStore.currentTrackIndex < musicStore.playlist.length - 1;
 
     const scrobbleTooltip = {};
     scrobbleTooltip[ScrobbleState.NO_TRACK] = "last.fm";
@@ -168,7 +169,7 @@ class Master extends Component {
         <VolumeButton />
 
         <AppBarIconButton iconClassName="icon-lastfm"
-          tooltip={scrobbleTooltip[musicStore.scrobbleState]}
+          tooltip={scrobbleTooltip[scrobbleStore.scrobbleState]}
           onClick={this.openLastFm} />
       </div>
     );
@@ -200,7 +201,7 @@ class Master extends Component {
           {this.props.children}
         </div>
 
-        <Snackbar open={musicStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED}
+        <Snackbar open={scrobbleStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED}
           message='Scrobble failed.' />
       </div>
     );
@@ -209,7 +210,8 @@ class Master extends Component {
 
 const musicStore = new MusicStore();
 const dbStore = new DbStore();
-const lyricsStore = new LyricsStore();
+const lyricsStore = new LyricsStore(musicStore);
+const scrobbleStore = new ScrobbleStore(musicStore);
 
 const muiTheme = getMuiTheme({
   palette: {
@@ -224,7 +226,12 @@ const muiTheme = getMuiTheme({
 
 const router = (
   <MuiThemeProvider muiTheme={muiTheme}>
-    <Provider musicStore={musicStore} dbStore={dbStore} lyricsStore={lyricsStore}>
+    <Provider
+      musicStore={musicStore}
+      dbStore={dbStore}
+      lyricsStore={lyricsStore}
+      scrobbleStore={scrobbleStore}>
+
       <Router history={hashHistory}>
         <Route path='/' component={Master}>
           <IndexRoute component={HomePage} />

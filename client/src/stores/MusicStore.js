@@ -1,23 +1,35 @@
-import {observable} from 'mobx';
+import {action, computed, observable} from 'mobx';
 import weighted from 'weighted';
 import PlayerState from '../lib/PlayerState';
-import ScrobbleState from '../lib/ScrobbleState';
 import {timeStringToSeconds} from '../lib/util';
 
 export default class MusicStore {
   @observable api = null;
   @observable playerState = PlayerState.STOPPED;
   @observable playlist = [];
-  @observable nowPlaying = 0;
+  @observable currentTrackIndex = 0;
   @observable currentTrackPosition = 0;
-  @observable trackPositionUpdateTimer = null;
   @observable willStopAfterCurrent = false;
 
-  // scrobble items
-  @observable scrobbleState = ScrobbleState.NO_TRACK;
-  @observable scrobblePlayTimer = null;
-  @observable scrobbleNowPlayingTimer = null;
+  trackPositionUpdateTimer = null;
 
+  @computed get currentTrack() {
+    if(this.playlist.length === 0) {
+      return null;
+    }
+
+    return this.playlist[this.currentTrackIndex];
+  }
+
+  @computed get currentTrackId() {
+    if(this.playlist.length === 0) {
+      return null;
+    }
+
+    return this.playlist[this.currentTrackIndex].id;
+  }
+
+  @action
   playAlbum(album) {
     const query = {
       album_artist: album.album_artist,
@@ -32,6 +44,7 @@ export default class MusicStore {
     });
   }
 
+  @action
   enqueueAlbum(album) {
     const query = {
       album_artist: album.album_artist,
@@ -48,6 +61,7 @@ export default class MusicStore {
     });
   }
 
+  @action
   playPlaylist(playlist) {
     const query = {
       playlist_id: playlist.id
@@ -61,18 +75,21 @@ export default class MusicStore {
     });
   }
 
+  @action
   playTrack(track) {
     this.stopPlayback();
     this.setPlaylist([track]);
     this.playOrPausePlayback();
   }
 
+  @action
   enqueueTrack(track) {
     this.playlist.push(track);
     const path = track.path.replace(/#/, "%23");
     this.api.addTrack("/stream/" + path);
   }
 
+  @action
   playShuffle(minutes) {
     $.getJSON("/shuffle", (tracks) => {
       // tracks are assumed to be ordered by last_play
@@ -103,18 +120,13 @@ export default class MusicStore {
     });
   }
 
+  @action
   initializePlayer(playerNode) {
     this.api = new Gapless5(playerNode.id);
     this.setVolume(.5);
 
     this.api.onplay = () => {
       this.playerState = PlayerState.PLAYING;
-
-      // avoid restarting the scrobble timers, in case of player state moving from paused to play
-      if(this.scrobbleState === ScrobbleState.NO_TRACK) {
-        this.startScrobbleTimers();
-      }
-
       this.startTrackPositionUpdateTimer();
 
     };
@@ -126,7 +138,6 @@ export default class MusicStore {
     this.api.onstop = () => {
       this.playerState = PlayerState.STOPPED;
       this.willStopAfterCurrent = false;
-      this.clearScrobbleTimers();
       this.clearTrackPositionUpdateTimer();
     };
 
@@ -140,20 +151,15 @@ export default class MusicStore {
     this.api.onfinishedall = () => {
       this.playerState = PlayerState.STOPPED;
       this.willStopAfterCurrent = false;
-      this.clearScrobbleTimers();
       this.clearTrackPositionUpdateTimer();
     };
 
     this.api.onprev = () => {
-      this.nowPlaying -= 1;
-      this.clearScrobbleTimers();
-      this.startScrobbleTimers();
+      this.currentTrackIndex -= 1;
     };
 
     this.api.onnext = () => {
-      this.nowPlaying += 1;
-      this.clearScrobbleTimers();
-      this.startScrobbleTimers();
+      this.currentTrackIndex += 1;
     };
 
     const currentPositionNode = playerNode.querySelector(".g5position span:nth-child(1)");
@@ -165,9 +171,9 @@ export default class MusicStore {
         return timeStringToSeconds(timeString);
       }
     };
-
   }
 
+  @action
   playOrPausePlayback() {
     if(this.api) {
       if(this.playerState === PlayerState.PLAYING) {
@@ -180,6 +186,7 @@ export default class MusicStore {
     }
   }
 
+  @action
   stopPlayback() {
     if(this.api) {
       this.api.stop();
@@ -187,19 +194,22 @@ export default class MusicStore {
     }
   }
 
+  @action
   toggleStopAfterCurrent() {
     if(this.api) {
       this.willStopAfterCurrent = !this.willStopAfterCurrent;
     }
   }
 
+  @action
   clearPlaylist() {
     this.willStopAfterCurrent = false;
-    this.nowPlaying = 0;
+    this.currentTrackIndex = 0;
     this.playlist = [];
     this.api.removeAllTracks();
   }
 
+  @action
   setPlaylist(tracks) {
     if(this.api) {
       this.clearPlaylist();
@@ -213,15 +223,17 @@ export default class MusicStore {
     }
   }
 
+  @action
   jumpToPlaylistItem(index) {
     if(this.api) {
       this.willStopAfterCurrent = false;
-      this.nowPlaying = index;
+      this.currentTrackIndex = index;
       this.api.gotoTrack(index, true);
       this.api.onplay();
     }
   }
 
+  @action
   jumpToPreviousTrack() {
     if(this.api) {
       this.willStopAfterCurrent = false;
@@ -229,6 +241,7 @@ export default class MusicStore {
     }
   }
 
+  @action
   jumpToNextTrack() {
     if(this.api) {
       this.willStopAfterCurrent = false;
@@ -236,9 +249,10 @@ export default class MusicStore {
     }
   }
 
+  @action
   seekToPosition(position) {
     if(this.api) {
-      const duration = this.playlist[this.nowPlaying].duration;
+      const duration = this.currentTrack.duration;
 
       if(position < 0) {
         position = 0;
@@ -259,6 +273,7 @@ export default class MusicStore {
     }
   }
 
+  @action
   setVolume(volume) {
     if(this.api) {
       if(volume < 0) {
@@ -280,6 +295,7 @@ export default class MusicStore {
     }
   }
 
+  @action
   startTrackPositionUpdateTimer() {
     this.trackPositionUpdateTimer = setInterval(() => {
       const newTrackPosition = this.api.getCurrentTrackPosition();
@@ -289,73 +305,12 @@ export default class MusicStore {
     }, 100);
   }
 
+  @action
   clearTrackPositionUpdateTimer() {
     if(this.trackPositionUpdateTimer) {
       clearInterval(this.trackPositionUpdateTimer);
       this.trackPositionUpdateTimer = null;
       this.currentTrackPosition = 0;
-    }
-  }
-
-  startScrobbleTimers() {
-    if(this.playerState === PlayerState.PLAYING) {
-      this.clearScrobbleTimers();
-
-      const trackStartedPlaying = Math.floor(Date.now() / 1000);
-      const trackToScrobble = this.playlist[this.nowPlaying];
-
-      const nowPlayingDelayMs = 5000;
-
-      if(trackToScrobble.duration * 1000 > nowPlayingDelayMs) {
-        // submit the now-playing update in 5 seconds if it's still playing.
-        this.scrobbleNowPlayingTimer = setTimeout(() => {
-          if(trackToScrobble === this.playlist[this.nowPlaying] &&
-            this.playerState !== PlayerState.STOPPED) {
-            const postData = {
-              id: trackToScrobble.id
-            };
-            $.post("/submit-now-playing", postData);
-          }
-
-          this.scrobbleNowPlayingTimer = null;
-        }, nowPlayingDelayMs);
-      }
-
-      // submit the play in (duration / 2) seconds if it's still playing.
-      const playDelayMs = trackToScrobble.duration / 2.0 * 1000;
-      this.scrobblePlayTimer = setTimeout(() => {
-        if(trackToScrobble === this.playlist[this.nowPlaying] &&
-          this.playerState !== PlayerState.STOPPED) {
-          const postData = {
-            id: trackToScrobble.id,
-            started_playing: trackStartedPlaying
-          };
-
-          $.post("/submit-play", postData).done(() => {
-            this.scrobbleState = ScrobbleState.TRACK_SCROBBLED;
-          }).fail(() => {
-            this.scrobbleState = ScrobbleState.SCROBBLE_FAILED;
-          });
-        }
-
-        this.scrobblePlayTimer = null;
-      }, playDelayMs);
-
-      this.scrobbleState = ScrobbleState.TRACK_QUEUED;
-    }
-  }
-
-  clearScrobbleTimers() {
-    this.scrobbleState = ScrobbleState.NO_TRACK;
-
-    if(this.scrobblePlayTimer) {
-      clearTimeout(this.scrobblePlayTimer);
-      this.scrobblePlayTimer = null;
-    }
-
-    if(this.scrobbleNowPlayingTimer) {
-      clearTimeout(this.scrobbleNowPlayingTimer);
-      this.scrobbleNowPlayingTimer = null;
     }
   }
 }

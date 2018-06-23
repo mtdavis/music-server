@@ -53,7 +53,7 @@ export default class CurrentTimeSlider extends Component {
     };
 
     if(musicStore.playerState !== PlayerState.STOPPED) {
-      const currentTrackDuration = musicStore.playlist[musicStore.nowPlaying].duration;
+      const currentTrackDuration = musicStore.currentTrack.duration;
       timeLabelStyles.color = this.props.muiTheme.appBar.textColor;
 
       if(this.state.dragging) {
@@ -98,27 +98,22 @@ export default class CurrentTimeSlider extends Component {
   }
 
   onSliderChange = (event, value) => {
-    if(this.state.dragging) {
-      this.setState({draggingValue: value});
-    }
-    else {
-      this.props.musicStore.seekToPosition(value);
-    }
+    this.setState({draggingValue: value});
   }
 
   onSliderDragStart = () => {
-    const {musicStore} = this.props;
-    this.setState({
-      dragging: true,
-      draggingValue: musicStore.currentTrackPosition
-    });
+    this.setState({dragging: true});
   }
 
   onSliderDragStop = () => {
     this.props.musicStore.seekToPosition(this.state.draggingValue);
-    this.setState({
-      dragging: false,
-      draggingValue: 0
-    });
+
+    setTimeout(() => {
+      // run this in a moment to prevent a flash of the previous time while player is updating
+      this.setState({
+        dragging: false,
+        draggingValue: 0
+      });
+    }, 100);
   }
 }

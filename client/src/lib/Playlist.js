@@ -28,7 +28,7 @@ export default class Playlist extends Component {
     const playlistItems = musicStore.playlist.map(function(track, index) {
       let icon = "icon-music";
 
-      if(track === musicStore.playlist[musicStore.nowPlaying]) {
+      if(track === musicStore.currentTrack) {
         if(musicStore.playerState === PlayerState.PLAYING) {
           icon = "icon-play2";
         }

@@ -14,10 +14,10 @@ export default class PlaylistList extends Component {
   render() {
     const columns = [
       {key:"title", header:"Title"},
-      {key:"tracks", header:"Tracks"},
+      {key:"tracks", header:"Tracks", textAlign:"right"},
       {key:"duration", header:"Duration", renderer:secondsToTimeString, textAlign:"right", wrap:false},
+      {key:"play_count", header:"Play Count", textAlign:"right"},
       {key:"last_play", header:"Last Play", renderer:unixTimestampToDateString, textAlign:"right", wrap:false},
-      {key:"play_count", header:"Play Count", textAlign:"right"}
     ];
 
     const table = (
