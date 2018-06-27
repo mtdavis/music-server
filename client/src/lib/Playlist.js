@@ -1,18 +1,17 @@
-import React from 'react';
+import React, {Component} from 'react';
+import {inject, observer} from 'mobx-react';
 import {Paper} from 'material-ui';
 import MTable from './table/MTable';
 import renderIcon from './table/renderIcon';
 import PlayerState from './PlayerState';
-import {
-  FluxMixin,
-  secondsToTimeString
-} from './util';
+import {secondsToTimeString} from './util';
 
-const Playlist = React.createClass({
-  mixins: [FluxMixin],
+@inject('musicStore')
+@observer
+export default class Playlist extends Component {
 
   render() {
-    const musicStore = this.getFlux().store("MusicStore");
+    const {musicStore} = this.props;
 
     // check whether all artists are equal.
     let allArtistsEqual = true;
@@ -29,7 +28,7 @@ const Playlist = React.createClass({
     const playlistItems = musicStore.playlist.map(function(track, index) {
       let icon = "icon-music";
 
-      if(track === musicStore.playlist[musicStore.nowPlaying]) {
+      if(track === musicStore.currentTrack) {
         if(musicStore.playerState === PlayerState.PLAYING) {
           icon = "icon-play2";
         }
@@ -73,11 +72,9 @@ const Playlist = React.createClass({
         />
       </Paper>
     );
-  },
-
-  onTrackClick(item) {
-    this.getFlux().actions.jumpToPlaylistItem(item.id);
   }
-});
 
-export default Playlist;
+  onTrackClick = (item) => {
+    this.props.musicStore.jumpToPlaylistItem(item.id);
+  }
+}

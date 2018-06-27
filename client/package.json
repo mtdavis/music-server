@@ -4,15 +4,19 @@
     "test": "jest"
   },
   "devDependencies": {
+    "babel-eslint": "^8.2.3",
+    "babel-plugin-transform-decorators-legacy": "^1.3.5",
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
-    "babel-preset-es2016": "6.22.0",
+    "babel-preset-es2015": "6.22.0",
     "babel-preset-react": "6.22.0",
+    "babel-preset-stage-1": "^6.24.1",
     "babelify": "7.3.0",
     "browserify": "14.0.0",
     "del": "2.2.2",
-    "eslint": "^3.19.0",
+    "eslint": "^4.19.1",
     "eslint-config-google": "^0.7.1",
-    "eslint-plugin-react": "^6.10.3",
+    "eslint-plugin-babel": "^5.1.0",
+    "eslint-plugin-react": "^7.9.1",
     "gulp": "3.9.1",
     "gulp-bower": "0.0.13",
     "gulp-inject": "4.2.0",
@@ -27,13 +31,13 @@
     "vinyl-source-stream": "1.1.0"
   },
   "dependencies": {
-    "babel-preset-es2015": "^6.22.0",
-    "babel-preset-react": "^6.22.0",
-    "babelify": "^7.3.0",
+    "debounce": "^1.1.0",
     "deep-equal": "1.0.1",
-    "fluxxor": "1.7.3",
     "jsep": "0.3.0",
     "material-ui": "0.16.7",
+    "mobx": "^5.0.2",
+    "mobx-react": "^5.2.3",
+    "pauseable": "^0.3.1",
     "react": "15.4.2",
     "react-dom": "15.4.2",
     "react-lazy-load": "^3.0.11",
@@ -43,8 +47,6 @@
     "weighted": "0.3.0"
   },
   "jest": {
-    "unmockedModulePathPatterns": [
-      "node_modules/fluxxor"
-    ]
+    "unmockedModulePathPatterns": []
   }
 }

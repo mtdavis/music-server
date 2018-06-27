@@ -1,12 +1,12 @@
-import React from 'react';
+import React, {Component} from 'react';
+import {inject, observer} from 'mobx-react';
 import PlaylistList from '../lib/PlaylistList';
-import {FluxMixin} from '../lib/util';
 
-export default React.createClass({
-  mixins: [FluxMixin],
-
+@inject('dbStore')
+@observer
+export default class PlaylistsPage extends Component {
   render() {
-    const dbStore = this.getFlux().store("DbStore");
+    const {dbStore} = this.props;
     const initialSortSpecs = [
       {columnKey: 'title', order: 1}
     ];
@@ -21,4 +21,4 @@ export default React.createClass({
       </div>
     );
   }
-});
+}

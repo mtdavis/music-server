@@ -1,23 +1,18 @@
-import React, {PropTypes} from 'react';
+import React, {Component, PropTypes} from 'react';
+import {inject, observer} from 'mobx-react';
 import Playlist from '../lib/Playlist';
-import {FluxMixin} from '../lib/util';
 import {
   Paper,
 } from 'material-ui';
 
-const AlbumArt = React.createClass({
-  propTypes: {
-    track: PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      album: PropTypes.string
-    })
-  },
+class AlbumArt extends Component {
+  constructor(props) {
+    super(props);
 
-  getInitialState() {
-    return {
+    this.state = {
       opacity: 0,
     };
-  },
+  }
 
   render() {
     let result;
@@ -45,19 +40,21 @@ const AlbumArt = React.createClass({
 
     return result;
   }
-});
+}
 
-export default React.createClass({
-  mixins: [FluxMixin],
+AlbumArt.propTypes = {
+  track: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    album: PropTypes.string
+  })
+};
 
-  contextTypes: {
-    flux: React.PropTypes.object.isRequired
-  },
-
+@inject('musicStore')
+@observer
+export default class HomePage extends Component {
   render() {
-
     let content;
-    const musicStore = this.getFlux().store("MusicStore");
+    const {musicStore} = this.props;
     if(musicStore.playlist.length === 0 || musicStore.playlist[0].album === '') {
       content = (
         <div className="row">
@@ -87,5 +84,4 @@ export default React.createClass({
       </div>
     );
   }
-
-});
+}

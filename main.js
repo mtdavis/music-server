@@ -206,9 +206,12 @@ function lyricsHandler() {
                 return lyricist.songAsync({search: search});
             }).then(function(song) {
                 res.writeHead(200, {
-                    "Content-Type": 'text/plain'
+                    "Content-Type": "application/json",
                 });
-                res.end(song.lyrics.trim());
+                res.end(JSON.stringify({
+                    lyrics: song.lyrics.trim(),
+                    url: song.url
+                }));
             }).catch(function(error) {
                 console.trace(error);
                 res.statusCode = 500;

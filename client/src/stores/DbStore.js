@@ -1,52 +1,33 @@
-import Fluxxor from 'fluxxor';
-import Actions from './Actions';
+import {observable} from 'mobx';
 
-export default Fluxxor.createStore({
+export default class DbStore {
+  @observable albums = [];
+  @observable tracks = [];
+  @observable playlists = [];
 
-  initialize() {
-    this.albums = [];
-    this.tracks = [];
-    this.playlists = [];
-
-    $.getJSON("/albums", function(albums) {
+  constructor() {
+    $.getJSON("/albums", (albums) => {
       this.albums = albums;
-      this.emit("change");
-    }.bind(this));
+    });
 
-    $.getJSON("/tracks", function(tracks) {
+    $.getJSON("/tracks", (tracks) => {
       this.tracks = tracks;
-      this.emit("change");
-    }.bind(this));
+    });
 
-    $.getJSON("/playlists", function(playlists) {
+    $.getJSON("/playlists", (playlists) => {
       this.playlists = playlists;
-      this.emit("change");
-    }.bind(this));
+    });
+  }
 
-    this.bindActions(
-      Actions.SCAN_FOR_CHANGED_METADATA, this.onScanForChangedMetadata,
-      Actions.SCAN_FOR_MOVED_FILES, this.onScanForMovedFiles,
-      Actions.SCAN_FOR_NEW_FILES, this.onScanForNewFiles
-    );
-  },
-
-  getState() {
-    return {
-      albums: this.albums,
-      tracks: this.tracks,
-      playlists: this.playlists,
-    };
-  },
-
-  onScanForChangedMetadata() {
+  scanForChangedMetadata() {
     $.post("/tools/scan-for-changed-metadata");
-  },
+  }
 
-  onScanForMovedFiles() {
+  scanForMovedFiles() {
     $.post("/tools/scan-for-moved-files");
-  },
+  }
 
-  onScanForNewFiles() {
+  scanForNewFiles() {
     $.post("/tools/scan-for-new-files");
-  },
-});
+  }
+}

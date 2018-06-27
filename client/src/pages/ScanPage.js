@@ -1,35 +1,35 @@
-import React from 'react';
-import {FluxMixin} from '../lib/util';
+import React, {Component} from 'react';
+import {inject} from 'mobx-react';
 import {
   FontIcon,
   RaisedButton
 } from 'material-ui';
 
-export default React.createClass({
-  mixins: [FluxMixin],
-
+@inject('dbStore')
+export default class ScanPage extends Component {
   render() {
+    const {dbStore} = this.props;
     return (
       <div className='scan-page container-fluid'>
         <div className="row">
           <div className="col-xs-12" style={{textAlign:"center"}}>
             <RaisedButton
               primary={true}
-              onClick={this.getFlux().actions.scanForNewFiles}
+              onClick={dbStore.scanForNewFiles}
               label="Scan for New Files"
               icon={<FontIcon className="icon-search"/>} />
             <br />
             <br />
             <RaisedButton
               primary={true}
-              onClick={this.getFlux().actions.scanForChangedMetadata}
+              onClick={dbStore.scanForChangedMetadata}
               label="Scan for Changed Metadata"
               icon={<FontIcon className="icon-search"/>} />
             <br />
             <br />
             <RaisedButton
               primary={true}
-              onClick={this.getFlux().actions.scanForMovedFiles}
+              onClick={dbStore.scanForMovedFiles}
               label="Scan for Moved Files"
               icon={<FontIcon className="icon-search"/>} />
           </div>
@@ -37,4 +37,4 @@ export default React.createClass({
       </div>
     );
   }
-});
+}

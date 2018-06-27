@@ -1,44 +1,23 @@
-import React, {PropTypes} from 'react';
-import {Snackbar} from 'material-ui';
+import React, {Component, PropTypes} from 'react';
+import {inject, observer} from 'mobx-react';
 import {
-  FluxMixin,
   secondsToTimeString,
   unixTimestampToDateString,
 } from './util';
 import MTable from './table/MTable';
 import FilteredTable from './table/FilteredTable';
 
-const PlaylistList = React.createClass({
-  mixins: [FluxMixin],
-
-  propTypes: {
-    playlists: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        title: PropTypes.string.isRequired,
-        tracks: PropTypes.number.isRequired,
-        duration: PropTypes.number.isRequired,
-        last_play: PropTypes.number,
-        play_count: PropTypes.number.isRequired,
-      })
-    ),
-
-    ...MTable.propTypes
-  },
-
-  getDefaultProps() {
-    return {
-      playlists: []
-    };
-  },
+@inject('musicStore')
+@observer
+export default class PlaylistList extends Component {
 
   render() {
     const columns = [
       {key:"title", header:"Title"},
-      {key:"tracks", header:"Tracks"},
+      {key:"tracks", header:"Tracks", textAlign:"right"},
       {key:"duration", header:"Duration", renderer:secondsToTimeString, textAlign:"right", wrap:false},
+      {key:"play_count", header:"Play Count", textAlign:"right"},
       {key:"last_play", header:"Last Play", renderer:unixTimestampToDateString, textAlign:"right", wrap:false},
-      {key:"play_count", header:"Play Count", textAlign:"right"}
     ];
 
     const table = (
@@ -57,11 +36,28 @@ const PlaylistList = React.createClass({
           filterKeys={[]} />
       </div>
     );
-  },
-
-  onPlaylistClick(playlist) {
-    this.getFlux().actions.playPlaylist(playlist);
   }
-});
 
-export default PlaylistList;
+  onPlaylistClick = (playlist) => {
+    this.props.musicStore.playPlaylist(playlist);
+  }
+}
+
+PlaylistList.propTypes = {
+  playlists: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      title: PropTypes.string.isRequired,
+      tracks: PropTypes.number.isRequired,
+      duration: PropTypes.number.isRequired,
+      last_play: PropTypes.number,
+      play_count: PropTypes.number.isRequired,
+    })
+  ),
+
+  ...MTable.propTypes
+};
+
+PlaylistList.defaultProps = {
+  playlists: []
+};

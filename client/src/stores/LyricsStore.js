@@ -1,54 +1,54 @@
-import Fluxxor from 'fluxxor';
-import Actions from './Actions';
+import {action, autorun, observable} from 'mobx';
 import LyricsState from '../lib/LyricsState';
 
-export default Fluxxor.createStore({
+export default class LyricsStore {
+  @observable lyricsState = LyricsState.NO_TRACK;
+  @observable lyricsTrackId = null;
+  @observable lyrics = null;
+  @observable url = null;
+  @observable lyricsVisible = false;
 
-  initialize() {
-    this.lyricsState = LyricsState.NO_TRACK;
-    this.lyricsTrackId = null;
-    this.lyrics = null;
+  constructor(musicStore) {
+    this.musicStore = musicStore;
 
-    this.bindActions(
-      Actions.GET_LYRICS, this.onGetLyrics
-    );
-  },
-
-  getState() {
-    return {
-      lyrics: this.lyrics,
-      lyricsState: this.lyricsState,
-    };
-  },
-
-  onGetLyrics() {
-    this.waitFor(['MusicStore'], this.finishOnGetLyrics);
-  },
-
-  finishOnGetLyrics(musicStore) {
-    if(musicStore.playlist.length > 0 ) {
-      const nowPlayingId = musicStore.playlist[musicStore.nowPlaying].id;
-
-      if(nowPlayingId !== this.lyricsTrackId) {
-        this.lyrics = null;
-        this.lyricsState = LyricsState.LOADING;
-        this.lyricsTrackId = nowPlayingId;
-        this.emit("change");
-
-        $.ajax("/lyrics", {
-          data: {id: nowPlayingId},
-          success: function(lyrics) {
-            this.lyrics = lyrics;
-            this.lyricsState = LyricsState.SUCCESSFUL;
-            this.emit("change");
-          }.bind(this),
-          error: function() {
-            this.lyrics = null;
-            this.lyricsState = LyricsState.FAILED;
-            this.emit("change");
-          }.bind(this)
-        });
+    autorun(() => {
+      if(!this.lyricsVisible) {
+        return;
       }
-    }
-  },
-});
+
+      if(this.musicStore.currentTrack) {
+        const nowPlayingId = this.musicStore.currentTrack.id;
+
+        if(nowPlayingId !== this.lyricsTrackId) {
+          this.lyrics = null;
+          this.lyricsState = LyricsState.LOADING;
+          this.lyricsTrackId = nowPlayingId;
+
+          $.ajax("/lyrics", {
+            data: {id: nowPlayingId},
+            success: (result) => {
+              this.lyrics = result.lyrics;
+              this.url = result.url;
+              this.lyricsState = LyricsState.SUCCESSFUL;
+            },
+            error: () => {
+              this.lyrics = null;
+              this.url = null;
+              this.lyricsState = LyricsState.FAILED;
+            }
+          });
+        }
+      }
+      else {
+        this.lyrics = null;
+        this.lyricsState = LyricsState.NO_TRACK;
+        this.lyricsTrackId = null;
+      }
+    });
+  }
+
+  @action
+  setLyricsVisible(visible) {
+    this.lyricsVisible = visible;
+  }
+}

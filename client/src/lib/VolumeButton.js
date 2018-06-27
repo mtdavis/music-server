@@ -1,5 +1,5 @@
-import React from 'react';
-import {FluxMixin} from './util';
+import React, {Component} from 'react';
+import {inject, observer} from 'mobx-react';
 import {
   Popover,
   Slider
@@ -7,15 +7,17 @@ import {
 import {PopoverAnimationVertical} from 'material-ui/Popover';
 import AppBarIconButton from './AppBarIconButton';
 
-const VolumeButton = React.createClass({
-  mixins: [FluxMixin],
+@inject('musicStore')
+@observer
+export default class VolumeButton extends Component {
+  constructor(props) {
+    super(props);
 
-  getInitialState() {
-    return {
+    this.state = {
       volume: .5,
       volumePopoverVisible: false
     };
-  },
+  }
 
   render() {
     let iconClassName;
@@ -57,26 +59,24 @@ const VolumeButton = React.createClass({
         </Popover>
       </div>
     );
-  },
+  }
 
-  toggleVolumePopover() {
+  toggleVolumePopover = () => {
     this.setState({
       volumePopoverVisible: !this.state.volumePopoverVisible
     });
-  },
+  }
 
-  handleRequestClose() {
+  handleRequestClose = () => {
     this.setState({
       volumePopoverVisible: false
     });
-  },
+  }
 
-  onVolumeChange(event, newVolume) {
-    this.getFlux().actions.setVolume(newVolume);
+  onVolumeChange = (event, newVolume) => {
+    this.props.musicStore.setVolume(newVolume);
     this.setState({
       volume: newVolume
     });
   }
-});
-
-export default VolumeButton;
+}

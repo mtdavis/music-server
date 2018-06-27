@@ -1,33 +1,38 @@
-import React from 'react';
-import {FluxMixin, secondsToTimeString} from './util';
+import React, {Component} from 'react';
+import {inject, observer} from 'mobx-react';
+import {secondsToTimeString} from './util';
 import {Slider} from 'material-ui';
 import {colors, getMuiTheme, muiThemeable, MuiThemeProvider} from 'material-ui/styles';
 
 import PlayerState from './PlayerState';
 
-const CurrentTimeSlider = muiThemeable()(React.createClass({
-  mixins: [FluxMixin],
+@muiThemeable()
+@inject('musicStore')
+@observer
+export default class CurrentTimeSlider extends Component {
 
-  muiTheme: getMuiTheme({
-    slider: {
-      trackColor: colors.minBlack,
-      trackColorSelected: colors.lightWhite,
-      selectionColor: colors.white,
-      rippleColor: colors.white,
-      handleColorZero: colors.white,
-      handleFillColor: colors.white,
-    }
-  }),
+  constructor(props) {
+    super(props);
 
-  getInitialState() {
-    return {
+    this.state = {
       dragging: false,
       draggingValue: 0
     };
-  },
+
+    this.muiTheme = getMuiTheme({
+      slider: {
+        trackColor: colors.minBlack,
+        trackColorSelected: colors.lightWhite,
+        selectionColor: colors.white,
+        rippleColor: colors.white,
+        handleColorZero: colors.white,
+        handleFillColor: colors.white,
+      }
+    });
+  }
 
   render() {
-    const musicStore = this.getFlux().store("MusicStore");
+    const {musicStore} = this.props;
 
     let timeString = "0:00";
     let sliderValue = 0;
@@ -48,7 +53,7 @@ const CurrentTimeSlider = muiThemeable()(React.createClass({
     };
 
     if(musicStore.playerState !== PlayerState.STOPPED) {
-      const currentTrackDuration = musicStore.playlist[musicStore.nowPlaying].duration;
+      const currentTrackDuration = musicStore.currentTrack.duration;
       timeLabelStyles.color = this.props.muiTheme.appBar.textColor;
 
       if(this.state.dragging) {
@@ -90,32 +95,25 @@ const CurrentTimeSlider = muiThemeable()(React.createClass({
         </div>
       </MuiThemeProvider>
     );
-  },
-
-  onSliderChange(event, value) {
-    if(this.state.dragging) {
-      this.setState({draggingValue: value});
-    }
-    else {
-      this.getFlux().actions.seekToPosition(value);
-    }
-  },
-
-  onSliderDragStart() {
-    const musicStore = this.getFlux().store("MusicStore");
-    this.setState({
-      dragging: true,
-      draggingValue: musicStore.currentTrackPosition
-    });
-  },
-
-  onSliderDragStop() {
-    this.getFlux().actions.seekToPosition(this.state.draggingValue);
-    this.setState({
-      dragging: false,
-      draggingValue: 0
-    });
   }
-}));
 
-export default CurrentTimeSlider;
+  onSliderChange = (event, value) => {
+    this.setState({draggingValue: value});
+  }
+
+  onSliderDragStart = () => {
+    this.setState({dragging: true});
+  }
+
+  onSliderDragStop = () => {
+    this.props.musicStore.seekToPosition(this.state.draggingValue);
+
+    setTimeout(() => {
+      // run this in a moment to prevent a flash of the previous time while player is updating
+      this.setState({
+        dragging: false,
+        draggingValue: 0
+      });
+    }, 100);
+  }
+}

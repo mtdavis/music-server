@@ -1,12 +1,12 @@
-import React from 'react';
+import React, {Component} from 'react';
+import {inject, observer} from 'mobx-react';
 import AlbumList from '../lib/AlbumList';
-import {FluxMixin} from '../lib/util';
 
-export default React.createClass({
-  mixins: [FluxMixin],
-
+@inject('dbStore')
+@observer
+export default class AlbumsPage extends Component {
   render() {
-    const dbStore = this.getFlux().store("DbStore");
+    const {dbStore} = this.props;
     const initialSortSpecs = [
       {columnKey: 'album', order: 1},
       {columnKey: 'album_artist', order: 1}
@@ -22,5 +22,4 @@ export default React.createClass({
       </div>
     );
   }
-
-});
+}

@@ -1,7 +1,7 @@
-import React, {PropTypes} from 'react';
+import React, {Component, PropTypes} from 'react';
+import {inject, observer} from 'mobx-react';
 import {Snackbar} from 'material-ui';
 import {
-  FluxMixin,
   secondsToTimeString,
   unixTimestampToDateString,
   unixTimestampToYear,
@@ -9,37 +9,17 @@ import {
 import MTable from './table/MTable';
 import FilteredTable from './table/FilteredTable';
 
-const AlbumList = React.createClass({
-  mixins: [FluxMixin],
+@inject('musicStore')
+@observer
+export default class AlbumList extends Component {
 
-  propTypes: {
-    albums: PropTypes.arrayOf(
-      PropTypes.shape({
-        album_artist: PropTypes.string.isRequired,
-        album: PropTypes.string.isRequired,
-        year: PropTypes.number,
-        release_date: PropTypes.number,
-        tracks: PropTypes.number.isRequired,
-        duration: PropTypes.number.isRequired,
-        play_count: PropTypes.number.isRequired,
-        last_play: PropTypes.number
-      })
-    ),
+  constructor(props) {
+    super(props);
 
-    ...MTable.propTypes
-  },
-
-  getDefaultProps() {
-    return {
-      albums: []
-    };
-  },
-
-  getInitialState() {
-    return {
+    this.state = {
       enqueueSnackbarOpen: false
     };
-  },
+  }
 
   render() {
     const columns = [
@@ -74,20 +54,39 @@ const AlbumList = React.createClass({
         />
       </div>
     );
-  },
+  }
 
-  onAlbumClick(album) {
-    this.getFlux().actions.playAlbum(album);
-  },
+  onAlbumClick = (album) => {
+    this.props.musicStore.playAlbum(album);
+  }
 
-  onAlbumCtrlClick(album) {
+  onAlbumCtrlClick = (album) => {
     this.setState({enqueueSnackbarOpen: true});
-    this.getFlux().actions.enqueueAlbum(album);
+    this.props.musicStore.enqueueAlbum(album);
 
     setTimeout(() => {
       this.setState({enqueueSnackbarOpen: false});
     }, 2000);
   }
-});
+}
 
-export default AlbumList;
+AlbumList.propTypes = {
+  albums: PropTypes.arrayOf(
+    PropTypes.shape({
+      album_artist: PropTypes.string.isRequired,
+      album: PropTypes.string.isRequired,
+      year: PropTypes.number,
+      release_date: PropTypes.number,
+      tracks: PropTypes.number.isRequired,
+      duration: PropTypes.number.isRequired,
+      play_count: PropTypes.number.isRequired,
+      last_play: PropTypes.number
+    })
+  ),
+
+  ...MTable.propTypes
+};
+
+AlbumList.defaultProps = {
+  albums: []
+};

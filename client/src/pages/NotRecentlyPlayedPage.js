@@ -1,12 +1,12 @@
-import React from 'react';
+import React, {Component} from 'react';
+import {inject, observer} from 'mobx-react';
 import AlbumList from '../lib/AlbumList';
-import {FluxMixin} from '../lib/util';
 
-export default React.createClass({
-  mixins: [FluxMixin],
-
+@inject('dbStore')
+@observer
+export default class NotRecentlyPlayedPage extends Component {
   render() {
-    const dbStore = this.getFlux().store("DbStore");
+    const {dbStore} = this.props;
 
     const daysAgo = 42; // default == 6 weeks
     const secondsAgo = daysAgo * 24 * 60 * 60;
@@ -34,5 +34,4 @@ export default React.createClass({
       </div>
     );
   }
-
-});
+}

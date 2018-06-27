@@ -1,8 +1,3 @@
-import Fluxxor from 'fluxxor';
-import React from 'react';
-
-export const FluxMixin = Fluxxor.FluxMixin(React);
-
 export function secondsToTimeString(seconds) {
   const minutes = Math.floor(seconds / 60);
   const remainderSeconds = seconds % 60;
@@ -38,16 +33,6 @@ export function unixTimestampToDateString(timestamp) {
 export function unixTimestampToYear(timestamp) {
   const dateObj = new Date(timestamp * 1000);
   return dateObj.getUTCFullYear();
-}
-
-export function withFlux(Component) {
-  return React.createClass({
-    mixins: [FluxMixin],
-
-    render() {
-      return <Component {...this.props} />;
-    }
-  });
 }
 
 export function compare(valA, valB) {
