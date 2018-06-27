@@ -20,7 +20,7 @@ function rowContainsText(rowData, text, columns) {
     const cellValue = rowData[column.key];
 
     if(column.renderer) {
-      if(column.renderer(cellValue).toLowerCase().indexOf(text) > -1) {
+      if(String(column.renderer(cellValue)).toLowerCase().indexOf(text) > -1) {
         return true;
       }
     }
