@@ -2,30 +2,32 @@ const Promise = require("bluebird");
 const sqlite3 = Promise.promisifyAll(require("sqlite3"));
 const musicServerSettings = require("./music-server-settings.json");
 
-function MusicServerDb() {
-    const db = new sqlite3.Database(musicServerSettings.files.db_path);
+class MusicServerDb {
+    constructor() {
+        this.db = new sqlite3.Database(musicServerSettings.files.db_path);
+    }
 
-    db.selectTrackByIdAsync = function(trackId) {
-        const statement = db.prepare(
-            "SELECT * FROM track WHERE rowid = $trackId");
+    selectTrackByIdAsync(trackId) {
+        const statement = this.db.prepare(
+            "SELECT * FROM track_view WHERE id = $trackId");
 
         return statement.getAsync({
             $trackId: trackId
         });
-    };
+    }
 
-    db.selectTrackByPathAsync = function(relativePath) {
-        const statement = db.prepare(
-            "SELECT rowid as id, * FROM track WHERE path = $path");
+    selectTrackByPathAsync(relativePath) {
+        const statement = this.db.prepare(
+            "SELECT * FROM track_view WHERE path = $path");
 
         return statement.getAsync({
             $path: relativePath
         });
-    };
+    }
 
-    db.updateTrackFromMetadataAsync = function(track) {
+    updateTrackFromMetadataAsync(track) {
         const currentTime = Math.floor(Date.now() / 1000);
-        const statement = db.prepare(
+        const statement = this.db.prepare(
             "UPDATE track " +
             "SET title = $title, artist = $artist, album_artist = $album_artist, album = $album, " +
             "    genre = $genre, track_number = $track_number, year = $year, " +
@@ -43,11 +45,11 @@ function MusicServerDb() {
             $current_time: currentTime,
             $id: track.id
         });
-    };
+    }
 
-    db.addTrackFromMetadataAsync = function(track) {
+    addTrackFromMetadataAsync(track) {
         const currentTime = Math.floor(Date.now() / 1000);
-        const statement = db.prepare(
+        const statement = this.db.prepare(
             "INSERT INTO track (title, artist, album_artist, album, genre, duration, " +
             "                   track_number, year, path, play_count, row_modified) " +
             "VALUES ($title, $artist, $album_artist, $album, $genre, $duration, " +
@@ -66,11 +68,11 @@ function MusicServerDb() {
             $path: track.path,
             $current_time: currentTime
         });
-    };
+    }
 
-    db.selectTrackByInfoAsync = function(track) {
+    selectTrackByInfoAsync(track) {
         let sql =
-            "SELECT rowid as id, * FROM track " +
+            "SELECT * FROM track_view " +
             "WHERE title = $title AND artist = $artist AND album = $album";
 
         if(track.track_number === null) {
@@ -87,18 +89,18 @@ function MusicServerDb() {
             sql += " AND year = $year";
         }
 
-        return db.prepare(sql).getAsync({
+        return this.db.prepare(sql).getAsync({
             $title: track.title,
             $artist: track.artist,
             $album: track.album,
             $track_number: track.track_number,
             $year: track.year
         });
-    };
+    }
 
-    db.updateTrackPathAsync = function(trackId, relativePath) {
+    updateTrackPathAsync(trackId, relativePath) {
         const currentTime = Math.floor(Date.now() / 1000);
-        const statement = db.prepare(
+        const statement = this.db.prepare(
             "UPDATE track " +
             "SET path = $path, row_modified = $current_time " +
             "WHERE rowid = $id");
@@ -108,10 +110,10 @@ function MusicServerDb() {
             $id: trackId,
             $current_time: currentTime
         });
-    };
+    }
 
-    db.addToScrobbleBacklog = function(track, timestamp) {
-        const statement = db.prepare(
+    addToScrobbleBacklog(track, timestamp) {
+        const statement = this.db.prepare(
             "INSERT INTO scrobble_backlog (title, artist, album, track_number, duration, timestamp) " +
             "VALUES ($title, $artist, $album, $track_number, $duration, $timestamp)");
 
@@ -123,37 +125,97 @@ function MusicServerDb() {
             $duration: track.duration,
             $timestamp: timestamp
         });
-    };
+    }
 
-    db.peekScrobbleBacklog = function() {
-        const statement = db.prepare(
+    peekScrobbleBacklog() {
+        const statement = this.db.prepare(
             "SELECT * FROM scrobble_backlog WHERE timestamp = " +
             "   (SELECT MIN(timestamp) FROM scrobble_backlog)");
 
         return statement.getAsync();
-    };
+    }
 
-    db.popScrobbleBacklog = function() {
-        const statement = db.prepare(
+    popScrobbleBacklog() {
+        const statement = this.db.prepare(
             "DELETE FROM scrobble_backlog WHERE timestamp = " +
             "   (SELECT MIN(timestamp) FROM scrobble_backlog)");
 
         return statement.runAsync();
-    };
+    }
 
-    db.run("CREATE TABLE IF NOT EXISTS scrobble_backlog(" +
-        "artist TEXT NOT NULL, " +
-        "title TEXT NOT NULL, " +
-        "album TEXT NOT NULL, " +
-        "track_number INTEGER, " +
-        "duration INTEGER NOT NULL, " +
-        "timestamp INTEGER" +
-        ")");
+    async submitPlay(trackId, timestamp) {
+        const statement = this.db.prepare(
+            "UPDATE track SET " +
+            "   play_count = play_count + 1, " +
+            "   last_play = $timestamp, " +
+            "   row_modified = $current_time " +
+            "WHERE rowid = $id");
 
-    // TODO: when refactoring is complete, should return this rather than db.
-    return db;
+        const currentTime = Math.floor(Date.now() / 1000);
+
+        await statement.runAsync({
+            $id: trackId,
+            $timestamp: timestamp,
+            $current_time: currentTime
+        });
+    }
+
+    async allIfModifiedSince(lastModifiedSql, selectSql, {
+        ifModifiedSince, lastModifiedSqlParams, selectSqlParams
+    }) {
+        const db = this.db;
+
+        const lastModifiedRow = await db.getAsync(lastModifiedSql, lastModifiedSqlParams);
+        const lastModified = new Date(lastModifiedRow.last_modified * 1000);
+
+        if(ifModifiedSince && ifModifiedSince.getTime() >= lastModified.getTime()) {
+            return {notModified: true, lastModified};
+        }
+
+        const rows = await db.allAsync(selectSql, selectSqlParams);
+        return {lastModified, rows};
+    }
 }
 
 module.exports = {
     MusicServerDb: MusicServerDb
 };
+
+
+/*
+DROP VIEW track_view;
+CREATE VIEW track_view (
+    id, title, artist, artist_id,
+    album, album_id, genre, track_number, year,
+    duration, path,
+    last_play, play_count,
+    owner, last_modified, release_date
+) AS
+    SELECT
+        track.rowid, track.title, artist.name, track.artist_id,
+        album.title, track.album_id, track.genre, track.track_number, track.year,
+        track.duration, track.path, track.last_play, track.play_count,
+        track.owner, track.row_modified,
+        (CASE WHEN track.release_date IS NULL THEN
+           CAST(strftime('%s', printf('%d-01-01', track.year)) AS INT) ELSE
+           track.release_date END)
+    FROM track
+    LEFT JOIN album ON track.album_id=album.rowid
+    LEFT JOIN artist ON track.artist_id=artist.rowid;
+
+DROP VIEW album_view;
+CREATE VIEW album_view (id, title, artist, genre, year, release_date, duration, tracks, last_play, play_count, last_modified) AS
+SELECT album.rowid, album.title, artist.name, track.genre, track.year,
+(CASE WHEN track.release_date IS NULL THEN
+   CAST(strftime('%s', printf('%d-01-01', track.year)) AS INT) ELSE
+   track.release_date END),
+SUM(track.duration), COUNT(track.rowid),
+(CASE WHEN COUNT(track.last_play) = COUNT(track.rowid) THEN min(track.last_play) ELSE NULL END),
+MIN(track.play_count) AS play_count,
+MAX(track.row_modified)
+FROM track
+LEFT JOIN album ON track.album_id=album.rowid
+LEFT JOIN artist ON album.artist_id=artist.rowid
+WHERE track.album_id IS NOT NULL
+GROUP BY track.album_id;
+*/

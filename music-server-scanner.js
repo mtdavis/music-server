@@ -3,7 +3,8 @@ const walk = require("walk");
 const path = require("path");
 const fs = Promise.promisifyAll(require("fs"));
 
-const db = require("./music-server-db").MusicServerDb();
+const MusicServerDb = require("./music-server-db").MusicServerDb;
+const db = new MusicServerDb();
 const musicServerSettings = require("./music-server-settings.json");
 const util = require("./music-server-util");
 
