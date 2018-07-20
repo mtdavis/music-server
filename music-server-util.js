@@ -41,6 +41,10 @@ function dummyPromise() {
 }
 
 function escapeForFileSystem(string, options) {
+    if(!string) {
+        return '';
+    }
+
     if(!options) {
         options = {leadingTrailing: true};
     }

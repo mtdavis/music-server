@@ -107,7 +107,6 @@ function checkForNewFile(root, fileStats, next) {
             }
             else {
                 process.stdout.write("<" + pathRelativeToMusicRoot + ">");
-                next();
                 util.getMetadataAsync(absolutePath, {duration: true}).
                     then(addTrackFromMetadataAsync).
                     then(next);
@@ -147,6 +146,7 @@ function checkForMovedFile(root, fileStats, next) {
                         title: fileMetadata.title,
                         artist: fileMetadata.artist[0],
                         album: fileMetadata.album,
+                        album_artist: fileMetadata.albumartist[0],
                         track_number: fileMetadata.track.no ? fileMetadata.track.no : null,
                         year: fileMetadata.year ? Number(fileMetadata.year) : null
                     });

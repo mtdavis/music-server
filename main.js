@@ -105,7 +105,8 @@ function tracksHandler() {
         "FROM track_view " +
         "WHERE album_id = $album_id OR $album_id IS NULL";
 
-    const tracksSql = "SELECT id, title, artist, album, album_id, genre, track_number, release_date, " +
+    const tracksSql =
+        "SELECT id, title, artist, album, album_id, genre, track_number, release_date, " +
         "duration, path, last_play, play_count, last_modified, year " +
         "FROM track_view " +
         "WHERE album_id = $album_id OR $album_id IS NULL " +
@@ -126,23 +127,11 @@ function tracksHandler() {
 }
 
 function playlistsHandler() {
-    const lastModifiedSql = "SELECT MAX(track.row_modified) AS last_modified " +
-        "FROM playlist " +
-        "LEFT JOIN playlist_track ON playlist.rowid = playlist_track.playlist_id " +
-        "LEFT JOIN track ON playlist_track.track_id = track.rowid " +
-        "GROUP BY playlist.rowid;";
+    const lastModifiedSql = "SELECT MAX(last_modified) " +
+        "FROM playlist_view;";
 
-    const playlistsSql = "SELECT playlist.rowid AS id, playlist.title, " +
-        "COUNT(playlist_track.rowid) AS tracks, " +
-        "SUM(track.duration) AS duration, " +
-        "( " +
-        "   CASE WHEN COUNT(track.last_play) = COUNT(track.rowid) THEN min(track.last_play) ELSE NULL END" +
-        ") AS last_play, " +
-        "MIN(track.play_count) AS play_count " +
-        "FROM playlist " +
-        "LEFT JOIN playlist_track ON playlist.rowid = playlist_track.playlist_id " +
-        "LEFT JOIN track ON playlist_track.track_id = track.rowid " +
-        "GROUP BY playlist.rowid;";
+    const playlistsSql = "SELECT id, title, tracks, duration, last_play, play_count " +
+        "FROM playlist_view;";
 
     return selectFromDb(lastModifiedSql, playlistsSql, {});
 }
@@ -150,9 +139,11 @@ function playlistsHandler() {
 function playlistTracksHandler() {
     const lastModifiedSql = "SELECT $current_time AS last_modified;";
 
-    const tracksSql = "SELECT track.rowid AS id, * " +
-        "FROM track " +
-        "LEFT JOIN playlist_track ON track.rowid = playlist_track.track_id " +
+    const tracksSql =
+        "SELECT id, title, artist, album, album_id, genre, track_number, release_date, " +
+        "duration, path, last_play, play_count, last_modified, year " +
+        "FROM track_view " +
+        "LEFT JOIN playlist_track ON track_view.id = playlist_track.track_id " +
         "WHERE playlist_track.playlist_id = $playlist_id " +
         "ORDER BY (" +
         "   CASE WHEN playlist_track.`order` IS NULL THEN RANDOM() ELSE playlist_track.`order` END" +
@@ -311,51 +302,47 @@ function albumArtHandler() {
 
 function submitPlayHandler() {
 
-    return function(req, res, next) {
+    return async function(req, res, next) {
         console.log(req.url, req.body);
-        const trackId = req.body.id;
+        const trackId = Number.parseInt(req.body.id, 10);
 
         const currentTime = Math.floor(Date.now() / 1000);
-        const timestamp = req.body.started_playing || currentTime;
+        const timestamp = Number.parseInt(req.body.started_playing, 10) || currentTime;
+        const track = await db.selectTrackByIdAsync(trackId);
 
-        function scrobbleOrQueue(track) {
-            if(track.owner !== 'mike') {
-                console.log('not scrobbling; owner = ' + track.owner);
-                return util.dummyPromise();
+        if(track.owner === 'mike') {
+            db.submitPlay(trackId, timestamp, false);
+
+            try {
+                await lastfm.doScrobbleAsync({
+                    method: 'track.scrobble',
+                    artist: track.artist,
+                    track: track.title,
+                    timestamp: timestamp,
+                    album: track.album,
+                    trackNumber: track.track_number,
+                    duration: track.duration
+                });
+
+                await db.markPlayScrobbled(trackId, timestamp);
             }
-
-            return lastfm.doScrobbleAsync({
-                method: 'track.scrobble',
-                artist: track.artist,
-                track: track.title,
-                timestamp: timestamp,
-                album: track.album,
-                trackNumber: track.track_number,
-                duration: track.duration
-            }).catch(function(error) {
-                return db.addToScrobbleBacklog(track, timestamp).throw(error);
-            });
+            catch(error) {
+                console.error('scrobble error; will try again later');
+            }
+        }
+        else {
+            console.log('not scrobbling; owner = ' + track.owner);
         }
 
-        db.submitPlay(
-            trackId, timestamp
-        ).then(function() {
-            return db.selectTrackByIdAsync(trackId);
-        }).then(scrobbleOrQueue).then(function() {
-            res.statusCode = 200;
-            res.end();
-        }).catch(function(error) {
-            console.error(error);
-            res.statusCode = 500;
-            res.end();
-        });
+        res.statusCode = 200;
+        res.end();
     };
 }
 
 function submitNowPlayingHandler() {
     return function(req, res, next) {
         console.log(req.url, req.body);
-        const trackId = req.body.id;
+        const trackId = Number.parseInt(req.body.id, 10);
 
         db.selectTrackByIdAsync(trackId).then(function(track) {
             return lastfm.doScrobbleAsync({
@@ -442,27 +429,29 @@ function startServer(router) {
     http.createServer(httpApp).listen(80);
 }
 
-function checkScrobbleBacklog() {
-    function scrobbleAndPop(row) {
-        if(row) {
-            return lastfm.doScrobbleAsync({
+async function checkScrobbleBacklog() {
+    console.log('checking backlog');
+    const track = await db.getTrackFromScrobbleBacklog();
+
+    if(track) {
+        try{
+            await lastfm.doScrobbleAsync({
                 method: 'track.scrobble',
-                artist: row.artist,
-                track: row.title,
-                timestamp: row.timestamp,
-                album: row.album,
-                trackNumber: row.track_number,
-                duration: row.duration
-            }).then(db.popScrobbleBacklog);
+                artist: track.artist,
+                track: track.title,
+                timestamp: track.timestamp,
+                album: track.album,
+                trackNumber: track.track_number,
+                duration: track.duration
+            });
+
+            await db.markPlayScrobbled(track.id, track.timestamp);
         }
-        else {
-            return util.dummyPromise();
+        catch(error) {
+            console.error(error);
+            console.error('scrobble error; will try again later');
         }
     }
-
-    db.peekScrobbleBacklog().then(scrobbleAndPop).catch(function(error) {
-        console.log(error);
-    });
 }
 
 function main() {
@@ -478,6 +467,7 @@ process.on('uncaughtException', function(err) {
             err.code !== "ENOTFOUND" &&
             err.code !== "ETIMEDOUT" &&
             err.code !== "ECONNRESET" &&
+            err.code !== "ECONNREFUSED" &&
             err.code !== "EAI_AGAIN") {
         throw err;
     }

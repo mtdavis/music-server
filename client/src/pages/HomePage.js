@@ -55,7 +55,7 @@ export default class HomePage extends Component {
   render() {
     let content;
     const {musicStore} = this.props;
-    if(musicStore.playlist.length === 0 || musicStore.playlist[0].album === '') {
+    if(musicStore.playlist.length === 0 || musicStore.playlist[0].album === null) {
       content = (
         <div className="row">
           <div className="col-xs-12">
