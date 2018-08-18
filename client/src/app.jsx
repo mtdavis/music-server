@@ -211,7 +211,7 @@ class Master extends Component {
 const musicStore = new MusicStore();
 const dbStore = new DbStore();
 const lyricsStore = new LyricsStore(musicStore);
-const scrobbleStore = new ScrobbleStore(musicStore);
+const scrobbleStore = new ScrobbleStore(musicStore, dbStore);
 
 const muiTheme = getMuiTheme({
   palette: {

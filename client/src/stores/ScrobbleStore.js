@@ -10,8 +10,9 @@ export default class ScrobbleStore {
   playTimer = null;
   nowPlayingTimer = null;
 
-  constructor(musicStore) {
+  constructor(musicStore, dbStore) {
     this.musicStore = musicStore;
+    this.dbStore = dbStore;
 
     autorun(() => {
       const trackChanged = musicStore.currentTrackId !== this.previousTrackId;
@@ -84,6 +85,8 @@ export default class ScrobbleStore {
           id: trackToScrobble.id,
           started_playing: trackStartedPlaying
         };
+
+        this.dbStore.incrementPlayCount(trackToScrobble.id, trackStartedPlaying);
 
         $.post("/submit-play", postData).done(() => {
           this.scrobbleState = ScrobbleState.TRACK_SCROBBLED;
