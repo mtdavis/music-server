@@ -27,9 +27,9 @@ class AlbumImage extends Component {
     };
 
     return (
-      <Paper key={this.props.album.id} style={paperStyle} rounded={false}>
+      <Paper style={paperStyle} rounded={false}>
         <LazyLoad height={this.state.placeholderHeight} offset={1000} debounce={false}>
-          <img src={'/album-art?id=' + this.props.album.id}
+          <img src={'/album-art?id=' + this.props.trackId}
             style={{
               width: '100%',
               cursor: 'pointer',
@@ -69,9 +69,11 @@ export default class FavoriteAlbumsPage extends Component {
       compare(a.album_artist, b.album_artist) || compare(a.release_date, b.release_date) ||
       compare(a.album, b.album));
 
-    const gridTiles = favoriteAlbums.map(album =>
-      <AlbumImage key={album.id} album={album} />
-    );
+    const gridTiles = favoriteAlbums.map(album => {
+      const trackOne = dbStore.tracks.filter(track =>
+        track.album_id === album.id && track.track_number === 1)[0];
+      return <AlbumImage key={album.id} album={album} trackId={trackOne.id} />;
+    });
 
     const divStyle = {
       display: 'flex',

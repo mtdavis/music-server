@@ -32,8 +32,7 @@ export default class MusicStore {
   @action
   playAlbum(album) {
     const query = {
-      album_artist: album.album_artist,
-      album: album.album
+      album_id: album.id
     };
 
     $.getJSON("/tracks", query, (tracks) => {

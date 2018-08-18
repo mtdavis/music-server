@@ -74,7 +74,7 @@ TrackList.propTypes = {
   tracks: PropTypes.arrayOf(
     PropTypes.shape({
       artist: PropTypes.string.isRequired,
-      album: PropTypes.string.isRequired,
+      album: PropTypes.string,
       title: PropTypes.string.isRequired,
       track_number: PropTypes.number,
       year: PropTypes.number,

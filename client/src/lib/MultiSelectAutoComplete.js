@@ -18,6 +18,13 @@ class MultiSelectAutoComplete extends React.Component {
   render() {
     const chips = this.state.selectedItems.map(this.renderChip.bind(this));
 
+    let {dataSource} = this.props;
+    if(dataSource.indexOf(null) !== -1) {
+      dataSource = dataSource.slice();
+      dataSource.splice(dataSource.indexOf(null), 1); // remove null
+      dataSource.splice(0, 0, '(None)');
+    }
+
     return (
       <div style={{layout: 'flex'}}>
         <AutoComplete
@@ -33,7 +40,7 @@ class MultiSelectAutoComplete extends React.Component {
           hintText={this.props.hintText}
           menuCloseDelay={0}
           openOnFocus={true}
-          dataSource={this.props.dataSource}
+          dataSource={dataSource}
           searchText={this.state.searchText}
           onUpdateInput={this.handleUpdateInput.bind(this)}
           onNewRequest={this.selectItem.bind(this)} />
@@ -70,6 +77,10 @@ class MultiSelectAutoComplete extends React.Component {
   }
 
   deselectItem(item) {
+    if(item === '(None)') {
+      item = null;
+    }
+
     const index = this.state.selectedItems.indexOf(item);
     if(index !== -1) {
       const selectedItems = this.state.selectedItems.slice();
@@ -84,6 +95,10 @@ class MultiSelectAutoComplete extends React.Component {
   }
 
   selectItem(item) {
+    if(item === '(None)') {
+      item = null;
+    }
+
     if(this.props.dataSource.includes(item) &&
       !this.state.selectedItems.includes(item)) {
 

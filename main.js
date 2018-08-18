@@ -5,7 +5,6 @@ const http = require("http");
 const https = require("https");
 const serveStatic = require("serve-static");
 const connectRoute = require("connect-route");
-const basicAuth = require("connect-basic-auth");
 const url = require("url");
 const bodyParser = require("body-parser");
 const musicServerSettings = require("./music-server-settings.json");
@@ -14,7 +13,8 @@ const path = require("path");
 const lyricist = Promise.promisifyAll(require("lyricist")(musicServerSettings.genius.access_token));
 const domain = require("domain");
 
-const db = require("./music-server-db").MusicServerDb();
+const MusicServerDb = require("./music-server-db").MusicServerDb;
+const db = new MusicServerDb();
 const lastfm = require("./music-server-lastfm").MusicServerLastfm();
 const util = require("./music-server-util");
 const scanner = require("./music-server-scanner");
@@ -39,93 +39,84 @@ function initRouter() {
     return result;
 }
 
-function selectFromDb(lastModifiedSql, selectSql, settings) {
-    return function(req, res, next) {
+function selectFromDb(lastModifiedSql, selectSql, {
+    lastModifiedSqlParamsBuilder, selectSqlParamsBuilder
+}) {
+    return async function(req, res, next) {
         console.log(req.url);
 
-        let lastModified;
-        let ifModifiedSince = null;
-        if(req.headers["if-modified-since"]) {
-            ifModifiedSince = new Date(req.headers["if-modified-since"]);
-        }
+        try {
+            let ifModifiedSince = null;
+            if(req.headers["if-modified-since"]) {
+                ifModifiedSince = new Date(req.headers["if-modified-since"]);
+            }
 
-        let lastModifiedSqlParams = {};
-        if(settings && settings.lastModifiedSqlParamsBuilder) {
-            lastModifiedSqlParams = settings.lastModifiedSqlParamsBuilder(req);
-        }
+            let lastModifiedSqlParams = {};
+            if(lastModifiedSqlParamsBuilder) {
+                lastModifiedSqlParams = lastModifiedSqlParamsBuilder(req);
+            }
 
-        db.getAsync(lastModifiedSql, lastModifiedSqlParams).then(function(row) {
-            lastModified = new Date(row.last_modified * 1000);
+            let selectSqlParams = {};
+            if(selectSqlParamsBuilder) {
+                selectSqlParams = selectSqlParamsBuilder(req);
+            }
 
-            if(ifModifiedSince &&
-                ifModifiedSince.getTime() === lastModified.getTime()) {
+            const {notModified, lastModified, rows} = await db.allIfModifiedSince(
+                lastModifiedSql, selectSql,
+                {ifModifiedSince, lastModifiedSqlParams, selectSqlParams}
+            );
+
+            if(notModified) {
                 res.writeHead(304, {
                     "Last-Modified": lastModified.toUTCString()
                 });
                 res.end();
-                return null;
             }
             else {
-                let selectSqlParams = {};
-                if(settings && settings.selectSqlParamsBuilder) {
-                    selectSqlParams = settings.selectSqlParamsBuilder(req);
-                }
-                return db.allAsync(selectSql, selectSqlParams);
-            }
-        }).then(function(rows) {
-            if(rows) {
                 res.writeHead(200, {
                     "Content-Type": "application/json",
                     "Pragma": "Public",
                     "Last-Modified": lastModified.toUTCString()
                 });
-                res.write(JSON.stringify(rows));
-                res.end();
+                res.end(JSON.stringify(rows));
             }
-        }).catch(function(error) {
+
+        }
+        catch(error) {
             console.error(error);
             res.statusCode = 500;
             res.end();
-        });
+        }
     };
 }
 
 function albumsHandler() {
-    const lastModifiedSql = "SELECT MAX(row_modified) AS last_modified " +
-        "FROM track " +
-        "WHERE album != ''";
+    const lastModifiedSql = "SELECT max(last_modified) as last_modified FROM album_view";
 
-    const albumsSql = "SELECT MIN(rowid) AS id, album_artist, album, genre, SUM(duration) AS duration, " +
-        "COUNT(rowid) AS tracks, year, " +
-        "(CASE WHEN release_date IS NULL THEN " +
-        "   CAST(strftime('%s', printf('%d-01-01', year)) AS INT) ELSE " +
-        "   release_date END) as release_date, " +
-        "(CASE WHEN COUNT(last_play) = COUNT(rowid) THEN min(last_play) ELSE NULL END) AS last_play, " +
-        "MIN(play_count) AS play_count " +
-        "FROM track " +
-        "WHERE album != '' " +
-        "GROUP BY album_artist, album";
+    const albumsSql = "SELECT id, artist AS album_artist, title AS album, genre, duration, " +
+        "tracks, year, release_date, last_play, play_count " +
+        "FROM album_view";
 
-    return selectFromDb(lastModifiedSql, albumsSql);
+    return selectFromDb(lastModifiedSql, albumsSql, {});
 }
 
 function tracksHandler() {
-    const lastModifiedSql = "SELECT max(row_modified) AS last_modified " +
-        "FROM track " +
-        "WHERE album_artist LIKE $album_artist " +
-        "AND album LIKE $album";
+    const lastModifiedSql = "SELECT max(last_modified) as last_modified " +
+        "FROM track_view " +
+        "WHERE album_id = $album_id OR $album_id IS NULL";
 
-    const tracksSql = "SELECT rowid AS id, * FROM track " +
-        "WHERE album_artist LIKE $album_artist " +
-        "AND album LIKE $album " +
-        "ORDER BY album_artist, album, track_number";
+    const tracksSql =
+        "SELECT id, title, artist, album, album_id, genre, track_number, release_date, " +
+        "duration, path, last_play, play_count, last_modified, year " +
+        "FROM track_view " +
+        "WHERE album_id = $album_id OR $album_id IS NULL " +
+        "ORDER BY album, track_number";
 
     function sqlParamsBuilder(req) {
         const query = url.parse(req.url, true).query;
 
         return {
-            $album_artist: query.album_artist || "%",
-            $album: query.album || "%"
+            $album_id: query.album_id || null
         };
     }
 
@@ -136,33 +127,23 @@ function tracksHandler() {
 }
 
 function playlistsHandler() {
-    const lastModifiedSql = "SELECT MAX(track.row_modified) AS last_modified " +
-        "FROM playlist " +
-        "LEFT JOIN playlist_track ON playlist.rowid = playlist_track.playlist_id " +
-        "LEFT JOIN track ON playlist_track.track_id = track.rowid " +
-        "GROUP BY playlist.rowid;";
+    const lastModifiedSql = "SELECT MAX(last_modified) " +
+        "FROM playlist_view;";
 
-    const playlistsSql = "SELECT playlist.rowid AS id, playlist.title, " +
-        "COUNT(playlist_track.rowid) AS tracks, " +
-        "SUM(track.duration) AS duration, " +
-        "( " +
-        "   CASE WHEN COUNT(track.last_play) = COUNT(track.rowid) THEN min(track.last_play) ELSE NULL END" +
-        ") AS last_play, " +
-        "MIN(track.play_count) AS play_count " +
-        "FROM playlist " +
-        "LEFT JOIN playlist_track ON playlist.rowid = playlist_track.playlist_id " +
-        "LEFT JOIN track ON playlist_track.track_id = track.rowid " +
-        "GROUP BY playlist.rowid;";
+    const playlistsSql = "SELECT id, title, tracks, duration, last_play, play_count " +
+        "FROM playlist_view;";
 
-    return selectFromDb(lastModifiedSql, playlistsSql);
+    return selectFromDb(lastModifiedSql, playlistsSql, {});
 }
 
 function playlistTracksHandler() {
     const lastModifiedSql = "SELECT $current_time AS last_modified;";
 
-    const tracksSql = "SELECT track.rowid AS id, * " +
-        "FROM track " +
-        "LEFT JOIN playlist_track ON track.rowid = playlist_track.track_id " +
+    const tracksSql =
+        "SELECT id, title, artist, album, album_id, genre, track_number, release_date, " +
+        "duration, path, last_play, play_count, last_modified, year " +
+        "FROM track_view " +
+        "LEFT JOIN playlist_track ON track_view.id = playlist_track.track_id " +
         "WHERE playlist_track.playlist_id = $playlist_id " +
         "ORDER BY (" +
         "   CASE WHEN playlist_track.`order` IS NULL THEN RANDOM() ELSE playlist_track.`order` END" +
@@ -224,52 +205,47 @@ function lyricsHandler() {
 function shuffleHandler() {
     const lastModifiedSql = "SELECT MAX(strftime('%s', 'now')) AS last_modified";
 
-    const shuffleSql = "SELECT rowid AS id, * FROM track " +
+    const shuffleSql = "SELECT * FROM track_view " +
         "WHERE (play_count >= 5) AND (duration >= 50) AND (duration < 1000) " +
         "AND (last_play < strftime('%s', 'now') - 90*24*60*60) " +
         "AND (album = '' OR album NOT IN (" +
-        "    SELECT album FROM (" +
-        "        SELECT album, MIN(play_count) AS play_count " +
-        "        FROM track " +
-        "        GROUP BY album_artist, album" +
-        "    ) WHERE play_count >= 5 " +
+        "    SELECT title FROM album_view WHERE play_count >= 5 " +
         ")) " +
         "ORDER BY last_play";
 
-    return selectFromDb(lastModifiedSql, shuffleSql);
+    return selectFromDb(lastModifiedSql, shuffleSql, {});
 }
 
 function albumArtHandler() {
-    return function(req, res, next) {
-        console.log(req.url);
-        const query = url.parse(req.url, true).query;
-        const trackId = query.id;
+    return async function(req, res, next) {
+        try {
+            console.log(req.url);
+            const query = url.parse(req.url, true).query;
+            const trackId = query.id;
 
-        let ifModifiedSince = null;
-        if(req.headers["if-modified-since"]) {
-            ifModifiedSince = new Date(req.headers["if-modified-since"]);
-        }
+            let ifModifiedSince = null;
+            if(req.headers["if-modified-since"]) {
+                ifModifiedSince = new Date(req.headers["if-modified-since"]);
+            }
 
-        let relativeExpectedArtPathJpg;
-        let relativeExpectedArtPathPng;
+            const track = await db.selectTrackByIdAsync(trackId);
 
-        db.selectTrackByIdAsync(trackId).then(function(track) {
             // find path to mp3
             const relativeTrackPath = track.path;
             const relativeTrackDirectory = path.dirname(relativeTrackPath);
-            relativeExpectedArtPathJpg = path.join(relativeTrackDirectory,
+            const relativeExpectedArtPathJpg = path.join(relativeTrackDirectory,
                 util.escapeForFileSystem(track.album) + ".jpg");
-            relativeExpectedArtPathPng = path.join(relativeTrackDirectory,
+            const relativeExpectedArtPathPng = path.join(relativeTrackDirectory,
                 util.escapeForFileSystem(track.album) + ".png");
 
             const fullTrackPath = path.join(musicServerSettings.files.base_stream_path, relativeTrackPath);
 
-            return Promise.join(
+            const [mp3Stat, jpgExists, pngExists, metadata] = await Promise.join(
                 fs.statAsync(fullTrackPath),
                 util.fileExistsAsync(path.join(musicServerSettings.files.base_stream_path, relativeExpectedArtPathJpg)),
                 util.fileExistsAsync(path.join(musicServerSettings.files.base_stream_path, relativeExpectedArtPathPng)),
                 util.getMetadataAsync(fullTrackPath));
-        }).spread(function(mp3Stat, jpgExists, pngExists, metadata) {
+
             // if file exists... forward to the static address
             // it will handle caching info
             if(jpgExists) {
@@ -315,69 +291,58 @@ function albumArtHandler() {
                 res.statusCode = 404;
                 res.end();
             }
-        }).catch(function(error) {
+        }
+        catch(error) {
             console.trace(error);
             res.statusCode = 500;
             res.end();
-        });
+        }
     };
 }
 
 function submitPlayHandler() {
-    const statement = db.prepare(
-        "UPDATE track SET play_count = play_count + 1, last_play = $last_play, row_modified = $current_time " +
-        "WHERE rowid = $id");
 
-    return function(req, res, next) {
+    return async function(req, res, next) {
         console.log(req.url, req.body);
-        const trackId = req.body.id;
+        const trackId = Number.parseInt(req.body.id, 10);
 
         const currentTime = Math.floor(Date.now() / 1000);
-        const lastPlay = req.body.started_playing || currentTime;
+        const timestamp = Number.parseInt(req.body.started_playing, 10) || currentTime;
+        const track = await db.selectTrackByIdAsync(trackId);
 
-        function scrobbleOrQueue(track) {
-            if(track.owner !== 'mike') {
-                console.log('not scrobbling; owner = ' + track.owner);
-                return util.dummyPromise();
+        if(track.owner === 'mike') {
+            db.submitPlay(trackId, timestamp, false);
+
+            try {
+                await lastfm.doScrobbleAsync({
+                    method: 'track.scrobble',
+                    artist: track.artist,
+                    track: track.title,
+                    timestamp: timestamp,
+                    album: track.album,
+                    trackNumber: track.track_number,
+                    duration: track.duration
+                });
+
+                await db.markPlayScrobbled(trackId, timestamp);
             }
-
-            return lastfm.doScrobbleAsync({
-                method: 'track.scrobble',
-                artist: track.artist,
-                track: track.title,
-                timestamp: lastPlay,
-                album: track.album,
-                trackNumber: track.track_number,
-                duration: track.duration
-            }).catch(function(error) {
-                return db.addToScrobbleBacklog(track, lastPlay).throw(error);
-            });
+            catch(error) {
+                console.error('scrobble error; will try again later');
+            }
+        }
+        else {
+            console.log('not scrobbling; owner = ' + track.owner);
         }
 
-        statement.runAsync({
-            $id: trackId,
-            $last_play: lastPlay,
-            $current_time: currentTime
-        }).then(function() {
-            return db.selectTrackByIdAsync(trackId);
-        }).then(scrobbleOrQueue).then(function() {
-            res.statusCode = 200;
-            res.end();
-        }).catch(function(error) {
-            console.error(error);
-            res.statusCode = 500;
-            res.end();
-        });
+        res.statusCode = 200;
+        res.end();
     };
 }
 
 function submitNowPlayingHandler() {
-    const statement = db.prepare(
-        "SELECT * FROM track WHERE rowid = $id");
-
     return function(req, res, next) {
         console.log(req.url, req.body);
-        const trackId = req.body.id;
+        const trackId = Number.parseInt(req.body.id, 10);
 
         db.selectTrackByIdAsync(trackId).then(function(track) {
             return lastfm.doScrobbleAsync({
@@ -464,27 +429,29 @@ function startServer(router) {
     http.createServer(httpApp).listen(80);
 }
 
-function checkScrobbleBacklog() {
-    function scrobbleAndPop(row) {
-        if(row) {
-            return lastfm.doScrobbleAsync({
+async function checkScrobbleBacklog() {
+    console.log('checking backlog');
+    const track = await db.getTrackFromScrobbleBacklog();
+
+    if(track) {
+        try{
+            await lastfm.doScrobbleAsync({
                 method: 'track.scrobble',
-                artist: row.artist,
-                track: row.title,
-                timestamp: row.timestamp,
-                album: row.album,
-                trackNumber: row.track_number,
-                duration: row.duration
-            }).then(db.popScrobbleBacklog);
+                artist: track.artist,
+                track: track.title,
+                timestamp: track.timestamp,
+                album: track.album,
+                trackNumber: track.track_number,
+                duration: track.duration
+            });
+
+            await db.markPlayScrobbled(track.id, track.timestamp);
         }
-        else {
-            return util.dummyPromise();
+        catch(error) {
+            console.error(error);
+            console.error('scrobble error; will try again later');
         }
     }
-
-    db.peekScrobbleBacklog().then(scrobbleAndPop).catch(function(error) {
-        console.log(error);
-    });
 }
 
 function main() {
@@ -500,6 +467,7 @@ process.on('uncaughtException', function(err) {
             err.code !== "ENOTFOUND" &&
             err.code !== "ETIMEDOUT" &&
             err.code !== "ECONNRESET" &&
+            err.code !== "ECONNREFUSED" &&
             err.code !== "EAI_AGAIN") {
         throw err;
     }
