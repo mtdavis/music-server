@@ -90,9 +90,9 @@ class MusicServerDb {
         const currentTime = Math.floor(Date.now() / 1000);
         const statement = this.db.prepare(
             "INSERT INTO track (title, artist_id, album_id, genre, duration, " +
-            "                   track_number, year, path, play_count, row_modified) " +
+            "                   track_number, year, path, row_modified) " +
             "VALUES ($title, $artist_id, $album_id, $genre, $duration, " +
-            "        $track_number, $year, $path, 0, $current_time)"
+            "        $track_number, $year, $path, $current_time)"
         );
 
         return statement.runAsync({
