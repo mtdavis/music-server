@@ -1,4 +1,5 @@
 import React, {PropTypes} from 'react';
+import {observer} from 'mobx-react';
 import jsep from 'jsep';
 import debounce from 'debounce';
 import {
@@ -108,6 +109,7 @@ function getUniqueValues(objects, key) {
   return result;
 }
 
+@observer
 export default class FilteredTable extends React.Component {
   constructor(props) {
     super(props);

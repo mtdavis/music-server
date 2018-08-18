@@ -1,14 +1,11 @@
-import React, {PropTypes} from 'react';
+import React, {Component, PropTypes} from 'react';
+import {observer} from 'mobx-react';
 import {
   Table,
   TableBody,
-  TableHeader,
-  TableHeaderColumn,
   TableRow,
   TableRowColumn,
-  TextField,
 } from 'material-ui';
-import deepEqual from 'deep-equal';
 import stable from 'stable';
 import MTableRow from './MTableRow';
 import MTableHeader from './MTableHeader';
@@ -18,84 +15,43 @@ window.Perf = Perf;
 
 function getRowComparator(columnKey, order) {
   return function(rowA, rowB) {
-    var valA = rowA[columnKey];
-    var valB = rowB[columnKey];
+    const valA = rowA[columnKey];
+    const valB = rowB[columnKey];
     return compare(valA, valB) * order;
-  }
+  };
 }
 
 function sortBySpecs(rows, sortSpecs) {
-  var sortedRows = rows.slice();
+  let sortedRows = rows.slice();
 
-  for(let sortSpec of sortSpecs) {
-    let {columnKey, order} = sortSpec;
-    let comparator = getRowComparator(columnKey, order);
+  for(const sortSpec of sortSpecs) {
+    const {columnKey, order} = sortSpec;
+    const comparator = getRowComparator(columnKey, order);
     sortedRows = stable(sortedRows, comparator);
   }
 
   return sortedRows;
 }
 
-export default React.createClass({
-  propTypes: {
-    placeholderText: PropTypes.string,
+@observer
+export default class MTable extends Component {
+  constructor(props) {
+    super(props);
 
-    columns: PropTypes.arrayOf(
-      PropTypes.shape({
-        key: PropTypes.string.isRequired,
-        header: PropTypes.string,
-        textAlign: PropTypes.oneOf(['left', 'right']),
-        renderer: PropTypes.func,
-        wrap: PropTypes.boolean
-      }
-    )),
-
-    rows: PropTypes.array,
-
-    onRowClick: PropTypes.func,
-
-    onRowCtrlClick: PropTypes.func,
-
-    showHeader: PropTypes.bool,
-
-    initialSortSpecs: PropTypes.arrayOf(
-      PropTypes.shape({
-        columnKey: PropTypes.string.isRequired,
-        order: PropTypes.oneOf([1, -1])
-      })
-    ),
-
-    rowLimit: PropTypes.number
-  },
-
-  getDefaultProps() {
-    return {
-      placeholderText: "Nothing to see here!",
-      columns: [],
-      rows: [],
-      onRowClick: null,
-      onRowCtrlClick: null,
-      showHeader: true,
-      initialSortSpecs: [],
-      rowLimit: Infinity
-    };
-  },
-
-  getInitialState() {
-    return {
+    this.state = {
       sortSpecs: this.props.initialSortSpecs,
       clickCount: 0,
     };
-  },
+  }
 
   componentWillUnmount() {
     clearTimeout(this._doubleClickTimeout);
-  },
+  }
 
   render() {
-    var sortedRows = sortBySpecs(this.props.rows, this.state.sortSpecs);
+    const sortedRows = sortBySpecs(this.props.rows, this.state.sortSpecs);
 
-    var rowNodes = sortedRows.map(rowData =>
+    const rowNodes = sortedRows.map(rowData =>
       <MTableRow
         key={rowData.id}
         rowData={rowData}
@@ -105,7 +61,7 @@ export default React.createClass({
       />
     );
 
-    var table;
+    let table;
     if(rowNodes.length === 0) {
       table = (
         <Table selectable={false}>
@@ -155,9 +111,9 @@ export default React.createClass({
     }
 
     return table;
-  },
+  }
 
-  mOnClick(event, rowData) {
+  mOnClick = (event, rowData) => {
     if((event.ctrlKey || event.metaKey) && this.props.onRowCtrlClick) {
       event.preventDefault();
       this.props.onRowCtrlClick(rowData);
@@ -176,13 +132,13 @@ export default React.createClass({
         this.props.onRowClick(rowData);
       }
     }
-  },
+  }
 
-  setSortColumnKey(newSortColumnKey) {
-    let newSortSpecs = this.state.sortSpecs.slice();
+  setSortColumnKey = (newSortColumnKey) => {
+    const newSortSpecs = this.state.sortSpecs.slice();
 
     // check if newSortColumnKey is already in sortSpecs
-    let existingIndex = newSortSpecs.findIndex(
+    const existingIndex = newSortSpecs.findIndex(
       spec => spec.columnKey === newSortColumnKey);
 
     if(existingIndex === -1) {
@@ -194,7 +150,7 @@ export default React.createClass({
     }
     else if(existingIndex === newSortSpecs.length - 1) {
       // exists in top position, so flip its order.
-      let sortSpec = Object.assign({}, newSortSpecs[existingIndex]);
+      const sortSpec = Object.assign({}, newSortSpecs[existingIndex]);
       newSortSpecs.splice(existingIndex, 1);
 
       sortSpec.order = -sortSpec.order;
@@ -212,10 +168,10 @@ export default React.createClass({
     }
 
     this.setState({sortSpecs: newSortSpecs});
-  },
+  }
 
   getTopSortSpec() {
-    let {sortSpecs} = this.state;
+    const {sortSpecs} = this.state;
     if(sortSpecs.length === 0) {
       return {
         columnKey: null,
@@ -224,5 +180,47 @@ export default React.createClass({
     }
 
     return sortSpecs[sortSpecs.length - 1];
-  },
-});
+  }
+}
+
+MTable.defaultProps = {
+  placeholderText: "Nothing to see here!",
+  columns: [],
+  rows: [],
+  onRowClick: null,
+  onRowCtrlClick: null,
+  showHeader: true,
+  initialSortSpecs: [],
+  rowLimit: Infinity
+};
+
+MTable.propTypes = {
+  placeholderText: PropTypes.string,
+
+  columns: PropTypes.arrayOf(
+    PropTypes.shape({
+      key: PropTypes.string.isRequired,
+      header: PropTypes.string,
+      textAlign: PropTypes.oneOf(['left', 'right']),
+      renderer: PropTypes.func,
+      wrap: PropTypes.boolean
+    })
+  ),
+
+  rows: PropTypes.array,
+
+  onRowClick: PropTypes.func,
+
+  onRowCtrlClick: PropTypes.func,
+
+  showHeader: PropTypes.bool,
+
+  initialSortSpecs: PropTypes.arrayOf(
+    PropTypes.shape({
+      columnKey: PropTypes.string.isRequired,
+      order: PropTypes.oneOf([1, -1])
+    })
+  ),
+
+  rowLimit: PropTypes.number
+};

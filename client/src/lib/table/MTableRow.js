@@ -1,11 +1,14 @@
 import React, {PropTypes} from 'react';
+import {observer} from 'mobx-react';
 import {
   TableRow
 } from 'material-ui';
 import deepEqual from 'deep-equal';
 import MTableRowColumn from './MTableRowColumn';
 
+@observer
 export default class MTableRow extends React.Component {
+  // TODO: remove this once we update material-ui
   shouldComponentUpdate(nextProps, nextState) {
     return !deepEqual(this.props.columns, nextProps.columns) ||
       !deepEqual(this.props.rowData, nextProps.rowData) ||
