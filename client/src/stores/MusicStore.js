@@ -1,4 +1,5 @@
 import {action, computed, observable} from 'mobx';
+import NoSleep from 'nosleep.js';
 import weighted from 'weighted';
 import PlayerState from '../lib/PlayerState';
 import {timeStringToSeconds} from '../lib/util';
@@ -12,6 +13,7 @@ export default class MusicStore {
   @observable willStopAfterCurrent = false;
 
   trackPositionUpdateTimer = null;
+  noSleep = new NoSleep();
 
   @computed get currentTrack() {
     if(this.playlist.length === 0) {
@@ -128,16 +130,21 @@ export default class MusicStore {
       this.playerState = PlayerState.PLAYING;
       this.startTrackPositionUpdateTimer();
 
+      this.noSleep.enable(); // prevent PC from sleeping during playback
     };
 
     this.api.onpause = () => {
       this.playerState = PlayerState.PAUSED;
+
+      this.noSleep.disable();
     };
 
     this.api.onstop = () => {
       this.playerState = PlayerState.STOPPED;
       this.willStopAfterCurrent = false;
       this.clearTrackPositionUpdateTimer();
+
+      this.noSleep.disable();
     };
 
     this.api.onfinishedtrack = () => {
@@ -151,6 +158,8 @@ export default class MusicStore {
       this.playerState = PlayerState.STOPPED;
       this.willStopAfterCurrent = false;
       this.clearTrackPositionUpdateTimer();
+
+      this.noSleep.disable();
     };
 
     this.api.onprev = () => {
