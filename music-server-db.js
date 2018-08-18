@@ -215,6 +215,36 @@ class MusicServerDb {
         const rows = await db.allAsync(selectSql, selectSqlParams);
         return {lastModified, rows};
     }
+
+    async getTagId(tagName) {
+        tagName = tagName.toLowerCase();
+
+        const statement = this.db.prepare("SELECT id FROM tag WHERE name = $name");
+        let tagIdRow = await statement.getAsync({$name: tagName});
+
+        if(!tagIdRow) {
+            const insert = this.db.prepare("INSERT INTO tag (name) VALUES ($name)");
+            await insert.runAsync({$name: tagName});
+            tagIdRow = await statement.getAsync({$name: tagName});
+        }
+
+        return tagIdRow.id;
+    }
+
+    async saveTag(trackId, tag, count) {
+        const tagId = await this.getTagId(tag);
+
+        const statement = this.db.prepare(
+            "INSERT OR IGNORE INTO track_tag (track_id, tag_id, count) " +
+            "VALUES ($track_id, $tag_id, $count)"
+        );
+
+        await statement.runAsync({
+            $track_id: trackId,
+            $tag_id: tagId,
+            $count: count
+        });
+    }
 }
 
 module.exports = {

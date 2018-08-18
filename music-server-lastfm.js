@@ -71,6 +71,48 @@ function MusicServerLastfm() {
         });
     };
 
+
+    this.getTopTagsAsync = function(artist, title) {
+        return new Promise(function(resolve, reject) {
+            console.log("getting tag info", artist, title);
+
+            function callback(res) {
+                let body = '';
+                res.on('data', function(chunk) {
+                    body += chunk;
+                });
+                res.on('end', function() {
+                    const topTags = JSON.parse(body).toptags;
+                    if(topTags) {
+                        resolve(topTags.tag.filter(
+                            (tag) => tag.count>=10
+                        ));
+                    }
+                    else {
+                        resolve([]);
+                    }
+                });
+            }
+
+            const path = url.format({
+                pathname: "/2.0/",
+                query: {
+                    method: "track.getTopTags",
+                    artist: artist,
+                    track: title,
+                    format: "json",
+                    api_key: musicServerSettings.lastfm.api_key
+                }
+            });
+
+            http.get({
+                host: 'ws.audioscrobbler.com',
+                port: 80,
+                path: path
+            }, callback);
+        });
+    };
+
     return this;
 }
 
