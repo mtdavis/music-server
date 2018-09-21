@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
 import {inject, observer} from 'mobx-react';
-import {
-  Popover,
-  Slider
-} from 'material-ui';
-import {PopoverAnimationVertical} from 'material-ui/Popover';
+import {Popover} from '@material-ui/core';
+import {Slider} from '@material-ui/lab';
 import AppBarIconButton from './AppBarIconButton';
+import VolumeMuteIcon from '@material-ui/icons/VolumeMute';
+import VolumeDownIcon from '@material-ui/icons/VolumeDown';
+import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 
 @inject('musicStore')
 @observer
@@ -20,40 +20,38 @@ export default class VolumeButton extends Component {
   }
 
   render() {
-    let iconClassName;
+    let icon;
     if(this.state.volume < .01) {
-      iconClassName = "icon-volume-mute";
+      icon = <VolumeMuteIcon />;
     }
-    else if(this.state.volume < .33) {
-      iconClassName = "icon-volume-low";
-    }
-    else if(this.state.volume < .67) {
-      iconClassName = "icon-volume-medium";
+    else if(this.state.volume < .5) {
+      icon = <VolumeDownIcon />;
     }
     else {
-      iconClassName = "icon-volume-high";
+      icon = <VolumeUpIcon />;
     }
 
     return (
       <div>
         <div ref='button'>
           <AppBarIconButton
-            iconClassName={iconClassName}
+            icon={icon}
             onClick={this.toggleVolumePopover} />
         </div>
 
         <Popover
           open={this.state.volumePopoverVisible}
-          onRequestClose={this.handleRequestClose}
+          onClose={this.handleRequestClose}
           anchorEl={this.refs.button}
-          animation={PopoverAnimationVertical}
-          anchorOrigin={{horizontal:"middle", vertical:"bottom"}}
-          targetOrigin={{horizontal:"middle", vertical:"top"}}
-          style={{transformOrigin: 'center top'}}
-          zDepth={2}>
+          transformOrigin={{horizontal:'center', vertical:'top'}}
+          anchorOrigin={{horizontal:"center", vertical:"bottom"}}
+          style={{zDepth: 2}}>
           <Slider
-            style={{height: 100, margin: '24px 12px'}}
-            axis='y'
+            style={{height: 148, padding: 24 }}
+            max={1}
+            step={.01}
+            vertical={true}
+            reverse={true}
             value={this.state.volume}
             onChange={this.onVolumeChange} />
         </Popover>

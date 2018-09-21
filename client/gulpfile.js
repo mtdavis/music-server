@@ -46,7 +46,7 @@ gulp.task('clear-build', function (done) {
  * Clears out all the stuff that have been generated during development.
  */
 gulp.task('clean', function(done) {
-  return runsequence('clear-material', 'clear-build', done);
+  return runsequence('clear-build', done);
 });
 
 /*
@@ -136,8 +136,11 @@ gulp.task('index', function (done) {
 gulp.task('build', function (done) {
   return runsequence(
     'clean',
-    'bower', //['copy-material', 'bower'],
-    ['style', 'less', 'js', 'icons'],
+    'bower',
+    'style',
+    'less',
+    'js',
+    'icons',
     'bootstrap',
     'index',
     done
@@ -177,33 +180,6 @@ gulp.task('server', function () {
       livereload: true,
       open: true
     }));
-});
-
-/*
- * Deletes the `src/style/material-ui` folder.
- */
-gulp.task('clear-material', function (done) {
-  del(['src/style/material-ui']).then(() => done());
-});
-
-/*
- * Copies the `material-ui` CSS (LESS) framework from the `node_modules` folder
- * without checking (and then deleting) for an exsting folder in the
- * destination.
- */
-gulp.task('copy-material-no-clear', function (done) {
-  var source =
-    path.join(__dirname, 'node_modules', 'material-ui', 'src', 'less');
-  var dest = path.join(__dirname, 'src', 'style', 'material-ui');
-  ncp(source, dest, done);
-});
-
-/*
- * Copies the `material-ui` CSS (LESS) framework from the `node_modules` folder,
- * assuming that it's been properly installed.
- */
-gulp.task('copy-material', function (done) {
-  return runsequence('clear-material', 'copy-material-no-clear', done);
 });
 
 /*

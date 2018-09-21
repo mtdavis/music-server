@@ -1,9 +1,11 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {inject, observer} from 'mobx-react';
 import {compare} from '../lib/util';
 import {
+  CircularProgress,
   Paper,
-} from 'material-ui';
+} from '@material-ui/core';
 import LazyLoad from 'react-lazy-load';
 
 @inject('musicStore')
@@ -27,7 +29,7 @@ class AlbumImage extends Component {
     };
 
     return (
-      <Paper style={paperStyle} rounded={false}>
+      <Paper style={paperStyle} square={true}>
         <LazyLoad height={this.state.placeholderHeight} offset={1000} debounce={false}>
           <img src={'/album-art?id=' + this.props.trackId}
             style={{
@@ -64,16 +66,23 @@ export default class FavoriteAlbumsPage extends Component {
   render() {
     const {dbStore} = this.props;
 
-    const favoriteAlbums = dbStore.albums.filter(album => album.play_count >= 10);
-    favoriteAlbums.sort((a, b) =>
-      compare(a.album_artist, b.album_artist) || compare(a.release_date, b.release_date) ||
-      compare(a.album, b.album));
+    let content;
 
-    const gridTiles = favoriteAlbums.map(album => {
-      const trackOne = dbStore.tracks.filter(track =>
-        track.album_id === album.id && track.track_number === 1)[0];
-      return <AlbumImage key={album.id} album={album} trackId={trackOne.id} />;
-    });
+    if(dbStore.albums.length === 0 || dbStore.tracks.length === 0) {
+      content = <CircularProgress style={{margin: 24}} />;
+    }
+    else {
+      const favoriteAlbums = dbStore.albums.filter(album => album.play_count >= 10);
+      favoriteAlbums.sort((a, b) =>
+        compare(a.album_artist, b.album_artist) || compare(a.release_date, b.release_date) ||
+        compare(a.album, b.album));
+
+      content = favoriteAlbums.map(album => {
+        const trackOne = dbStore.tracks.filter(track =>
+          track.album_id === album.id && track.track_number === 1)[0];
+        return <AlbumImage key={album.id} album={album} trackId={trackOne.id} />;
+      });
+    }
 
     const divStyle = {
       display: 'flex',
@@ -84,7 +93,7 @@ export default class FavoriteAlbumsPage extends Component {
 
     return (
       <div style={divStyle}>
-        {gridTiles}
+        {content}
       </div>
     );
   }

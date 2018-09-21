@@ -1,78 +1,68 @@
-import React, {PropTypes} from 'react';
-import {AutoComplete, Chip} from 'material-ui';
+import React from 'react';
+import PropTypes from 'prop-types';
+import {TextField, Chip} from '@material-ui/core';
+import {withStyles} from '@material-ui/core/styles';
 
-function filter(searchText, key) {
-  return searchText === '' ||
-    key.toLowerCase().indexOf(searchText.toLowerCase()) !== -1;
+import AutoComplete from './AutoComplete';
+
+const styles = {
+  chip: {
+    marginLeft: 8,
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  wrapper: {
+    display: 'flex',
+  },
+  autoCompleteWrapper: {
+    width: 300,
+  },
 }
 
+@withStyles(styles)
 class MultiSelectAutoComplete extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchText: '',
-      selectedItems: []
+      selectedItems: [],
+      currentSelectedValue: null,
     };
   }
 
   render() {
-    const chips = this.state.selectedItems.map(this.renderChip.bind(this));
+    const classes = this.props.classes;
+    const chips = this.state.selectedItems.map(this.renderChip);
 
-    let {dataSource} = this.props;
-    if(dataSource.indexOf(null) !== -1) {
-      dataSource = dataSource.slice();
-      dataSource.splice(dataSource.indexOf(null), 1); // remove null
-      dataSource.splice(0, 0, '(None)');
+    let {options} = this.props;
+    if(options.indexOf(null) !== -1) {
+      options = options.slice();
+      options.splice(options.indexOf(null), 1); // remove null
+      options.splice(0, 0, '(None)');
     }
 
     return (
-      <div style={{layout: 'flex'}}>
-        <AutoComplete
-          filter={filter}
-          popoverProps={{
-            zDepth: 2,
-            useLayerForClickAway: true
-          }}
-          menuStyle={{
-            maxHeight: '60vh',
-            overflowY: 'scroll'
-          }}
-          hintText={this.props.hintText}
-          menuCloseDelay={0}
-          openOnFocus={true}
-          dataSource={dataSource}
-          searchText={this.state.searchText}
-          onUpdateInput={this.handleUpdateInput.bind(this)}
-          onNewRequest={this.selectItem.bind(this)} />
+      <div className={classes.wrapper}>
+        <div className={classes.autoCompleteWrapper}>
+          <AutoComplete
+            hintText={this.props.hintText}
+            options={options}
+            value={this.state.currentSelectedValue}
+            onChange={this.selectItem} />
+        </div>
 
         {chips}
       </div>
     );
   }
 
-  handleUpdateInput(searchText) {
-    this.setState({searchText});
-  }
-
-  renderChip(item) {
-    const style = {
-      verticalAlign: 'middle',
-      display: 'inline-block',
-      marginLeft: 8,
-      marginTop: 4,
-      marginBottom: 4,
-    };
-    const labelStyle = {
-      verticalAlign: 'top'
-    };
+  renderChip = (item) => {
+    const {classes} = this.props;
     return (
       <Chip
         key={item}
-        style={style}
-        labelStyle={labelStyle}
-        onRequestDelete={() => this.deselectItem(item)}>
-        {item || '(None)'}
-      </Chip>
+        label={item || '(None)'}
+        className={classes.chip}
+        onDelete={() => this.deselectItem(item)} />
     );
   }
 
@@ -94,19 +84,19 @@ class MultiSelectAutoComplete extends React.Component {
 
   }
 
-  selectItem(item) {
+  selectItem = (item) => {
     if(item === '(None)') {
       item = null;
     }
 
-    if(this.props.dataSource.includes(item) &&
+    if(this.props.options.includes(item) &&
       !this.state.selectedItems.includes(item)) {
 
       const selectedItems = this.state.selectedItems.slice();
       selectedItems.push(item);
       this.setState({
         selectedItems,
-        searchText: ''
+        currentSelectedValue: null,
       });
 
       if(this.props.onSelectedItemsUpdate) {
@@ -118,7 +108,7 @@ class MultiSelectAutoComplete extends React.Component {
 
 MultiSelectAutoComplete.propTypes = {
   hintText: PropTypes.string.isRequired,
-  dataSource: PropTypes.arrayOf(PropTypes.string).isRequired,
+  options: PropTypes.arrayOf(PropTypes.string).isRequired,
   onSelectedItemsUpdate: PropTypes.func
 };
 

@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
 import {inject} from 'mobx-react';
 import {
-  FontIcon,
-  RaisedButton
-} from 'material-ui';
+  Button
+} from '@material-ui/core';
+import SearchIcon from '@material-ui/icons/Search';
 
 @inject('dbStore')
 export default class ScanPage extends Component {
@@ -13,25 +13,22 @@ export default class ScanPage extends Component {
       <div className='scan-page container-fluid'>
         <div className="row">
           <div className="col-xs-12" style={{textAlign:"center"}}>
-            <RaisedButton
-              primary={true}
-              onClick={dbStore.scanForNewFiles}
-              label="Scan for New Files"
-              icon={<FontIcon className="icon-search"/>} />
+            <Button variant='contained' color='primary' onClick={dbStore.scanForNewFiles}>
+              <SearchIcon />
+              Scan for New Files
+            </Button>
             <br />
             <br />
-            <RaisedButton
-              primary={true}
-              onClick={dbStore.scanForChangedMetadata}
-              label="Scan for Changed Metadata"
-              icon={<FontIcon className="icon-search"/>} />
+            <Button variant='contained' color='primary' onClick={dbStore.scanForChangedMetadata}>
+              <SearchIcon />
+              Scan for Changed Metadata
+            </Button>
             <br />
             <br />
-            <RaisedButton
-              primary={true}
-              onClick={dbStore.scanForMovedFiles}
-              label="Scan for Moved Files"
-              icon={<FontIcon className="icon-search"/>} />
+            <Button variant='contained' color='primary' onClick={dbStore.scanForMovedFiles}>
+              <SearchIcon />
+              Scan for Moved Files
+            </Button>
           </div>
         </div>
       </div>

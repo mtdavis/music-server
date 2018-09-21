@@ -3,12 +3,13 @@ import {inject, observer} from 'mobx-react';
 import MTable from '../lib/table/MTable';
 import {
   CircularProgress,
-  Paper
-} from 'material-ui';
-import {muiThemeable} from 'material-ui/styles';
+  Paper,
+  Typography,
+} from '@material-ui/core';
+import {withTheme} from '@material-ui/core/styles';
 import LyricsState from '../lib/LyricsState';
 
-@muiThemeable()
+@withTheme()
 @inject('musicStore', 'lyricsStore')
 @observer
 export default class LyricsPage extends Component {
@@ -67,8 +68,6 @@ export default class LyricsPage extends Component {
 
       const headerStyle = {
         textAlign: 'center',
-        fontSize: '24px',
-        fontWeight: this.props.muiTheme.appBar.titleFontWeight,
         borderBottom: '1px solid #eee',
         paddingTop: '12px',
         paddingBottom: '12px',
@@ -76,15 +75,18 @@ export default class LyricsPage extends Component {
       };
 
       const lyricsStyle = {
-        fontFamily: this.props.muiTheme.fontFamily,
+        fontFamily: this.props.theme.typography.fontFamily,
         lineHeight: '1.333',
         textAlign: 'center',
         whiteSpace: 'pre-wrap',
+        marginTop: 12,
       };
 
       content = (
         <Paper style={{paddingBottom:'12px'}}>
-          <h1 style={headerStyle}>{header}</h1>
+          <div style={headerStyle}>
+            <Typography variant="title" color="inherit">{header}</Typography>
+          </div>
           <div style={lyricsStyle}>
             {lyrics}
           </div>

@@ -1,17 +1,16 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {observer} from 'mobx-react';
 import {
   Table,
   TableBody,
   TableRow,
-  TableRowColumn,
-} from 'material-ui';
+  TableCell,
+} from '@material-ui/core';
 import stable from 'stable';
 import MTableRow from './MTableRow';
 import MTableHeader from './MTableHeader';
 import {compare} from '../util';
-import Perf from 'react-addons-perf';
-window.Perf = Perf;
 
 function getRowComparator(columnKey, order) {
   return function(rowA, rowB) {
@@ -64,12 +63,12 @@ export default class MTable extends Component {
     let table;
     if(rowNodes.length === 0) {
       table = (
-        <Table selectable={false}>
-          <TableBody displayRowCheckbox={false}>
+        <Table>
+          <TableBody>
             <TableRow>
-              <TableRowColumn>
+              <TableCell>
                 {this.props.placeholderText}
-              </TableRowColumn>
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>
@@ -77,12 +76,12 @@ export default class MTable extends Component {
     }
     else if(rowNodes.length > this.props.rowLimit) {
       table = (
-        <Table selectable={false}>
-          <TableBody displayRowCheckbox={false}>
+        <Table>
+          <TableBody>
             <TableRow>
-              <TableRowColumn>
+              <TableCell>
                 {rowNodes.length} rows; specify some filter criteria.
-              </TableRowColumn>
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>
@@ -91,8 +90,6 @@ export default class MTable extends Component {
     else {
       table = (
         <Table
-          fixedHeader={false}
-          selectable={false}
           style={{tableLayout:'auto'}}>
           {
             this.props.showHeader &&
@@ -103,7 +100,7 @@ export default class MTable extends Component {
               setSortColumnKey={this.setSortColumnKey}
             />
           }
-          <TableBody showRowHover={true} displayRowCheckbox={false}>
+          <TableBody>
             {rowNodes}
           </TableBody>
         </Table>

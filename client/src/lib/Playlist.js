@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {inject, observer} from 'mobx-react';
-import {Paper} from 'material-ui';
+import {Paper} from '@material-ui/core';
 import MTable from './table/MTable';
 import renderIcon from './table/renderIcon';
 import PlayerState from './PlayerState';

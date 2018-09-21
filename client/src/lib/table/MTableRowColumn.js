@@ -1,5 +1,6 @@
-import React, {PropTypes} from 'react';
-import {TableRowColumn} from 'material-ui';
+import React from 'react';
+import PropTypes from 'prop-types';
+import {TableCell} from '@material-ui/core';
 import renderIcon from './renderIcon';
 
 export default class MTableRowColumn extends React.Component {
@@ -23,6 +24,11 @@ export default class MTableRowColumn extends React.Component {
     }
 
     var content;
+
+    if(!style) {
+      style = {}
+    }
+
     style.padding = 0;
 
     if(value !== null && value !== undefined) {
@@ -47,11 +53,11 @@ export default class MTableRowColumn extends React.Component {
     };
 
     return (
-      <TableRowColumn {...props} style={style}>
+      <TableCell {...props} style={style}>
         <div onClick={mOnClick} style={divStyle}>
           {content}
         </div>
-      </TableRowColumn>
+      </TableCell>
     );
   }
 }
@@ -69,5 +75,5 @@ MTableRowColumn.propTypes = {
 
   mOnClick: PropTypes.func,
 
-  ...TableRowColumn.props
+  ...TableCell.props
 };

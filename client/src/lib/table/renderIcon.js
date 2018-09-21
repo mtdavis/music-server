@@ -1,6 +1,6 @@
 import React from 'react';
-import {FontIcon} from 'material-ui';
+import {Icon} from '@material-ui/core';
 
 export default function renderIcon(value) {
-  return <FontIcon className={value} />;
+  return <Icon className={value} />;
 };

@@ -1,19 +1,19 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {inject} from 'mobx-react';
 import {
-  FontIcon,
-  RaisedButton
-} from 'material-ui';
+  Button
+} from '@material-ui/core';
+import ShuffleIcon from '@material-ui/icons/Shuffle';
 
 @inject('musicStore')
 class ShuffleButton extends Component {
   render() {
     return (
-      <RaisedButton
-        primary={true}
-        onClick={this.onClick}
-        label={this.props.minutes + ' Minutes'}
-        icon={<FontIcon className="icon-shuffle" style={{top:'-1.5px'}}/>} />
+      <Button variant='contained' color='primary' onClick={this.onClick}>
+        <ShuffleIcon />
+        {this.props.minutes + ' Minutes'}
+      </Button>
     );
   }
 

@@ -1,63 +1,68 @@
 import React, {Component} from 'react';
 import {inject, observer} from 'mobx-react';
 import {secondsToTimeString} from './util';
-import {Slider} from 'material-ui';
-import {colors, getMuiTheme, muiThemeable, MuiThemeProvider} from 'material-ui/styles';
+import {
+  colors,
+  Typography,
+} from '@material-ui/core';
+import {withStyles} from '@material-ui/core/styles';
+import {fade} from '@material-ui/core/styles/colorManipulator';
+import {Slider} from '@material-ui/lab';
 
 import PlayerState from './PlayerState';
 
-@muiThemeable()
+const styles = {
+  track: {
+    backgroundColor: 'rgba(0, 0, 0, 0.26)',
+  },
+  trackBefore: {
+    backgroundColor: colors.common.white,
+  },
+  thumb: {
+    backgroundColor: colors.common.white,
+  },
+  focused: {
+    boxShadow: `0px 0px 0px 9px ${fade(colors.common.white, 0.16)}`,
+  },
+  timeLabel: {
+    margin: 'auto 0 auto 10px'
+  },
+};
+
+const DragState = {
+  NO: 0,
+  YES: 1,
+  JUST_ENDED: 2,
+}
+
+@withStyles(styles)
 @inject('musicStore')
 @observer
-export default class CurrentTimeSlider extends Component {
+class CurrentTimeSlider extends Component {
 
   constructor(props) {
     super(props);
 
     this.state = {
-      dragging: false,
-      draggingValue: 0
+      dragging: DragState.NO,
+      draggingValue: null,
     };
-
-    this.muiTheme = getMuiTheme({
-      slider: {
-        trackColor: colors.minBlack,
-        trackColorSelected: colors.lightWhite,
-        selectionColor: colors.white,
-        rippleColor: colors.white,
-        handleColorZero: colors.white,
-        handleFillColor: colors.white,
-      }
-    });
   }
 
   render() {
-    const {musicStore} = this.props;
+    const {classes, musicStore} = this.props;
 
     let timeString = "0:00";
     let sliderValue = 0;
     let sliderMax = 1;
     let sliderDisabled = true;
 
-    const timeLabelStyles = {
-      color: this.props.muiTheme.palette.disabledColor,
-      fontWeight: this.props.muiTheme.appBar.titleFontWeight,
-      height: this.props.muiTheme.appBar.height,
-      lineHeight: this.props.muiTheme.appBar.height + 'px',
-      paddingTop: 0,
-      paddingRight: this.props.muiTheme.padding,
-      paddingBottom: 0,
-      paddingLeft: this.props.muiTheme.padding,
-      margin: 0,
-      fontSize: 24
-    };
-
     if(musicStore.playerState !== PlayerState.STOPPED) {
       const currentTrackDuration = musicStore.currentTrack.duration;
-      timeLabelStyles.color = this.props.muiTheme.appBar.textColor;
+      // timeLabelStyles.color = this.props.theme.appBar.textColor;
 
-      if(this.state.dragging) {
-        sliderValue = undefined;
+      if(this.state.dragging !== DragState.NO) {
+        sliderValue = this.state.draggingValue;
         timeString = secondsToTimeString(this.state.draggingValue);
       }
       else {
@@ -75,45 +80,57 @@ export default class CurrentTimeSlider extends Component {
     }
 
     return (
-      <MuiThemeProvider muiTheme={this.muiTheme}>
-        <div className="time-wrapper">
-          <Slider
-            className="time-slider"
-            name="currentTime"
-            min={0}
-            max={sliderMax}
-            value={sliderValue}
-            disabled={sliderDisabled}
-            onChange={this.onSliderChange}
-            onDragStart={this.onSliderDragStart}
-            onDragStop={this.onSliderDragStop}
-          />
+      <div className="time-wrapper">
+        <Slider
+          classes={classes}
+          name="currentTime"
+          min={0}
+          max={sliderMax}
+          value={sliderValue}
+          disabled={sliderDisabled}
+          onChange={this.onSliderChange}
+          onDragStart={this.onSliderDragStart}
+          onDragEnd={this.onSliderDragEnd}
+        />
 
-          <h1 className={'time-label'} style={timeLabelStyles}>
-            {timeString}
-          </h1>
-        </div>
-      </MuiThemeProvider>
+        <Typography variant="title" color="inherit" className={classes.timeLabel}>
+          {timeString}
+        </Typography>
+      </div>
     );
   }
 
   onSliderChange = (event, value) => {
-    this.setState({draggingValue: value});
+    if(this.state.dragging === DragState.YES) {
+      this.setState({draggingValue: value});
+    }
+    else {
+      this.props.musicStore.seekToPosition(value);
+    }
   }
 
   onSliderDragStart = () => {
-    this.setState({dragging: true});
+    this.setState({
+      dragging: DragState.YES,
+      draggingValue: this.props.musicStore.currentTrackPosition,
+    });
   }
 
-  onSliderDragStop = () => {
+  onSliderDragEnd = () => {
     this.props.musicStore.seekToPosition(this.state.draggingValue);
+
+    this.setState({
+      dragging: DragState.JUST_ENDED,
+    });
 
     setTimeout(() => {
       // run this in a moment to prevent a flash of the previous time while player is updating
       this.setState({
-        dragging: false,
-        draggingValue: 0
+        dragging: DragState.NO,
+        draggingValue: 0,
       });
     }, 100);
   }
 }
+
+export default CurrentTimeSlider;

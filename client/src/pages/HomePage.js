@@ -1,9 +1,10 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {inject, observer} from 'mobx-react';
 import Playlist from '../lib/Playlist';
 import {
   Paper,
-} from 'material-ui';
+} from '@material-ui/core';
 
 class AlbumArt extends Component {
   constructor(props) {
@@ -28,7 +29,7 @@ class AlbumArt extends Component {
       };
 
       result = (
-        <Paper rounded={false} style={paperStyle}>
+        <Paper square={true} style={paperStyle}>
           <img
             src={'/album-art?id=' + this.props.track.id}
             style={{width: '100%'}}
