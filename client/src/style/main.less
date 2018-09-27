@@ -13,12 +13,6 @@ html, body
   background: #f5f5f5;
 }
 
-/*.mui-raised-button-container .mui-font-icon::before
-{
-  vertical-align: middle;
-  padding-left: 10px;
-}*/
-
 .pulsate
 {
   @keyframes pulsate {
@@ -30,60 +24,4 @@ html, body
     }
   }
   animation: pulsate 2s cubic-bezier(0.23, 1, 0.32, 1) 0s infinite;
-}
-
-/*.accent .mui-font-icon
-{
-  color: @accent-3-color;
-  text-shadow:
-    -2px -2px 2px white, -2px -2px 2px white, -2px -2px 2px white,
-    -2px 2px 2px white, -2px 2px 2px white, -2px 2px 2px white,
-    2px -2px 2px white, 2px -2px 2px white, 2px -2px 2px white,
-    2px 2px 2px white, 2px 2px 2px white, 2px 2px 2px white;
-}*/
-
-/*.mui-app-bar
-{
-  display: flex;
-}*/
-
-.app-bar-toolbar
-{
-  justify-content: flex-end;
-  flex: 1;
-  display: flex;
-}
-
-.time-wrapper
-{
-  justify-content: flex-end;
-  display: flex;
-  flex: 1;
-}
-
-.time-slider
-{
-  flex: 1;
-  margin: 0;
-  padding: 0 24px;
-  height: 48px;
-}
-
-.time-label
-{
-  flex: none;
-  /*.mui-font-style-headline;*/
-  /*color: lighten(@body-text-color, 75%);*/
-  padding-right: 12px;
-
-  /*&.playing
-  {
-    color: @app-bar-text-color;
-  }*/
-}
-
-.table-filter {
-  width: 100%;
-  padding-left: 16px;
-  margin-bottom: 1rem;
 }

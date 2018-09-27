@@ -1,10 +1,37 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import {
-  TableHeaderColumn,
-} from 'material-ui';
-import {colors} from 'material-ui/styles';
+  colors,
+  TableCell,
+} from '@material-ui/core';
+import {withStyles} from '@material-ui/core/styles';
+
 import SortIcon from './SortIcon';
 
+const styles = {
+  cell: {
+    padding: 0,
+    position: 'relative',
+    height: 56,
+    '&:last-child': {
+      paddingRight: 0,
+    },
+  },
+  div: {
+    height: '100%',
+    width: '100%',
+    top: 0,
+    left: 0,
+    display: 'flex',
+    alignItems: 'center',
+    padding: '0 12px',
+    cursor: 'pointer',
+    justifyContent: 'flex-start',
+    userSelect: 'none',
+  },
+};
+
+@withStyles(styles)
 class MTableHeaderColumn extends React.Component {
   constructor(props) {
     super(props);
@@ -15,28 +42,22 @@ class MTableHeaderColumn extends React.Component {
   }
 
   render() {
-    var {column, sortingActive, sortOrder, setSortColumnKey, ...props} = this.props;
+    const {classes, column, sortingActive, sortOrder, setSortColumnKey, ...props} = this.props;
 
-    let divStyle = {
-      color: sortingActive ? colors.darkBlack : undefined,
-      backgroundColor: this.state.hover ? colors.grey100 : undefined,
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      padding: '0 12px',
-      cursor: 'pointer',
-      justifyContent: 'flex-start',
+    const divStyles = {
+      color: sortingActive ? 'rgba(0, 0, 0, 0.87)' : undefined,
+      backgroundColor: this.state.hover ? colors.grey['100'] : undefined,
       flexDirection: column.textAlign==='right' ? 'row-reverse' : 'row',
-      userSelect: 'none',
     };
 
     return (
-      <TableHeaderColumn {...props} style={{padding: 0}}>
+      <TableCell {...props} classes={{'root': classes.cell}}>
         <div
           onClick={() => setSortColumnKey(column.key)}
           onMouseEnter={this.onMouseEnter.bind(this)}
           onMouseLeave={this.onMouseLeave.bind(this)}
-          style={divStyle}>
+          style={divStyles}
+          className={classes.div}>
           <div style={{order: 1}}>
             {column.header}
           </div>
@@ -47,7 +68,7 @@ class MTableHeaderColumn extends React.Component {
               sortOrder={sortOrder} />
           </div>
         </div>
-      </TableHeaderColumn>
+      </TableCell>
     );
   }
 
@@ -60,7 +81,7 @@ class MTableHeaderColumn extends React.Component {
   }
 }
 
-MTableHeaderColumn.muiName = 'TableHeaderColumn';
+MTableHeaderColumn.muiName = 'TableCell';
 
 MTableHeaderColumn.propTypes = {
   column: PropTypes.shape({
@@ -75,7 +96,7 @@ MTableHeaderColumn.propTypes = {
 
   setSortColumnKey: PropTypes.func.isRequired,
 
-  ...TableHeaderColumn.propTypes
-}
+  ...TableCell.propTypes
+};
 
 export default MTableHeaderColumn;

@@ -1,24 +1,25 @@
 import React from 'react';
-import {IconButton} from 'material-ui';
-import {muiThemeable} from 'material-ui/styles';
+import {IconButton} from '@material-ui/core';
+import {withTheme} from '@material-ui/core/styles';
 
-const AppBarIconButton = muiThemeable()(React.createClass({
-  propTypes: {
-    ...IconButton.propTypes
-  },
-
+@withTheme()
+export default class AppBarIconButton extends React.Component {
   render() {
-    const {muiTheme, ...props} = this.props;
+    const {theme, icon, ...props} = this.props;
     const color = this.props.disabled ?
-      muiTheme.palette.disabledColor :
-      muiTheme.appBar.textColor;
+      theme.palette.disabledColor :
+      'inherit';
     return (
       <IconButton
-        style={{marginTop: 8}}
-        iconStyle={{color: color}}
-        {...props} />
+        color={color}
+        {...props}
+      >
+        {icon}
+      </IconButton>
     );
   }
-}));
+}
 
-export default AppBarIconButton;
+AppBarIconButton.propTypes = {
+  ...IconButton.propTypes
+};

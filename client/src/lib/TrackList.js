@@ -1,6 +1,7 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {inject, observer} from 'mobx-react';
-import {Snackbar} from 'material-ui';
+import {Snackbar} from '@material-ui/core';
 import {
   secondsToTimeString,
   unixTimestampToDateString,

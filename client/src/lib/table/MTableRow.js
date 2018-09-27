@@ -1,24 +1,17 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import {observer} from 'mobx-react';
 import {
   TableRow
-} from 'material-ui';
-import deepEqual from 'deep-equal';
+} from '@material-ui/core';
 import MTableRowColumn from './MTableRowColumn';
 
 @observer
 export default class MTableRow extends React.Component {
-  // TODO: remove this once we update material-ui
-  shouldComponentUpdate(nextProps, nextState) {
-    return !deepEqual(this.props.columns, nextProps.columns) ||
-      !deepEqual(this.props.rowData, nextProps.rowData) ||
-      !deepEqual(this.props.displayBorder, nextProps.displayBorder);
-  }
-
   render() {
-    var {columns, rowData, cursor, style, mOnClick, ...props} = this.props;
+    let {columns, rowData, cursor, style, mOnClick, ...props} = this.props;
 
-    var cells = columns.map(column =>
+    const cells = columns.map(column =>
       <MTableRowColumn
         key={column.key}
         value={rowData[column.key]}
@@ -35,7 +28,7 @@ export default class MTableRow extends React.Component {
       <TableRow {...props} style={style}>
         {cells}
       </TableRow>
-    )
+    );
   }
 
   mOnClick(event) {

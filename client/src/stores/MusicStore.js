@@ -117,7 +117,7 @@ export default class MusicStore {
       this.stopPlayback();
       this.setPlaylist(tracksToEnqueue);
       this.playOrPausePlayback();
-      location.hash = "home";
+      location.hash = "/";
     });
   }
 

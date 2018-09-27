@@ -1,6 +1,7 @@
-import React, {PropTypes} from 'react';
-import ArrowUpwardIcon from 'material-ui/svg-icons/navigation/arrow-upward';
-import ArrowDownwardIcon from 'material-ui/svg-icons/navigation/arrow-downward';
+import React from 'react';
+import PropTypes from 'prop-types';
+import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
+import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 
 export default class SortIcon extends React.Component {
   constructor(props) {
@@ -8,7 +9,7 @@ export default class SortIcon extends React.Component {
   }
 
   render() {
-    let style = {
+    const style = {
       transform: 'scale(.66)',
       transitionProperty: 'none',
     };

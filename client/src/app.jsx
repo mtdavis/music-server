@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {render} from 'react-dom';
-import {Router, Route, hashHistory, IndexRoute, withRouter} from 'react-router';
-import injectTapEventPlugin from "react-tap-event-plugin";
+import {Route, Switch, withRouter} from 'react-router';
+import {HashRouter} from 'react-router-dom';
 import {inject, observer, Provider} from 'mobx-react';
 
 import {DbStore, LyricsStore, MusicStore, ScrobbleStore} from './stores';
@@ -12,10 +12,29 @@ import AppBarIconButton from './lib/AppBarIconButton';
 import VolumeButton from './lib/VolumeButton';
 import PlayerState from './lib/PlayerState';
 import ScrobbleState from './lib/ScrobbleState';
-import LinkMenuItem from './lib/LinkMenuItem';
+import LeftNavComponent from './lib/LeftNavComponent';
 
-import {AppBar, Divider, Drawer, Snackbar} from 'material-ui';
-import {colors, getMuiTheme, MuiThemeProvider} from 'material-ui/styles';
+import {
+  AppBar,
+  colors,
+  Icon,
+  IconButton,
+  Snackbar,
+  Toolbar,
+  Tooltip,
+  Typography
+} from '@material-ui/core';
+import {
+  createMuiTheme,
+  MuiThemeProvider
+} from '@material-ui/core/styles';
+
+import MenuIcon from '@material-ui/icons/Menu';
+import PauseIcon from '@material-ui/icons/Pause';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
+import StopIcon from '@material-ui/icons/Stop';
+import SkipNextIcon from '@material-ui/icons/SkipNext';
 
 import HomePage from './pages/HomePage';
 import LyricsPage from './pages/LyricsPage';
@@ -27,8 +46,6 @@ import AllTracksPage from './pages/AllTracksPage';
 import ShufflePage from './pages/ShufflePage';
 import PlaylistsPage from './pages/PlaylistsPage';
 import ScanPage from './pages/ScanPage';
-
-injectTapEventPlugin();
 
 const titles = {
   '/': "Now Playing",
@@ -43,80 +60,19 @@ const titles = {
   '/playlists': "Playlists",
 };
 
-class LeftNavComponent extends Component {
+@withRouter
+@inject('musicStore', 'scrobbleStore')
+@observer
+class Master extends Component {
   constructor(props) {
     super(props);
 
     // automatically show the menu if the initial page is the home page
     this.state = {
-      open: window.location.hash === '#/'
+      drawerOpen: window.location.hash === '#/'
     };
   }
 
-  render() {
-    return (
-      <Drawer open={this.state.open} onRequestChange={this.onRequestChange} docked={false} width={320}>
-        <AppBar title="Mike's Music Player" onLeftIconButtonTouchTap={this.close} />
-        <LinkMenuItem to='/' iconClassName={'icon-music'} onClick={this.close}>
-          Now Playing
-        </LinkMenuItem>
-        <LinkMenuItem to='/lyrics' iconClassName={'icon-music'} onClick={this.close}>
-          Lyrics
-        </LinkMenuItem>
-        <Divider />
-        <LinkMenuItem to='/albums' iconClassName='icon-album' onClick={this.close}>
-          All Albums
-        </LinkMenuItem>
-        <LinkMenuItem to='/not-recently-played' iconClassName='icon-album' onClick={this.close}>
-          Not Recently Played
-        </LinkMenuItem>
-        <LinkMenuItem to='/never-played' iconClassName='icon-album' onClick={this.close}>
-          Never Played
-        </LinkMenuItem>
-        <LinkMenuItem to='/favorite-albums' iconClassName='icon-album' onClick={this.close}>
-          Favorite Albums
-        </LinkMenuItem>
-        <Divider />
-        <LinkMenuItem to='/tracks' iconClassName='icon-music' onClick={this.close}>
-          All Tracks
-        </LinkMenuItem>
-        <LinkMenuItem to='/playlists' iconClassName='icon-music' onClick={this.close}>
-          Playlists
-        </LinkMenuItem>
-        <LinkMenuItem to='/shuffle' iconClassName='icon-shuffle' onClick={this.close}>
-          Shuffle
-        </LinkMenuItem>
-        <Divider />
-        <LinkMenuItem to='/scan' iconClassName='icon-search' onClick={this.close}>
-          Scan
-        </LinkMenuItem>
-      </Drawer>
-    );
-  }
-
-  onRequestChange = (open) => {
-    this.setState({
-      open: open
-    });
-  }
-
-  open = () => {
-    this.setState({
-      open: true
-    });
-  }
-
-  close = () => {
-    this.setState({
-      open: false
-    });
-  }
-}
-
-@withRouter
-@inject('musicStore', 'scrobbleStore')
-@observer
-class Master extends Component {
   openLastFm = () => {
     window.open("https://last.fm/user/ogreatone43");
   }
@@ -130,10 +86,23 @@ class Master extends Component {
     }
   }
 
+  openDrawer = () => {
+    this.setState({
+      drawerOpen: true
+    });
+  }
+
+  onDrawerClose = () => {
+    this.setState({
+      drawerOpen: false
+    });
+  }
+
   render() {
     const {musicStore, scrobbleStore} = this.props;
     const playButtonEnabled = musicStore.playlist.length > 0;
-    const playOrPause = musicStore.playerState === PlayerState.PLAYING ? "icon-pause" : "icon-play";
+    const playOrPauseIcon = musicStore.playerState === PlayerState.PLAYING ?
+      <PauseIcon /> : <PlayArrowIcon />;
     const stopButtonEnabled = musicStore.playerState !== PlayerState.STOPPED;
     const prevButtonEnabled = musicStore.playlist.length > 1 &&
       musicStore.currentTrackIndex > 0;
@@ -146,58 +115,58 @@ class Master extends Component {
     scrobbleTooltip[ScrobbleState.TRACK_SCROBBLED] = "Scrobbled";
     scrobbleTooltip[ScrobbleState.SCROBBLE_FAILED] = "Scrobble failed!";
 
+    const title = titles[this.props.location.pathname] || 'Now Playing';
+
+    const lastFmIcon = (
+      <Tooltip title={scrobbleTooltip[scrobbleStore.scrobbleState]}>
+        <Icon className='icon-lastfm' />
+      </Tooltip>
+    );
+
     const toolbar = (
-      <div className='app-bar-toolbar'>
+      <Toolbar>
+        <IconButton color="inherit" onClick={this.openDrawer}>
+          <MenuIcon />
+        </IconButton>
+        <Typography variant="title" color="inherit">
+          {title}
+        </Typography>
+
         <GaplessPlayer />
 
         <CurrentTimeSlider />
 
-        <AppBarIconButton iconClassName="icon-previous"
+        <AppBarIconButton icon={<SkipPreviousIcon />}
           disabled={!prevButtonEnabled}
           onClick={() => musicStore.jumpToPreviousTrack()} />
-        <AppBarIconButton iconClassName={playOrPause}
+        <AppBarIconButton icon={playOrPauseIcon}
           disabled={!playButtonEnabled}
           onClick={() => musicStore.playOrPausePlayback()} />
-        <AppBarIconButton iconClassName="icon-stop"
+        <AppBarIconButton icon={<StopIcon />}
           className={musicStore.willStopAfterCurrent ? "pulsate" : ""}
           disabled={!stopButtonEnabled}
           onClick={this.onStopButtonClick} />
-        <AppBarIconButton iconClassName="icon-next"
+        <AppBarIconButton icon={<SkipNextIcon />}
           disabled={!nextButtonEnabled}
           onClick={() => musicStore.jumpToNextTrack()} />
 
         <VolumeButton />
 
-        <AppBarIconButton iconClassName="icon-lastfm"
+        <AppBarIconButton icon={lastFmIcon}
           tooltip={scrobbleTooltip[scrobbleStore.scrobbleState]}
           onClick={this.openLastFm} />
-      </div>
+      </Toolbar>
     );
-
-    const title = titles[this.props.router.getCurrentLocation().pathname] || 'Now Playing';
 
     return (
       <div>
-        <AppBar
-          title={title}
-          onLeftIconButtonTouchTap={() => this.refs.leftNav.open()}
-          zDepth={1}
-          iconElementRight={toolbar}
-          iconStyleRight={{
-            margin: 0,
-            flex: 1
-          }}
-          titleStyle={{
-            flex: 'none'
-          }}
-          style={{
-            position: 'fixed'
-          }}
-        />
+        <AppBar>
+          {toolbar}
+        </AppBar>
 
-        <LeftNavComponent ref='leftNav' />
+        <LeftNavComponent open={this.state.drawerOpen} onClose={this.onDrawerClose} />
 
-        <div className='mui-app-content-canvas' style={{position: 'relative', top: 64}}>
+        <div style={{position: 'relative', top: 64}}>
           {this.props.children}
         </div>
 
@@ -213,40 +182,43 @@ const dbStore = new DbStore();
 const lyricsStore = new LyricsStore(musicStore);
 const scrobbleStore = new ScrobbleStore(musicStore, dbStore);
 
-const muiTheme = getMuiTheme({
+const muiTheme = createMuiTheme({
   palette: {
-    primary1Color: colors.lightBlue500,
-    primary2Color: colors.lightBlue700,
-    primary3Color: colors.grey400,
-    accent1Color: colors.deepOrange200,
-    accent2Color: colors.grey100,
-    accent3Color: colors.grey500,
+    primary: {
+      main: colors.lightBlue['600'],
+    },
+    secondary: {
+      main: colors.deepOrange['200'],
+    },
+    contrastThreshold: 3,
   }
 });
 
 const router = (
-  <MuiThemeProvider muiTheme={muiTheme}>
+  <MuiThemeProvider theme={muiTheme}>
     <Provider
       musicStore={musicStore}
       dbStore={dbStore}
       lyricsStore={lyricsStore}
       scrobbleStore={scrobbleStore}>
 
-      <Router history={hashHistory}>
-        <Route path='/' component={Master}>
-          <IndexRoute component={HomePage} />
-          <Route path='lyrics' component={LyricsPage} />
-          <Route path='albums' component={AlbumsPage} />
-          <Route path='not-recently-played' component={NotRecentlyPlayedPage} />
-          <Route path='never-played' component={NeverPlayedPage} />
-          <Route path='favorite-albums' component={FavoriteAlbumsPage} />
-          <Route path='tracks' component={AllTracksPage} />
-          <Route path='shuffle' component={ShufflePage} />
-          <Route path='scan' component={ScanPage} />
-          <Route path='playlists' component={PlaylistsPage} />
-          <Route path='*' component={HomePage} />
-        </Route>
-      </Router>
+      <HashRouter>
+        <Master>
+          <Switch>
+            <Route exact path='/' component={HomePage} />
+            <Route path='/lyrics' component={LyricsPage} />
+            <Route path='/albums' component={AlbumsPage} />
+            <Route path='/not-recently-played' component={NotRecentlyPlayedPage} />
+            <Route path='/never-played' component={NeverPlayedPage} />
+            <Route path='/favorite-albums' component={FavoriteAlbumsPage} />
+            <Route path='/tracks' component={AllTracksPage} />
+            <Route path='/shuffle' component={ShufflePage} />
+            <Route path='/scan' component={ScanPage} />
+            <Route path='/playlists' component={PlaylistsPage} />
+            <Route path='*' component={HomePage} />
+          </Switch>
+        </Master>
+      </HashRouter>
     </Provider>
   </MuiThemeProvider>
 );

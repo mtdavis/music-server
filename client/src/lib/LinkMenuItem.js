@@ -1,33 +1,34 @@
-import React, {PropTypes} from 'react';
-import {FontIcon, MenuItem} from 'material-ui';
-import {Link} from 'react-router';
+import React from 'react';
+import PropTypes from 'prop-types';
+import {ListItem, ListItemIcon, ListItemText} from '@material-ui/core';
+import {withRouter} from 'react-router-dom';
 
-const LinkMenuItem = React.createClass({
-  propTypes: {
-    iconClassName: PropTypes.string.isRequired,
-    to: PropTypes.string.isRequired,
-    onClick: PropTypes.func.isRequired,
-    children: PropTypes.node.isRequired
-  },
-
+@withRouter
+export default class LinkMenuItem extends React.Component {
   render() {
-    const icon = <FontIcon className={this.props.iconClassName} />;
+    const {icon} = this.props;
 
     return (
-      <MenuItem innerDivStyle={{padding: 0}} leftIcon={icon}>
-        <Link to={this.props.to} onClick={this.props.onClick} style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          padding: '0px 16px 0px 56px',
-          textDecoration: 'none',
-          color: 'inherit'
-        }}>
+      <ListItem button onClick={this.onClick}>
+        <ListItemIcon>
+          {icon}
+        </ListItemIcon>
+        <ListItemText>
           {this.props.children}
-        </Link>
-      </MenuItem>
+        </ListItemText>
+      </ListItem>
     );
   }
-});
 
-export default LinkMenuItem;
+  onClick = (event) => {
+    this.props.history.push(this.props.to);
+    this.props.onClick(event);
+  }
+}
+
+LinkMenuItem.propTypes = {
+  icon: PropTypes.node.isRequired,
+  to: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired,
+  children: PropTypes.node.isRequired
+};

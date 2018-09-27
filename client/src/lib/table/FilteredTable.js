@@ -1,11 +1,14 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import {observer} from 'mobx-react';
 import jsep from 'jsep';
 import debounce from 'debounce';
 import {
   Paper,
   TextField,
-} from 'material-ui';
+} from '@material-ui/core';
+import {withStyles} from '@material-ui/core/styles';
+
 import MultiSelectAutoComplete from '../MultiSelectAutoComplete';
 import {compare} from '../util';
 import MTable from './MTable';
@@ -109,8 +112,28 @@ function getUniqueValues(objects, key) {
   return result;
 }
 
+const styles = {
+  textField: {
+    marginTop: 10,
+    marginBottom: 16,
+    width: 300,
+  },
+  autoComplete: {
+    height: 40,
+    marginTop: 10,
+  },
+  filterBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    paddingLeft: 16,
+    marginBottom: '1rem',
+  }
+};
+
 @observer
-export default class FilteredTable extends React.Component {
+@withStyles(styles)
+class FilteredTable extends React.Component {
   constructor(props) {
     super(props);
 
@@ -125,12 +148,8 @@ export default class FilteredTable extends React.Component {
     };
   }
 
-  setTextFilterField = (element) => {
-    this.textFilterField = element;
-  }
-
   render() {
-    let rows = this.props.rows;
+    let {classes, rows} = this.props;
 
     const filterElems = [];
 
@@ -147,13 +166,14 @@ export default class FilteredTable extends React.Component {
         '...';
 
       filterElems.push(
-        <MultiSelectAutoComplete
-          key={filterKey}
-          dataSource={filterOptions}
-          hintText={hint}
-          onSelectedItemsUpdate={selectedItems =>
-            this.onSelectedFilterChange(filterKey, selectedItems)}
-        />
+        <div className={classes.autoComplete} key={filterKey}>
+          <MultiSelectAutoComplete
+            options={filterOptions}
+            hintText={hint}
+            onSelectedItemsUpdate={selectedItems =>
+              this.onSelectedFilterChange(filterKey, selectedItems)}
+          />
+        </div>
       );
 
       // now filter the rows by those selected filters.
@@ -182,25 +202,22 @@ export default class FilteredTable extends React.Component {
       columns: this.props.columns
     });
 
-    const filterField = (
-      <div className="table-filter">
+    const filterBox = (
+      <Paper className={classes.filterBox}>
         {filterElems}
 
         <TextField
-          ref={this.setTextFilterField}
-          hintText="Text or query..."
-          errorText={filterTextValid ? "" : "Error!"}
-          errorStyle={{display: 'none'}}
+          className={classes.textField}
+          placeholder="Text or query..."
+          error={!filterTextValid}
           onChange={this.onTextFilterChange}
           onKeyUp={this.onTextFilterChange} />
-      </div>
+      </Paper>
     );
 
     return (
       <div>
-        <Paper>
-          {filterField}
-        </Paper>
+        {filterBox}
 
         <Paper>
           {table}
@@ -209,9 +226,14 @@ export default class FilteredTable extends React.Component {
     );
   }
 
-  onTextFilterChange = debounce(() => {
+  onTextFilterChange = (event) => {
+    event.persist();
+    this.delayedOnTextFilterChange(event);
+  }
+
+  delayedOnTextFilterChange = debounce((event) => {
     this.setState({
-      filterText: this.textFilterField.input.value
+      filterText: event.target.value
     });
   }, 200)
 
@@ -231,3 +253,5 @@ FilteredTable.propTypes = {
 
   table: PropTypes.node.isRequired
 };
+
+export default FilteredTable;

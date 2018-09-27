@@ -1,15 +1,16 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import {
-  TableHeader,
+  TableHead,
   TableRow
-} from 'material-ui';
+} from '@material-ui/core';
 import MTableHeaderColumn from './MTableHeaderColumn';
 
 class MTableHeader extends React.Component {
   render() {
-    var {columns, sortColumnKey, sortOrder, setSortColumnKey, ...props} = this.props;
+    const {columns, sortColumnKey, sortOrder, setSortColumnKey, ...props} = this.props;
 
-    var cells = columns.map(column =>
+    const cells = columns.map(column =>
       <MTableHeaderColumn
         key={column.key}
         column={column}
@@ -20,16 +21,16 @@ class MTableHeader extends React.Component {
     );
 
     return (
-      <TableHeader {...props} displaySelectAll={false} adjustForCheckbox={false}>
+      <TableHead {...props}>
         <TableRow>
           {cells}
         </TableRow>
-      </TableHeader>
+      </TableHead>
     );
   }
 }
 
-MTableHeader.muiName = 'TableHeader';
+MTableHeader.muiName = 'TableHead';
 
 MTableHeader.propTypes = {
   columns: PropTypes.arrayOf(PropTypes.shape({
@@ -42,7 +43,7 @@ MTableHeader.propTypes = {
 
   setSortColumnKey: PropTypes.func.isRequired,
 
-  ...TableHeader.propTypes
-}
+  ...TableHead.propTypes
+};
 
 export default MTableHeader;
