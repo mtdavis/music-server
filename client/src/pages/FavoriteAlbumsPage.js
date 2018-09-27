@@ -6,8 +6,29 @@ import {
   CircularProgress,
   Paper,
 } from '@material-ui/core';
+import {withStyles} from '@material-ui/core/styles';
 import LazyLoad from 'react-lazy-load';
 
+const styles = {
+  albumPaper: {
+    margin: '12px',
+    width: 250,
+    lineHeight: 0,
+    transition: 'opacity 450ms cubic-bezier(0.23, 1, 0.32, 1)',
+  },
+  albumImage: {
+    width: '100%',
+    cursor: 'pointer',
+  },
+  wrapper: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+};
+
+@withStyles(styles)
 @inject('musicStore')
 class AlbumImage extends Component {
   constructor(props) {
@@ -19,23 +40,13 @@ class AlbumImage extends Component {
   }
 
   render() {
-
-    const paperStyle = {
-      margin: '12px',
-      width: 250,
-      lineHeight: 0,
-      opacity: this.state.opacity,
-      transition: 'opacity 450ms cubic-bezier(0.23, 1, 0.32, 1)',
-    };
+    const {classes} = this.props;
 
     return (
-      <Paper style={paperStyle} square={true}>
+      <Paper style={{opacity: this.state.opacity}} square={true} className={classes.albumPaper}>
         <LazyLoad height={this.state.placeholderHeight} offset={1000} debounce={false}>
           <img src={'/album-art?id=' + this.props.trackId}
-            style={{
-              width: '100%',
-              cursor: 'pointer',
-            }}
+            className={classes.albumImage}
             onClick={this.onClick} onLoad={this.onLoad}/>
         </LazyLoad>
       </Paper>
@@ -60,11 +71,12 @@ AlbumImage.propTypes = {
   })
 };
 
+@withStyles(styles)
 @inject('dbStore')
 @observer
 export default class FavoriteAlbumsPage extends Component {
   render() {
-    const {dbStore} = this.props;
+    const {classes, dbStore} = this.props;
 
     let content;
 
@@ -84,15 +96,8 @@ export default class FavoriteAlbumsPage extends Component {
       });
     }
 
-    const divStyle = {
-      display: 'flex',
-      flexWrap: 'wrap',
-      justifyContent: 'center',
-      alignItems: 'center',
-    };
-
     return (
-      <div style={divStyle}>
+      <div className={classes.wrapper}>
         {content}
       </div>
     );

@@ -47,7 +47,7 @@ export default class VolumeButton extends Component {
           anchorOrigin={{horizontal:"center", vertical:"bottom"}}
           style={{zDepth: 2}}>
           <Slider
-            style={{height: 148, padding: 24 }}
+            style={{height: 148, padding: 24}}
             max={1}
             step={.01}
             vertical={true}

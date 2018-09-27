@@ -6,9 +6,35 @@ import {
   Paper,
   Typography,
 } from '@material-ui/core';
-import {withTheme} from '@material-ui/core/styles';
+import {withStyles, withTheme} from '@material-ui/core/styles';
 import LyricsState from '../lib/LyricsState';
 
+function styles(theme) {
+  return {
+    link: {
+      textDecoration: 'none',
+    },
+    header: {
+      textAlign: 'center',
+      borderBottom: '1px solid #eee',
+      paddingTop: '12px',
+      paddingBottom: '12px',
+      marginTop: 0,
+    },
+    lyrics: {
+      fontFamily: theme.typography.fontFamily,
+      lineHeight: '1.333',
+      textAlign: 'center',
+      whiteSpace: 'pre-wrap',
+      marginTop: 12,
+    },
+    paper: {
+      paddingBottom: 12,
+    }
+  };
+}
+
+@withStyles(styles, {withTheme: true})
 @withTheme()
 @inject('musicStore', 'lyricsStore')
 @observer
@@ -23,7 +49,7 @@ export default class LyricsPage extends Component {
 
   render() {
     let content;
-    const {lyricsStore, musicStore} = this.props;
+    const {classes, lyricsStore, musicStore} = this.props;
 
     if(lyricsStore.lyricsState === LyricsState.NO_TRACK) {
       content = (
@@ -59,35 +85,19 @@ export default class LyricsPage extends Component {
       }
       else if(lyricsStore.lyricsState === LyricsState.SUCCESSFUL) {
         header = (
-          <a href={lyricsStore.url} style={{textDecoration: 'none'}} target='_blank'>
+          <a href={lyricsStore.url} className={classes.link} target='_blank'>
             {header}
           </a>
         );
         lyrics = lyricsStore.lyrics;
       }
 
-      const headerStyle = {
-        textAlign: 'center',
-        borderBottom: '1px solid #eee',
-        paddingTop: '12px',
-        paddingBottom: '12px',
-        marginTop: 0,
-      };
-
-      const lyricsStyle = {
-        fontFamily: this.props.theme.typography.fontFamily,
-        lineHeight: '1.333',
-        textAlign: 'center',
-        whiteSpace: 'pre-wrap',
-        marginTop: 12,
-      };
-
       content = (
-        <Paper style={{paddingBottom:'12px'}}>
-          <div style={headerStyle}>
+        <Paper className={classes.paper}>
+          <div className={classes.header}>
             <Typography variant="title" color="inherit">{header}</Typography>
           </div>
-          <div style={lyricsStyle}>
+          <div className={classes.lyrics}>
             {lyrics}
           </div>
         </Paper>

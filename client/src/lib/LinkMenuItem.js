@@ -14,14 +14,14 @@ export default class LinkMenuItem extends React.Component {
           {icon}
         </ListItemIcon>
         <ListItemText>
-            {this.props.children}
+          {this.props.children}
         </ListItemText>
       </ListItem>
     );
   }
 
   onClick = (event) => {
-    this.props.history.push(this.props.to)
+    this.props.history.push(this.props.to);
     this.props.onClick(event);
   }
 }

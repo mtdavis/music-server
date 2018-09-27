@@ -9,7 +9,7 @@ export default class SortIcon extends React.Component {
   }
 
   render() {
-    let style = {
+    const style = {
       transform: 'scale(.66)',
       transitionProperty: 'none',
     };

@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {TextField, Chip} from '@material-ui/core';
+import {Chip} from '@material-ui/core';
 import {withStyles} from '@material-ui/core/styles';
 
 import AutoComplete from './AutoComplete';
@@ -17,7 +17,7 @@ const styles = {
   autoCompleteWrapper: {
     width: 300,
   },
-}
+};
 
 @withStyles(styles)
 class MultiSelectAutoComplete extends React.Component {

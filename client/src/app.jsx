@@ -12,7 +12,6 @@ import AppBarIconButton from './lib/AppBarIconButton';
 import VolumeButton from './lib/VolumeButton';
 import PlayerState from './lib/PlayerState';
 import ScrobbleState from './lib/ScrobbleState';
-import LinkMenuItem from './lib/LinkMenuItem';
 import LeftNavComponent from './lib/LeftNavComponent';
 
 import {
@@ -167,7 +166,7 @@ class Master extends Component {
 
         <LeftNavComponent open={this.state.drawerOpen} onClose={this.onDrawerClose} />
 
-        <div className='mui-app-content-canvas' style={{position: 'relative', top: 64}}>
+        <div style={{position: 'relative', top: 64}}>
           {this.props.children}
         </div>
 
@@ -216,7 +215,7 @@ const router = (
             <Route path='/shuffle' component={ShufflePage} />
             <Route path='/scan' component={ScanPage} />
             <Route path='/playlists' component={PlaylistsPage} />
-            <Route path='*' component={LyricsPage} />
+            <Route path='*' component={HomePage} />
           </Switch>
         </Master>
       </HashRouter>

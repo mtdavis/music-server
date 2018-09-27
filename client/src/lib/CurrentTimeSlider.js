@@ -1,19 +1,20 @@
 import React, {Component} from 'react';
 import {inject, observer} from 'mobx-react';
-import {secondsToTimeString} from './util';
-import {
-  colors,
-  Typography,
-} from '@material-ui/core';
+import {colors} from '@material-ui/core';
 import {withStyles} from '@material-ui/core/styles';
-import {fade} from '@material-ui/core/styles/colorManipulator';
 import {Slider} from '@material-ui/lab';
 
 import PlayerState from './PlayerState';
+import CurrentTimeLabel from './CurrentTimeLabel';
 
 const styles = {
+  wrapper: {
+    display: 'flex',
+    flex: 1,
+    marginLeft: 24,
+  },
   track: {
-    backgroundColor: 'rgba(0, 0, 0, 0.26)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   trackBefore: {
     backgroundColor: colors.common.white,
@@ -21,19 +22,13 @@ const styles = {
   thumb: {
     backgroundColor: colors.common.white,
   },
-  focused: {
-    boxShadow: `0px 0px 0px 9px ${fade(colors.common.white, 0.16)}`,
-  },
-  timeLabel: {
-    margin: 'auto 0 auto 10px'
-  },
 };
 
 const DragState = {
   NO: 0,
   YES: 1,
   JUST_ENDED: 2,
-}
+};
 
 @withStyles(styles)
 @inject('musicStore')
@@ -50,29 +45,25 @@ class CurrentTimeSlider extends Component {
   }
 
   render() {
-    const {classes, musicStore} = this.props;
+    const {musicStore} = this.props;
+    const {wrapper, ...classes} = this.props.classes;
 
-    let timeString = "0:00";
+    let seconds = 0;
+    const playing = musicStore.playerState !== PlayerState.STOPPED;
     let sliderValue = 0;
     let sliderMax = 1;
     let sliderDisabled = true;
 
-    if(musicStore.playerState !== PlayerState.STOPPED) {
+    if(playing) {
       const currentTrackDuration = musicStore.currentTrack.duration;
-      // timeLabelStyles.color = this.props.theme.appBar.textColor;
 
-      if(this.state.dragging !== DragState.NO) {
-        sliderValue = this.state.draggingValue;
-        timeString = secondsToTimeString(this.state.draggingValue);
+      if(this.state.dragging === DragState.NO) {
+        sliderValue = musicStore.currentTrackPosition;
+        seconds = musicStore.currentTrackPosition;
       }
       else {
-        sliderValue = musicStore.currentTrackPosition;
-        timeString = secondsToTimeString(musicStore.currentTrackPosition);
-      }
-
-      // strip off decimal
-      if(timeString.indexOf(".") > -1) {
-        timeString = timeString.split(".")[0];
+        sliderValue = this.state.draggingValue;
+        seconds = this.state.draggingValue;
       }
 
       sliderMax = currentTrackDuration;
@@ -80,7 +71,7 @@ class CurrentTimeSlider extends Component {
     }
 
     return (
-      <div className="time-wrapper">
+      <div className={wrapper}>
         <Slider
           classes={classes}
           name="currentTime"
@@ -93,9 +84,7 @@ class CurrentTimeSlider extends Component {
           onDragEnd={this.onSliderDragEnd}
         />
 
-        <Typography variant="title" color="inherit" className={classes.timeLabel}>
-          {timeString}
-        </Typography>
+        <CurrentTimeLabel enabled={playing} seconds={seconds} />
       </div>
     );
   }

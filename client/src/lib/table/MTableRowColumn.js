@@ -9,7 +9,7 @@ export default class MTableRowColumn extends React.Component {
   }
 
   render() {
-    var {value, renderer, textAlign, wrap, style, mOnClick, ...props} = this.props;
+    let {value, renderer, textAlign, wrap, style, mOnClick, ...props} = this.props;
 
     if(!renderer) {
       renderer = (x) => x;
@@ -23,10 +23,10 @@ export default class MTableRowColumn extends React.Component {
       wrap = true;
     }
 
-    var content;
+    let content;
 
     if(!style) {
-      style = {}
+      style = {};
     }
 
     style.padding = 0;
@@ -42,14 +42,14 @@ export default class MTableRowColumn extends React.Component {
       content = "-";
     }
 
-    var divStyle = {
+    const divStyle = {
       padding: '0 12px',
       display: 'flex',
       alignItems: 'center',
       height: '100%',
       justifyContent: textAlign==='right' ? 'flex-end' : 'flex-start',
       whiteSpace: wrap ? 'normal' : 'nowrap',
-      userSelect: 'none', //prevent double-click from selecting text
+      userSelect: 'none', // prevent double-click from selecting text
     };
 
     return (

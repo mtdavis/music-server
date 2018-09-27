@@ -26,22 +26,20 @@ ShuffleButton.propTypes = {
   minutes: PropTypes.number.isRequired
 };
 
-export default class ShufflePage extends Component {
-  render() {
-    return (
-      <div className='shuffle-page container-fluid'>
-        <div className="row">
-          <div className="col-xs-12" style={{textAlign:"center"}}>
-            <ShuffleButton minutes={30} />
-            <br />
-            <br />
-            <ShuffleButton minutes={60} />
-            <br />
-            <br />
-            <ShuffleButton minutes={90} />
-          </div>
+export default function ShufflePage() {
+  return (
+    <div className='shuffle-page container-fluid'>
+      <div className="row">
+        <div className="col-xs-12" style={{textAlign:"center"}}>
+          <ShuffleButton minutes={30} />
+          <br />
+          <br />
+          <ShuffleButton minutes={60} />
+          <br />
+          <br />
+          <ShuffleButton minutes={90} />
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 }
