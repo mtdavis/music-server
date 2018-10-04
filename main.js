@@ -301,7 +301,6 @@ function albumArtHandler() {
 }
 
 function submitPlayHandler() {
-
     return async function(req, res, next) {
         console.log(req.url, req.body);
         const trackId = Number.parseInt(req.body.id, 10);
@@ -340,27 +339,29 @@ function submitPlayHandler() {
 }
 
 function submitNowPlayingHandler() {
-    return function(req, res, next) {
+    return async function(req, res, next) {
         console.log(req.url, req.body);
         const trackId = Number.parseInt(req.body.id, 10);
+        const track = await db.selectTrackByIdAsync(trackId);
 
-        db.selectTrackByIdAsync(trackId).then(function(track) {
-            return lastfm.doScrobbleAsync({
-                method: 'track.updateNowPlaying',
-                artist: track.artist,
-                track: track.title,
-                album: track.album,
-                trackNumber: track.track_number,
-                duration: track.duration
-            });
-        }).then(function() {
-            res.statusCode = 200;
-            res.end();
-        }).catch(function(error) {
-            console.error(error);
-            res.statusCode = 500;
-            res.end();
-        });
+        if(track.owner === 'mike' && !musicServerSettings.demoMode) {
+            try {
+                await lastfm.doScrobbleAsync({
+                    method: 'track.updateNowPlaying',
+                    artist: track.artist,
+                    track: track.title,
+                    album: track.album,
+                    trackNumber: track.track_number,
+                    duration: track.duration
+                });
+            }
+            catch(error) {
+                console.error(error);
+            }
+        }
+
+        res.statusCode = 200;
+        res.end();
     };
 }
 
@@ -375,7 +376,6 @@ function scanForMovedFilesHandler() {
 function scanForNewFilesHandler() {
     return scanHandler(scanner.scanForNewFilesAsync);
 }
-
 
 function scanHandler(scanFunction) {
     return function(req, res, next) {
