@@ -22,6 +22,7 @@ const connectLimitBandwidth = require("./connect-limit-bandwidth");
 
 function initRouter() {
     const result = connectRoute(function(router) {
+        router.get("/demo-mode", demoModeHandler())
         router.get("/albums", albumsHandler());
         router.get("/tracks", tracksHandler());
         router.get("/album-art", albumArtHandler());
@@ -87,6 +88,15 @@ function selectFromDb(lastModifiedSql, selectSql, {
             res.statusCode = 500;
             res.end();
         }
+    };
+}
+
+function demoModeHandler() {
+    return function(req, res, next) {
+        res.writeHead(200, {
+            "Content-Type": "application/json",
+        });
+        res.end(JSON.stringify(musicServerSettings.demoMode));
     };
 }
 
@@ -301,7 +311,6 @@ function albumArtHandler() {
 }
 
 function submitPlayHandler() {
-
     return async function(req, res, next) {
         console.log(req.url, req.body);
         const trackId = Number.parseInt(req.body.id, 10);
@@ -310,9 +319,9 @@ function submitPlayHandler() {
         const timestamp = Number.parseInt(req.body.started_playing, 10) || currentTime;
         const track = await db.selectTrackByIdAsync(trackId);
 
-        if(track.owner === 'mike') {
-            db.submitPlay(trackId, timestamp, false);
+        db.submitPlay(trackId, timestamp, false);
 
+        if(track.owner === 'mike' && !musicServerSettings.demoMode) {
             try {
                 await lastfm.doScrobbleAsync({
                     method: 'track.scrobble',
@@ -340,27 +349,29 @@ function submitPlayHandler() {
 }
 
 function submitNowPlayingHandler() {
-    return function(req, res, next) {
+    return async function(req, res, next) {
         console.log(req.url, req.body);
         const trackId = Number.parseInt(req.body.id, 10);
+        const track = await db.selectTrackByIdAsync(trackId);
 
-        db.selectTrackByIdAsync(trackId).then(function(track) {
-            return lastfm.doScrobbleAsync({
-                method: 'track.updateNowPlaying',
-                artist: track.artist,
-                track: track.title,
-                album: track.album,
-                trackNumber: track.track_number,
-                duration: track.duration
-            });
-        }).then(function() {
-            res.statusCode = 200;
-            res.end();
-        }).catch(function(error) {
-            console.error(error);
-            res.statusCode = 500;
-            res.end();
-        });
+        if(track.owner === 'mike' && !musicServerSettings.demoMode) {
+            try {
+                await lastfm.doScrobbleAsync({
+                    method: 'track.updateNowPlaying',
+                    artist: track.artist,
+                    track: track.title,
+                    album: track.album,
+                    trackNumber: track.track_number,
+                    duration: track.duration
+                });
+            }
+            catch(error) {
+                console.error(error);
+            }
+        }
+
+        res.statusCode = 200;
+        res.end();
     };
 }
 
@@ -375,7 +386,6 @@ function scanForMovedFilesHandler() {
 function scanForNewFilesHandler() {
     return scanHandler(scanner.scanForNewFilesAsync);
 }
-
 
 function scanHandler(scanFunction) {
     return function(req, res, next) {
@@ -412,13 +422,17 @@ function startServer(router) {
     });
 
     const options = {
-        key: fs.readFileSync('key.pem'),
-        cert: fs.readFileSync('cert.pem')
+        key: fs.readFileSync(musicServerSettings.files.priv_key),
+        cert: fs.readFileSync(musicServerSettings.files.cert)
     };
 
     https.createServer(options, app).listen(443);
 
     const httpApp = connect();
+
+    // for letsencrypt
+    httpApp.use("/.well-known", serveStatic(".well-known"));
+
     httpApp.use("/", function(req, res, next) {
         res.writeHead(303, {
             "Location":"https://" + req.headers.host
@@ -458,7 +472,9 @@ function main() {
     const router = initRouter();
     startServer(router);
 
-    setInterval(checkScrobbleBacklog, 5 * 60 * 1000);
+    if(!musicServerSettings.demoMode) {
+        setInterval(checkScrobbleBacklog, 5 * 60 * 1000);
+    }
 }
 
 process.on('uncaughtException', function(err) {

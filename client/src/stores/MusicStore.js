@@ -11,6 +11,13 @@ export default class MusicStore {
   @observable currentTrackIndex = 0;
   @observable currentTrackPosition = 0;
   @observable willStopAfterCurrent = false;
+  @observable demoMode = false;
+
+  constructor() {
+    $.getJSON("/demo-mode", (demoMode) => {
+      this.demoMode = demoMode;
+    });
+  }
 
   trackPositionUpdateTimer = null;
   noSleep = new NoSleep();
