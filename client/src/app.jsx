@@ -153,7 +153,7 @@ class Master extends Component {
         <VolumeButton />
 
         {
-          musicStore.demoMode ||
+          musicStore.demoMode ? null :
           <AppBarIconButton icon={lastFmIcon}
             tooltip={scrobbleTooltip[scrobbleStore.scrobbleState]}
             onClick={this.openLastFm} />

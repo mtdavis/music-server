@@ -96,13 +96,13 @@ class LeftNavComponent extends Component {
             Favorite Albums
           </LinkMenuItem>
           {
-            musicStore.demoMode || <Divider />
+            musicStore.demoMode ? null : <Divider />
           }
           <LinkMenuItem to='/tracks' icon={<MusicNoteIcon />} onClick={this.close}>
             All Tracks
           </LinkMenuItem>
           {
-            musicStore.demoMode ||
+            musicStore.demoMode ? null :
             <div>
               <LinkMenuItem to='/playlists' icon={<QueueMusicIcon />} onClick={this.close}>
                 Playlists
