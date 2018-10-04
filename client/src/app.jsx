@@ -67,9 +67,11 @@ class Master extends Component {
   constructor(props) {
     super(props);
 
-    // automatically show the menu if the initial page is the home page
     this.state = {
-      drawerOpen: window.location.hash === '#/'
+      demoSnackbarClosed: false,
+
+      // automatically show the menu if the initial page is the home page
+      drawerOpen: window.location.hash === '#/',
     };
   }
 
@@ -95,6 +97,12 @@ class Master extends Component {
   onDrawerClose = () => {
     this.setState({
       drawerOpen: false
+    });
+  }
+
+  onDemoSnackbarClose = () => {
+    this.setState({
+      demoSnackbarClosed: true
     });
   }
 
@@ -175,6 +183,18 @@ class Master extends Component {
 
         <Snackbar open={scrobbleStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED}
           message='Scrobble failed.' />
+
+        <Snackbar
+          open={musicStore.demoMode && !this.state.demoSnackbarClosed}
+          autoHideDuration={10000}
+          onClose={this.onDemoSnackbarClose}
+          message={
+            <span>
+              This is a demo instance that uses public-domain music.<br/>
+              A few features are disabled, e.g., scrobbling to last.fm.
+            </span>
+          }
+        />
       </div>
     );
   }
