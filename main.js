@@ -412,8 +412,8 @@ function startServer(router) {
     });
 
     const options = {
-        key: fs.readFileSync('key.pem'),
-        cert: fs.readFileSync('cert.pem')
+        key: fs.readFileSync(musicServerSettings.files.priv_key),
+        cert: fs.readFileSync(musicServerSettings.files.cert)
     };
 
     https.createServer(options, app).listen(443);
