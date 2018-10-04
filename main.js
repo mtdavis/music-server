@@ -310,9 +310,9 @@ function submitPlayHandler() {
         const timestamp = Number.parseInt(req.body.started_playing, 10) || currentTime;
         const track = await db.selectTrackByIdAsync(trackId);
 
-        if(track.owner === 'mike') {
-            db.submitPlay(trackId, timestamp, false);
+        db.submitPlay(trackId, timestamp, false);
 
+        if(track.owner === 'mike' && !musicServerSettings.demoMode) {
             try {
                 await lastfm.doScrobbleAsync({
                     method: 'track.scrobble',
@@ -419,6 +419,10 @@ function startServer(router) {
     https.createServer(options, app).listen(443);
 
     const httpApp = connect();
+
+    // for letsencrypt
+    httpApp.use("/.well-known", serveStatic(".well-known"));
+
     httpApp.use("/", function(req, res, next) {
         res.writeHead(303, {
             "Location":"https://" + req.headers.host
@@ -458,7 +462,9 @@ function main() {
     const router = initRouter();
     startServer(router);
 
-    setInterval(checkScrobbleBacklog, 5 * 60 * 1000);
+    if(!musicServerSettings.demoMode) {
+        setInterval(checkScrobbleBacklog, 5 * 60 * 1000);
+    }
 }
 
 process.on('uncaughtException', function(err) {
