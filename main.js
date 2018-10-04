@@ -22,6 +22,7 @@ const connectLimitBandwidth = require("./connect-limit-bandwidth");
 
 function initRouter() {
     const result = connectRoute(function(router) {
+        router.get("/demo-mode", demoModeHandler())
         router.get("/albums", albumsHandler());
         router.get("/tracks", tracksHandler());
         router.get("/album-art", albumArtHandler());
@@ -87,6 +88,15 @@ function selectFromDb(lastModifiedSql, selectSql, {
             res.statusCode = 500;
             res.end();
         }
+    };
+}
+
+function demoModeHandler() {
+    return function(req, res, next) {
+        res.writeHead(200, {
+            "Content-Type": "application/json",
+        });
+        res.end(JSON.stringify(musicServerSettings.demoMode));
     };
 }
 

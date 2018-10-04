@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import {inject, observer} from 'mobx-react';
 import {
   AppBar,
   Divider,
@@ -40,6 +41,8 @@ const leftNavStyles = {
 };
 
 @withStyles(leftNavStyles)
+@inject('musicStore')
+@observer
 class LeftNavComponent extends Component {
   constructor(props) {
     super(props);
@@ -58,7 +61,7 @@ class LeftNavComponent extends Component {
   }
 
   render() {
-    const {classes} = this.props;
+    const {classes, musicStore} = this.props;
 
     return (
       <Drawer open={this.state.open} onClose={this.close}>
@@ -92,20 +95,27 @@ class LeftNavComponent extends Component {
           <LinkMenuItem to='/favorite-albums' icon={<StarsIcon />} onClick={this.close}>
             Favorite Albums
           </LinkMenuItem>
-          <Divider />
+          {
+            musicStore.demoMode || <Divider />
+          }
           <LinkMenuItem to='/tracks' icon={<MusicNoteIcon />} onClick={this.close}>
             All Tracks
           </LinkMenuItem>
-          <LinkMenuItem to='/playlists' icon={<QueueMusicIcon />} onClick={this.close}>
-            Playlists
-          </LinkMenuItem>
-          <LinkMenuItem to='/shuffle' icon={<ShuffleIcon />} onClick={this.close}>
-            Shuffle
-          </LinkMenuItem>
-          <Divider />
-          <LinkMenuItem to='/scan' icon={<SearchIcon />} onClick={this.close}>
-            Scan
-          </LinkMenuItem>
+          {
+            musicStore.demoMode ||
+            <div>
+              <LinkMenuItem to='/playlists' icon={<QueueMusicIcon />} onClick={this.close}>
+                Playlists
+              </LinkMenuItem>
+              <LinkMenuItem to='/shuffle' icon={<ShuffleIcon />} onClick={this.close}>
+                Shuffle
+              </LinkMenuItem>
+              <Divider />
+              <LinkMenuItem to='/scan' icon={<SearchIcon />} onClick={this.close}>
+                Scan
+              </LinkMenuItem>
+            </div>
+          }
         </List>
       </Drawer>
     );
