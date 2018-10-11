@@ -79,8 +79,12 @@ gulp.task('style', function () {
 gulp.task('js', function() {
   return browserify(paths.appjs, {debug: true})
     .transform("babelify", {
-      presets: ["es2015", "react", "stage-1"],
-      plugins: ["transform-object-rest-spread", "transform-decorators-legacy"]
+      presets: ["@babel/env", "@babel/preset-react"],
+      plugins: [
+        "@babel/plugin-transform-spread",
+        ["@babel/plugin-proposal-decorators", {"legacy": true}],
+        ["@babel/plugin-proposal-class-properties", {"loose": true}],
+      ]
     })
     .bundle()
     .on('error', function (err) {
