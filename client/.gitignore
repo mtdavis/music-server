@@ -1,8 +1,6 @@
 # Build directory
 build
-
-# Copied styles for Material UI
-src/style/material-ui
+dist
 
 # OS X-specific file
 .DS_Store

@@ -48,6 +48,10 @@ import ShufflePage from './pages/ShufflePage';
 import PlaylistsPage from './pages/PlaylistsPage';
 import ScanPage from './pages/ScanPage';
 
+import './style/main.css';
+import './style/bootstrap.css';
+import './style/icomoon/style.css';
+
 interface Props {
   children: React.ReactNode,
 };

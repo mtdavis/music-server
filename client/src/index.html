@@ -5,24 +5,11 @@
     <meta charset='utf-8'>
     <title>Mike's Music Player</title>
 
-    <!-- The code inside the `global:css`, `inject:css`, and `endinject` will be
-            automatically updated upon compilation. -->
-
-    <!-- global:css -->
-    <!-- endinject -->
-
-    <!-- inject:css -->
-    <!-- endinject -->
-
-    <script src="/jquery/dist/jquery.min.js"></script>
-    <script src="/gapless5/gapless5.js"></script>
-
     <link href='//fonts.googleapis.com/css?family=Roboto:400,300,500' rel='stylesheet' type='text/css'></link>
     <link id="favicon" rel="shortcut icon" type="image/png" href="data:image/png;base64,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"></link>
   </head>
 
   <body>
     <div id='app' />
-    <script src='bundle.js'></script>
   </body>
 </html>
