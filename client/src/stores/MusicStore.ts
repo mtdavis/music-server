@@ -5,9 +5,9 @@ import PlayerState from '../lib/PlayerState';
 import {timeStringToSeconds} from '../lib/util';
 
 export default class MusicStore {
-  @observable api = null;
+  @observable api: Gapless5 | null = null;
   @observable playerState = PlayerState.STOPPED;
-  @observable playlist = [];
+  @observable playlist: Track[] = [];
   @observable currentTrackIndex = 0;
   @observable currentTrackPosition = 0;
   @observable willStopAfterCurrent = false;
@@ -19,10 +19,10 @@ export default class MusicStore {
     });
   }
 
-  trackPositionUpdateTimer = null;
+  trackPositionUpdateTimer: number | null = null;
   noSleep = new NoSleep();
 
-  @computed get currentTrack() {
+  @computed get currentTrack(): Track | null {
     if(this.playlist.length === 0) {
       return null;
     }
@@ -39,7 +39,7 @@ export default class MusicStore {
   }
 
   @action
-  playAlbum(album) {
+  playAlbum(album: Album) {
     const query = {
       album_id: album.id
     };
@@ -53,13 +53,17 @@ export default class MusicStore {
   }
 
   @action
-  enqueueAlbum(album) {
+  enqueueAlbum(album: Album) {
     const query = {
       album_artist: album.album_artist,
       album: album.album
     };
 
     $.getJSON("/tracks", query, (tracks) => {
+      if(!this.api) {
+        throw Error('Gapless5 instance is not initialized');
+      }
+
       for(let i = 0; i < tracks.length; i++) {
         this.playlist.push(tracks[i]);
         const path = tracks[i].path.replace(/#/, "%23");
@@ -70,7 +74,7 @@ export default class MusicStore {
   }
 
   @action
-  playPlaylist(playlist) {
+  playPlaylist(playlist: Playlist) {
     const query = {
       playlist_id: playlist.id
     };
@@ -84,24 +88,32 @@ export default class MusicStore {
   }
 
   @action
-  playTrack(track) {
+  playTrack(track: Track) {
     this.stopPlayback();
     this.setPlaylist([track]);
     this.playOrPausePlayback();
   }
 
   @action
-  enqueueTrack(track) {
+  enqueueTrack(track: Track) {
+    if(!this.api) {
+      throw Error('Gapless5 instance is not initialized');
+    }
+
     this.playlist.push(track);
     const path = track.path.replace(/#/, "%23");
     this.api.addTrack("/stream/" + path);
   }
 
   @action
-  playShuffle(minutes) {
+  playShuffle(minutes: number) {
     $.getJSON("/shuffle", (tracks) => {
+      if(!this.api) {
+        throw Error('Gapless5 instance is not initialized');
+      }
+
       // tracks are assumed to be ordered by last_play
-      const weights = {};
+      const weights: {[trackId: number]: number} = {};
       for(let i = 0; i < tracks.length; i++) {
         weights[i] = 1.0 / (i + 1);
       }
@@ -111,7 +123,7 @@ export default class MusicStore {
       let enqueuedSeconds = 0;
 
       while(enqueuedSeconds < secondsToFill && tracks.length > 0) {
-        const index = weighted.select(weights);
+        const index: number = weighted.select(weights);
         if(tracks[index]) {
           const track = tracks[index];
           delete tracks[index];
@@ -129,7 +141,7 @@ export default class MusicStore {
   }
 
   @action
-  initializePlayer(playerNode) {
+  initializePlayer(playerNode: Element) {
     this.api = new Gapless5(playerNode.id);
     this.setVolume(.5);
 
@@ -177,7 +189,7 @@ export default class MusicStore {
       this.currentTrackIndex += 1;
     };
 
-    const currentPositionNode = playerNode.querySelector(".g5position span:nth-child(1)");
+    const currentPositionNode = playerNode.querySelector(".g5position span:nth-child(1)")!;
 
     this.api.getCurrentTrackPosition = function() {
       const timeString = currentPositionNode.textContent;
@@ -185,39 +197,48 @@ export default class MusicStore {
       if(timeString) {
         return timeStringToSeconds(timeString);
       }
+
+      return 0;
     };
   }
 
   @action
   playOrPausePlayback() {
-    if(this.api) {
-      if(this.playerState === PlayerState.PLAYING) {
-        this.api.pause();
-      }
-      else {
-        this.api.play();
-      }
+    if(!this.api) {
+      throw Error('Gapless5 instance is not initialized');
+    }
 
+    if(this.playerState === PlayerState.PLAYING) {
+      this.api.pause();
+    }
+    else {
+      this.api.play();
     }
   }
 
   @action
   stopPlayback() {
-    if(this.api) {
-      this.api.stop();
-      this.clearTrackPositionUpdateTimer();
+    if(!this.api) {
+      throw Error('Gapless5 instance is not initialized');
     }
+    this.api.stop();
+    this.clearTrackPositionUpdateTimer();
   }
 
   @action
   toggleStopAfterCurrent() {
-    if(this.api) {
-      this.willStopAfterCurrent = !this.willStopAfterCurrent;
+    if(!this.api) {
+      throw Error('Gapless5 instance is not initialized');
     }
+    this.willStopAfterCurrent = !this.willStopAfterCurrent;
   }
 
   @action
   clearPlaylist() {
+    if(!this.api) {
+      throw Error('Gapless5 instance is not initialized');
+    }
+
     this.willStopAfterCurrent = false;
     this.currentTrackIndex = 0;
     this.playlist = [];
@@ -225,48 +246,58 @@ export default class MusicStore {
   }
 
   @action
-  setPlaylist(tracks) {
-    if(this.api) {
-      this.clearPlaylist();
+  setPlaylist(tracks: Track[]) {
+    if(!this.api) {
+      throw Error('Gapless5 instance is not initialized');
+    }
+    this.clearPlaylist();
 
-      for(let i = 0; i < tracks.length; i++) {
-        this.playlist.push(tracks[i]);
-        const path = tracks[i].path.replace(/#/, "%23");
-        this.api.addTrack("/stream/" + path);
-      }
-
+    for(let i = 0; i < tracks.length; i++) {
+      this.playlist.push(tracks[i]);
+      const path = tracks[i].path.replace(/#/, "%23");
+      this.api.addTrack("/stream/" + path);
     }
   }
 
   @action
-  jumpToPlaylistItem(index) {
-    if(this.api) {
-      this.willStopAfterCurrent = false;
-      this.currentTrackIndex = index;
-      this.api.gotoTrack(index, true);
-      this.api.onplay();
+  jumpToPlaylistItem(index: number) {
+    if(!this.api) {
+      throw Error('Gapless5 instance is not initialized');
     }
+
+    this.willStopAfterCurrent = false;
+    this.currentTrackIndex = index;
+    this.api.gotoTrack(index, true);
+    this.api.onplay();
   }
 
   @action
   jumpToPreviousTrack() {
-    if(this.api) {
-      this.willStopAfterCurrent = false;
-      this.api.prevtrack();
+    if(!this.api) {
+      throw Error('Gapless5 instance is not initialized');
     }
+
+    this.willStopAfterCurrent = false;
+    this.api.prevtrack();
   }
 
   @action
   jumpToNextTrack() {
-    if(this.api) {
-      this.willStopAfterCurrent = false;
-      this.api.next();
+    if(!this.api) {
+      throw Error('Gapless5 instance is not initialized');
     }
+
+    this.willStopAfterCurrent = false;
+    this.api.next();
   }
 
   @action
-  seekToPosition(position) {
-    if(this.api) {
+  seekToPosition(position: number) {
+    if(!this.api) {
+      throw Error('Gapless5 instance is not initialized');
+    }
+
+    if(this.currentTrack) {
       const duration = this.currentTrack.duration;
 
       if(position < 0) {
@@ -289,30 +320,35 @@ export default class MusicStore {
   }
 
   @action
-  setVolume(volume) {
-    if(this.api) {
-      if(volume < 0) {
-        volume = 0;
-      }
+  setVolume(volume: number) {
+    if(!this.api) {
+      throw Error('Gapless5 instance is not initialized');
+    }
+    if(volume < 0) {
+      volume = 0;
+    }
 
-      if(volume > 1) {
-        volume = 1;
-      }
+    if(volume > 1) {
+      volume = 1;
+    }
 
-      try {
-        // Gapless5 takes a value between 0 and 65535.
-        this.api.setGain(Math.floor(volume * 65535));
-      }
-      catch(ex) {
-        // Gapless 5 throws an exception if you set the gain while tracklist is empty;
-        // but it will still work.
-      }
+    try {
+      // Gapless5 takes a value between 0 and 65535.
+      this.api.setGain(Math.floor(volume * 65535));
+    }
+    catch(ex) {
+      // Gapless 5 throws an exception if you set the gain while tracklist is empty;
+      // but it will still work.
     }
   }
 
   @action
   startTrackPositionUpdateTimer() {
-    this.trackPositionUpdateTimer = setInterval(() => {
+    this.trackPositionUpdateTimer = window.setInterval(() => {
+      if(!this.api) {
+        throw Error('Gapless5 instance is not initialized');
+      }
+
       const newTrackPosition = this.api.getCurrentTrackPosition();
       if(newTrackPosition !== this.currentTrackPosition) {
         this.currentTrackPosition = newTrackPosition;
@@ -323,7 +359,7 @@ export default class MusicStore {
   @action
   clearTrackPositionUpdateTimer() {
     if(this.trackPositionUpdateTimer) {
-      clearInterval(this.trackPositionUpdateTimer);
+      window.clearInterval(this.trackPositionUpdateTimer);
       this.trackPositionUpdateTimer = null;
       this.currentTrackPosition = 0;
     }

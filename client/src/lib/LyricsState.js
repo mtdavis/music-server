@@ -1,6 +1,0 @@
-export default {
-  NO_TRACK: "NO_TRACK",
-  LOADING: "LOADING",
-  SUCCESSFUL: "SUCCESSFUL",
-  FAILED: "FAILED",
-};

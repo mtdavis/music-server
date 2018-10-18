@@ -1,14 +1,16 @@
 import {action, autorun, observable} from 'mobx';
 import LyricsState from '../lib/LyricsState';
+import MusicStore from './MusicStore';
 
 export default class LyricsStore {
   @observable lyricsState = LyricsState.NO_TRACK;
-  @observable lyricsTrackId = null;
-  @observable lyrics = null;
-  @observable url = null;
+  @observable lyricsTrackId: number | null = null;
+  @observable lyrics: string | null = null;
+  @observable url: string | null = null;
   @observable lyricsVisible = false;
+  musicStore: MusicStore;
 
-  constructor(musicStore) {
+  constructor(musicStore: MusicStore) {
     this.musicStore = musicStore;
 
     autorun(() => {
@@ -48,7 +50,7 @@ export default class LyricsStore {
   }
 
   @action
-  setLyricsVisible(visible) {
+  setLyricsVisible(visible: boolean) {
     this.lyricsVisible = visible;
   }
 }

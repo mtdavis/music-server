@@ -1,9 +1,9 @@
-import {action, observable} from 'mobx';
+import {action, IObservableArray, observable} from 'mobx';
 
 export default class DbStore {
-  @observable albums = [];
-  @observable tracks = [];
-  @observable playlists = [];
+  @observable albums: IObservableArray<Album> = observable.array([]);
+  @observable tracks: IObservableArray<Track> = observable.array([]);
+  @observable playlists: IObservableArray<Playlist> = observable.array([]);
 
   constructor() {
     $.getJSON("/albums", (albums) => {
@@ -32,8 +32,13 @@ export default class DbStore {
   }
 
   @action
-  incrementPlayCount(trackId, timestamp) {
+  incrementPlayCount(trackId: number, timestamp: number) {
     const track = this.tracks.find((t) => t.id === trackId);
+
+    if(!track) {
+      throw Error(`Could not find track with ID ${trackId}`);
+    }
+
     track.play_count += 1;
     track.last_play = timestamp;
 
@@ -43,12 +48,17 @@ export default class DbStore {
       let albumPlayCount = track.play_count;
 
       this.tracks.filter((t) => t.album_id === albumId).forEach((t) => {
-        albumLastPlay = Math.min(t.last_play, albumLastPlay);
+        albumLastPlay = Math.min(t.last_play || 0, albumLastPlay);
         albumPlayCount = Math.min(t.play_count, albumPlayCount);
       });
 
       const album = this.albums.find((a) => a.id === albumId);
-      album.last_play = albumLastPlay;
+
+      if(!album) {
+        throw Error(`Could not find album with ID ${albumId}`);
+      }
+
+      album.last_play = albumLastPlay || null;
       album.play_count = albumPlayCount;
     }
   }

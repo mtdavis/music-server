@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {render} from 'react-dom';
-import {Route, Switch, withRouter} from 'react-router';
+import {Route, Switch} from 'react-router';
 import {HashRouter} from 'react-router-dom';
 import {inject, observer, Provider} from 'mobx-react';
 
@@ -36,6 +36,7 @@ import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
 import StopIcon from '@material-ui/icons/Stop';
 import SkipNextIcon from '@material-ui/icons/SkipNext';
 
+import Title from './lib/Title';
 import HomePage from './pages/HomePage';
 import LyricsPage from './pages/LyricsPage';
 import AlbumsPage from './pages/AlbumsPage';
@@ -47,24 +48,24 @@ import ShufflePage from './pages/ShufflePage';
 import PlaylistsPage from './pages/PlaylistsPage';
 import ScanPage from './pages/ScanPage';
 
-const titles = {
-  '/': "Now Playing",
-  '/lyrics': "Lyrics",
-  '/albums': "All Albums",
-  '/not-recently-played': "Not Recently Played",
-  '/never-played': "Never Played",
-  '/favorite-albums': "Favorite Albums",
-  '/tracks': "All Tracks",
-  '/shuffle': "Shuffle",
-  '/scan': "Scan",
-  '/playlists': "Playlists",
+interface Props {
+  children: React.ReactNode,
 };
 
-@withRouter
+interface InjectedProps extends Props {
+  musicStore: MusicStore,
+  scrobbleStore: ScrobbleStore,
+}
+
+interface State {
+  demoSnackbarClosed: boolean,
+  drawerOpen: boolean,
+};
+
 @inject('musicStore', 'scrobbleStore')
 @observer
-class Master extends Component {
-  constructor(props) {
+class Master extends Component<Props, State> {
+  constructor(props: Props) {
     super(props);
 
     this.state = {
@@ -75,16 +76,20 @@ class Master extends Component {
     };
   }
 
+  get injected() {
+    return this.props as InjectedProps;
+  }
+
   openLastFm = () => {
     window.open("https://last.fm/user/ogreatone43");
   }
 
-  onStopButtonClick = (event) => {
+  onStopButtonClick = (event: KeyboardEvent) => {
     if(event.ctrlKey || event.metaKey) {
-      this.props.musicStore.toggleStopAfterCurrent();
+      this.injected.musicStore.toggleStopAfterCurrent();
     }
     else {
-      this.props.musicStore.stopPlayback();
+      this.injected.musicStore.stopPlayback();
     }
   }
 
@@ -107,7 +112,7 @@ class Master extends Component {
   }
 
   render() {
-    const {musicStore, scrobbleStore} = this.props;
+    const {musicStore, scrobbleStore} = this.injected;
     const playButtonEnabled = musicStore.playlist.length > 0;
     const playOrPauseIcon = musicStore.playerState === PlayerState.PLAYING ?
       <PauseIcon /> : <PlayArrowIcon />;
@@ -117,13 +122,12 @@ class Master extends Component {
     const nextButtonEnabled = musicStore.playlist.length > 1 &&
       musicStore.currentTrackIndex < musicStore.playlist.length - 1;
 
-    const scrobbleTooltip = {};
-    scrobbleTooltip[ScrobbleState.NO_TRACK] = "last.fm";
-    scrobbleTooltip[ScrobbleState.TRACK_QUEUED] = "Queued";
-    scrobbleTooltip[ScrobbleState.TRACK_SCROBBLED] = "Scrobbled";
-    scrobbleTooltip[ScrobbleState.SCROBBLE_FAILED] = "Scrobble failed!";
-
-    const title = titles[this.props.location.pathname] || 'Now Playing';
+    const scrobbleTooltip: {[key in ScrobbleState]: string} = {
+      [ScrobbleState.NO_TRACK]: "last.fm",
+      [ScrobbleState.TRACK_QUEUED]: "Queued",
+      [ScrobbleState.TRACK_SCROBBLED]: "Scrobbled",
+      [ScrobbleState.SCROBBLE_FAILED]: "Scrobble failed!",
+    };
 
     const lastFmIcon = (
       <Tooltip title={scrobbleTooltip[scrobbleStore.scrobbleState]}>
@@ -136,9 +140,8 @@ class Master extends Component {
         <IconButton color="inherit" onClick={this.openDrawer}>
           <MenuIcon />
         </IconButton>
-        <Typography variant="title" color="inherit">
-          {title}
-        </Typography>
+
+        <Title />
 
         <GaplessPlayer />
 
