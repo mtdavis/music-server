@@ -1,32 +1,34 @@
 import React, {Component} from 'react';
 import {Typography} from '@material-ui/core';
-import {RouteComponentProps, withRouter} from 'react-router';
+import {Route, Switch} from 'react-router';
+import {HashRouter} from 'react-router-dom';
 
-const titles: {[path: string]: string} = {
-  '/': "Now Playing",
-  '/lyrics': "Lyrics",
-  '/albums': "All Albums",
-  '/not-recently-played': "Not Recently Played",
-  '/never-played': "Never Played",
-  '/favorite-albums': "Favorite Albums",
-  '/tracks': "All Tracks",
-  '/shuffle': "Shuffle",
-  '/scan': "Scan",
-  '/playlists': "Playlists",
-};
-
-class Title extends Component<RouteComponentProps> {
+export default class Title extends Component {
   render() {
-    const title = this.props.location && this.props.location.pathname ?
-      titles[this.props.location.pathname] :
-      'Now Playing';
-
     return (
+      <HashRouter>
+        <Switch>
+          <Route exact path='/' component={this.renderTitle('Now Playing')} />
+          <Route path='/lyrics' component={this.renderTitle('Lyrics')} />
+          <Route path='/albums' component={this.renderTitle('All Albums')} />
+          <Route path='/not-recently-played' component={this.renderTitle('Not Recently Played')} />
+          <Route path='/never-played' component={this.renderTitle('Never Played')} />
+          <Route path='/favorite-albums' component={this.renderTitle('Favorite Albums')} />
+          <Route path='/tracks' component={this.renderTitle('All Tracks')} />
+          <Route path='/shuffle' component={this.renderTitle('Shuffle')} />
+          <Route path='/scan' component={this.renderTitle('Scan')} />
+          <Route path='/playlists' component={this.renderTitle('Playlists')} />
+          <Route path='*' component={this.renderTitle('Now Playing')} />
+        </Switch>
+      </HashRouter>
+    );
+  }
+
+  renderTitle(title: string) {
+    return () => (
       <Typography variant="title" color="inherit">
         {title}
       </Typography>
     );
   }
 }
-
-export default withRouter(Title);

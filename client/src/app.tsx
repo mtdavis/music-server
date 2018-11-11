@@ -53,7 +53,6 @@ import './style/bootstrap.css';
 import './style/icomoon/style.css';
 
 interface Props {
-  children: React.ReactNode,
 };
 
 interface InjectedProps extends Props {
@@ -182,11 +181,21 @@ class Master extends Component<Props, State> {
           {toolbar}
         </AppBar>
 
-        <LeftNavComponent open={this.state.drawerOpen} onClose={this.onDrawerClose} />
-
-        <div style={{position: 'relative', top: 64}}>
-          {this.props.children}
-        </div>
+        <HashRouter>
+          <Switch>
+            <Route exact path='/' component={this.renderRoute(HomePage)} />
+            <Route path='/lyrics' component={this.renderRoute(LyricsPage)} />
+            <Route path='/albums' component={this.renderRoute(AlbumsPage)} />
+            <Route path='/not-recently-played' component={this.renderRoute(NotRecentlyPlayedPage)} />
+            <Route path='/never-played' component={this.renderRoute(NeverPlayedPage)} />
+            <Route path='/favorite-albums' component={this.renderRoute(FavoriteAlbumsPage)} />
+            <Route path='/tracks' component={this.renderRoute(AllTracksPage)} />
+            <Route path='/shuffle' component={this.renderRoute(ShufflePage)} />
+            <Route path='/scan' component={this.renderRoute(ScanPage)} />
+            <Route path='/playlists' component={this.renderRoute(PlaylistsPage)} />
+            <Route path='*' component={this.renderRoute(HomePage)} />
+          </Switch>
+        </HashRouter>
 
         <Snackbar open={scrobbleStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED}
           message='Scrobble failed.' />
@@ -202,6 +211,18 @@ class Master extends Component<Props, State> {
             </span>
           }
         />
+      </div>
+    );
+  }
+
+  renderRoute(Comp: typeof Component | React.StatelessComponent) {
+    return () => (
+      <div>
+        <LeftNavComponent open={this.state.drawerOpen} onClose={this.onDrawerClose} />
+
+        <div style={{position: 'relative', top: 64}}>
+          <Comp />
+        </div>
       </div>
     );
   }
@@ -230,25 +251,9 @@ const router = (
       musicStore={musicStore}
       dbStore={dbStore}
       lyricsStore={lyricsStore}
-      scrobbleStore={scrobbleStore}>
-
-      <HashRouter>
-        <Master>
-          <Switch>
-            <Route exact path='/' component={HomePage} />
-            <Route path='/lyrics' component={LyricsPage} />
-            <Route path='/albums' component={AlbumsPage} />
-            <Route path='/not-recently-played' component={NotRecentlyPlayedPage} />
-            <Route path='/never-played' component={NeverPlayedPage} />
-            <Route path='/favorite-albums' component={FavoriteAlbumsPage} />
-            <Route path='/tracks' component={AllTracksPage} />
-            <Route path='/shuffle' component={ShufflePage} />
-            <Route path='/scan' component={ScanPage} />
-            <Route path='/playlists' component={PlaylistsPage} />
-            <Route path='*' component={HomePage} />
-          </Switch>
-        </Master>
-      </HashRouter>
+      scrobbleStore={scrobbleStore}
+    >
+      <Master />
     </Provider>
   </MuiThemeProvider>
 );
