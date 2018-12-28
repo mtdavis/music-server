@@ -1,10 +1,24 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {TableCell} from '@material-ui/core';
+import TableCell, {TableCellProps} from '@material-ui/core/TableCell';
 import renderIcon from './renderIcon';
 
-export default class MTableRowColumn extends React.Component {
-  constructor(props) {
+interface Props extends TableCellProps {
+  value: any,
+
+  renderer: (value: any) => any,
+
+  textAlign: 'left' | 'right',
+
+  wrap: boolean,
+
+  style: React.CSSProperties,
+
+  mOnClick: (evt: React.SyntheticEvent) => void,
+};
+
+export default class MTableRowColumn extends React.Component<Props> {
+  constructor(props: Props) {
     super(props);
   }
 
@@ -12,7 +26,7 @@ export default class MTableRowColumn extends React.Component {
     let {value, renderer, textAlign, wrap, style, mOnClick, ...props} = this.props;
 
     if(!renderer) {
-      renderer = (x) => x;
+      renderer = (x: any) => x;
     }
 
     if(!textAlign) {
@@ -42,7 +56,7 @@ export default class MTableRowColumn extends React.Component {
       content = "-";
     }
 
-    const divStyle = {
+    const divStyle: React.CSSProperties = {
       padding: '0 12px',
       display: 'flex',
       alignItems: 'center',
@@ -61,19 +75,3 @@ export default class MTableRowColumn extends React.Component {
     );
   }
 }
-
-MTableRowColumn.propTypes = {
-  value: PropTypes.node,
-
-  renderer: PropTypes.func,
-
-  textAlign: PropTypes.oneOf(['left', 'right']),
-
-  wrap: PropTypes.bool,
-
-  style: PropTypes.object,
-
-  mOnClick: PropTypes.func,
-
-  ...TableCell.props
-};
