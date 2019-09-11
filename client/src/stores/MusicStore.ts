@@ -3,6 +3,7 @@ import NoSleep from 'nosleep.js';
 import weighted from 'weighted';
 import PlayerState from '../lib/PlayerState';
 import {timeStringToSeconds} from '../lib/util';
+import DbStore from './DbStore';
 
 export default class MusicStore {
   @observable api: Gapless5 | null = null;
@@ -12,8 +13,10 @@ export default class MusicStore {
   @observable currentTrackPosition = 0;
   @observable willStopAfterCurrent = false;
   @observable demoMode = false;
+  dbStore: DbStore;
 
-  constructor() {
+  constructor(dbStore: DbStore) {
+    this.dbStore = dbStore;
     $.getJSON("/demo-mode", (demoMode) => {
       this.demoMode = demoMode;
     });
@@ -40,16 +43,11 @@ export default class MusicStore {
 
   @action
   playAlbum(album: Album) {
-    const query = {
-      album_id: album.id
-    };
-
-    $.getJSON("/tracks", query, (tracks) => {
-      this.stopPlayback();
-      this.setPlaylist(tracks);
-      this.playOrPausePlayback();
-      location.hash = "/";
-    });
+    location.hash = "/";
+    const tracks = this.dbStore.getAlbumTracks(album.id);
+    this.stopPlayback();
+    this.setPlaylist(tracks);
+    this.playOrPausePlayback();
   }
 
   @action

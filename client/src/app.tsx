@@ -26,7 +26,8 @@ import {
 } from '@material-ui/core';
 import {
   createMuiTheme,
-  MuiThemeProvider
+  MuiThemeProvider,
+  withStyles,
 } from '@material-ui/core/styles';
 
 import MenuIcon from '@material-ui/icons/Menu';
@@ -65,6 +66,13 @@ interface State {
   drawerOpen: boolean,
 };
 
+const styles = {
+  toolbar: {
+    paddingLeft: 12,
+  },
+};
+
+@withStyles(styles)
 @inject('musicStore', 'scrobbleStore')
 @observer
 class Master extends Component<Props, State> {
@@ -115,6 +123,7 @@ class Master extends Component<Props, State> {
   }
 
   render() {
+    const {classes} = this.props;
     const {musicStore, scrobbleStore} = this.injected;
     const playButtonEnabled = musicStore.playlist.length > 0;
     const playOrPauseIcon = musicStore.playerState === PlayerState.PLAYING ?
@@ -139,7 +148,7 @@ class Master extends Component<Props, State> {
     );
 
     const toolbar = (
-      <Toolbar>
+      <Toolbar className={classes.toolbar}>
         <IconButton color="inherit" onClick={this.openDrawer}>
           <MenuIcon />
         </IconButton>
@@ -228,8 +237,8 @@ class Master extends Component<Props, State> {
   }
 }
 
-const musicStore = new MusicStore();
 const dbStore = new DbStore();
+const musicStore = new MusicStore(dbStore);
 const lyricsStore = new LyricsStore(musicStore);
 const scrobbleStore = new ScrobbleStore(musicStore, dbStore);
 

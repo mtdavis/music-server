@@ -44,10 +44,10 @@ const binops = {
   ":" : function(a, b) { return (a * 60) + b; },
   "<" : function(a, b) { return a < b; },
   "<=" : function(a, b) { return a <= b; },
-  "==" : function(a, b) { return a == b; },
+  "==" : function(a, b) { return a == b; }, // eslint-disable-line eqeqeq
   ">=" : function(a, b) { return a >= b; },
   ">" : function(a, b) { return a > b; },
-  "!=" : function(a, b) { return a != b; },
+  "!=" : function(a, b) { return a != b; }, // eslint-disable-line eqeqeq
   "~=" : function(a, b) { return a.toString().toLowerCase().indexOf(b.toString().toLowerCase()) > -1; },
   "&&" : function(a, b) { return a && b; },
   "||" : function(a, b) { return a || b; },
@@ -149,7 +149,8 @@ class FilteredTable extends React.Component {
   }
 
   render() {
-    let {classes, rows} = this.props;
+    const {classes} = this.props;
+    let {rows} = this.props;
 
     const filterElems = [];
 

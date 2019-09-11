@@ -3,7 +3,7 @@
     "build": "webpack --mode production",
     "watch": "webpack --watch --mode development",
     "postinstall": "bower install",
-    "lint": "eslint src"
+    "lint": "eslint src ; ./node_modules/.bin/tsc --noEmit"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",

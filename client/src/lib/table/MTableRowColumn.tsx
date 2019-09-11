@@ -44,6 +44,7 @@ export default class MTableRowColumn extends React.Component<Props> {
     }
 
     style.padding = 0;
+    style.userSelect = 'none';
 
     if(value !== null && value !== undefined) {
       content = renderer(value);
@@ -67,8 +68,8 @@ export default class MTableRowColumn extends React.Component<Props> {
     };
 
     return (
-      <TableCell {...props} style={style}>
-        <div onClick={mOnClick} style={divStyle}>
+      <TableCell {...props} style={style} onClick={mOnClick}>
+        <div style={divStyle}>
           {content}
         </div>
       </TableCell>

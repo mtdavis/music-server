@@ -8,7 +8,7 @@ export default class NotRecentlyPlayedPage extends Component {
   render() {
     const {dbStore} = this.props;
 
-    const daysAgo = 42; // default == 6 weeks
+    const daysAgo = 120;
     const secondsAgo = daysAgo * 24 * 60 * 60;
     const beforeTimestamp = Math.floor(new Date().getTime() / 1000) - secondsAgo;
 

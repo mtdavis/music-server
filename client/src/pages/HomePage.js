@@ -10,36 +10,40 @@ class AlbumArt extends Component {
   constructor(props) {
     super(props);
 
+    // check if the image is already in the cache
+    const img = new Image();
+    img.src = this.getImgUrl();
+
     this.state = {
-      opacity: 0,
+      opacity: img.complete ? 1 : 0
     };
   }
 
+  getImgUrl() {
+    return `/album-art?id=${this.props.track.id}`;
+  }
+
   render() {
-    let result;
     if(this.props.track.album === "") {
-      result = null;
-    }
-    else {
-      const paperStyle = {
-        width: '100%',
-        lineHeight: '0',
-        opacity: this.state.opacity,
-        transition: 'opacity 450ms cubic-bezier(0.23, 1, 0.32, 1)'
-      };
-
-      result = (
-        <Paper square={true} style={paperStyle}>
-          <img
-            src={'/album-art?id=' + this.props.track.id}
-            style={{width: '100%'}}
-            onLoad={() => this.setState({opacity: 1})}
-          />
-        </Paper>
-      );
+      return null;
     }
 
-    return result;
+    const paperStyle = {
+      width: '100%',
+      lineHeight: 0,
+      opacity: this.state.opacity,
+      transition: 'opacity 450ms cubic-bezier(0.23, 1, 0.32, 1)'
+    };
+
+    return (
+      <Paper square={true} style={paperStyle}>
+        <img
+          src={this.getImgUrl()}
+          style={{width: '100%'}}
+          onLoad={() => this.setState({opacity: 1})}
+        />
+      </Paper>
+    );
   }
 }
 

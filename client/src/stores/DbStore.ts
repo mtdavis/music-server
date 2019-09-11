@@ -62,4 +62,22 @@ export default class DbStore {
       album.play_count = albumPlayCount;
     }
   }
+
+  getAlbumTracks(albumId: number) {
+    const result: Array<Track> = this.tracks.filter((t) => t.album_id === albumId);
+    result.sort((first, second) => {
+      if(first.track_number === null && second.track_number === null) {
+        return 0;
+      }
+      else if(first.track_number === null) {
+        return -1;
+      }
+      else if(second.track_number === null) {
+        return 1;
+      }
+
+      return first.track_number - second.track_number;
+    });
+    return result;
+  }
 }

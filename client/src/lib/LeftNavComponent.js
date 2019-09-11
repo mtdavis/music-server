@@ -35,9 +35,9 @@ const leftNavStyles = {
     left: 0,
     right: 'auto',
   },
-  toolBar: {
-    paddingLeft: 10
-  }
+  toolbar: {
+    paddingLeft: 12,
+  },
 };
 
 @withStyles(leftNavStyles)
@@ -66,7 +66,7 @@ class LeftNavComponent extends Component {
     return (
       <Drawer open={this.state.open} onClose={this.close}>
         <AppBar title="Mike's Music Player" className={classes.appBar}>
-          <Toolbar className={classes.toolBar}>
+          <Toolbar className={classes.toolbar}>
             <IconButton color="inherit" onClick={this.close}>
               <MenuIcon />
             </IconButton>
@@ -103,18 +103,18 @@ class LeftNavComponent extends Component {
           </LinkMenuItem>
           {
             musicStore.demoMode ? null :
-            <div>
-              <LinkMenuItem to='/playlists' icon={<QueueMusicIcon />} onClick={this.close}>
-                Playlists
-              </LinkMenuItem>
-              <LinkMenuItem to='/shuffle' icon={<ShuffleIcon />} onClick={this.close}>
-                Shuffle
-              </LinkMenuItem>
-              <Divider />
-              <LinkMenuItem to='/scan' icon={<SearchIcon />} onClick={this.close}>
-                Scan
-              </LinkMenuItem>
-            </div>
+              <div>
+                <LinkMenuItem to='/playlists' icon={<QueueMusicIcon />} onClick={this.close}>
+                  Playlists
+                </LinkMenuItem>
+                <LinkMenuItem to='/shuffle' icon={<ShuffleIcon />} onClick={this.close}>
+                  Shuffle
+                </LinkMenuItem>
+                <Divider />
+                <LinkMenuItem to='/scan' icon={<SearchIcon />} onClick={this.close}>
+                  Scan
+                </LinkMenuItem>
+              </div>
           }
         </List>
       </Drawer>

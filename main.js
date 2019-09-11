@@ -444,7 +444,6 @@ function startServer(router) {
 }
 
 async function checkScrobbleBacklog() {
-    console.log('checking backlog');
     const track = await db.getTrackFromScrobbleBacklog();
 
     if(track) {

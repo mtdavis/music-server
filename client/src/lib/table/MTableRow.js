@@ -9,13 +9,16 @@ import MTableRowColumn from './MTableRowColumn';
 @observer
 export default class MTableRow extends React.Component {
   render() {
-    let {columns, rowData, cursor, style, mOnClick, ...props} = this.props;
+    let {style} = this.props;
+    const {columns, rowData, cursor, ...props} = this.props;
+    delete props.style;
+    delete props.mOnClick;
 
     const cells = columns.map(column =>
       <MTableRowColumn
         key={column.key}
         value={rowData[column.key]}
-        mOnClick={this.mOnClick.bind(this)}
+        mOnClick={this.mOnClick}
         renderer={column.renderer}
         textAlign={column.textAlign}
         wrap={column.wrap} />
@@ -31,7 +34,7 @@ export default class MTableRow extends React.Component {
     );
   }
 
-  mOnClick(event) {
+  mOnClick = (event) => {
     this.props.mOnClick(event, this.props.rowData);
   }
 }
