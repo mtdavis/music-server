@@ -6,3 +6,4 @@ music-server-settings.json
 *.pem
 .DS_Store
 package-lock.json
+Music Server.app
