@@ -12,7 +12,7 @@ interface Props extends TableCellProps {
 
   wrap: boolean,
 
-  style: React.CSSProperties,
+  style?: React.CSSProperties,
 
   mOnClick: (evt: React.SyntheticEvent) => void,
 };

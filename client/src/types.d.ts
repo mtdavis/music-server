@@ -77,3 +77,5 @@ declare interface Playlist {
   last_play: number | null;
   play_count: number;
 }
+
+type RowData = {[key: string]: {val: any}};
