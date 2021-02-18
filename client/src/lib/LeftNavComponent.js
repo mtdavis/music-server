@@ -41,33 +41,17 @@ const leftNavStyles = {
 };
 
 @withStyles(leftNavStyles)
-@inject('musicStore')
+@inject('musicStore', 'uiStore')
 @observer
 class LeftNavComponent extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      open: props.open
-    };
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if(nextProps.open !== this.state.open) {
-      this.setState({
-        open: nextProps.open
-      });
-    }
-  }
-
   render() {
-    const {classes, musicStore} = this.props;
+    const {classes, musicStore, uiStore} = this.props;
 
     return (
-      <Drawer open={this.state.open} onClose={this.close}>
+      <Drawer open={uiStore.drawerOpen} onClose={uiStore.closeDrawer}>
         <AppBar title="Mike's Music Player" className={classes.appBar}>
           <Toolbar className={classes.toolbar}>
-            <IconButton color="inherit" onClick={this.close}>
+            <IconButton color="inherit" onClick={uiStore.closeDrawer}>
               <MenuIcon />
             </IconButton>
             <Typography variant="title" color="inherit">
@@ -76,42 +60,42 @@ class LeftNavComponent extends Component {
           </Toolbar>
         </AppBar>
         <List className={classes.list}>
-          <LinkMenuItem to='/' icon={<PlaylistPlayIcon />} onClick={this.close}>
+          <LinkMenuItem to='/' icon={<PlaylistPlayIcon />} onClick={uiStore.closeDrawer}>
             Now Playing
           </LinkMenuItem>
-          <LinkMenuItem to='/lyrics' icon={<FormatAlignCenterIcon />} onClick={this.close}>
+          <LinkMenuItem to='/lyrics' icon={<FormatAlignCenterIcon />} onClick={uiStore.closeDrawer}>
             Lyrics
           </LinkMenuItem>
           <Divider />
-          <LinkMenuItem to='/albums' icon={<AlbumIcon />} onClick={this.close}>
+          <LinkMenuItem to='/albums' icon={<AlbumIcon />} onClick={uiStore.closeDrawer}>
             All Albums
           </LinkMenuItem>
-          <LinkMenuItem to='/not-recently-played' icon={<WatchLaterIcon />} onClick={this.close}>
+          <LinkMenuItem to='/not-recently-played' icon={<WatchLaterIcon />} onClick={uiStore.closeDrawer}>
             Not Recently Played
           </LinkMenuItem>
-          <LinkMenuItem to='/never-played' icon={<CancelIcon />} onClick={this.close}>
+          <LinkMenuItem to='/never-played' icon={<CancelIcon />} onClick={uiStore.closeDrawer}>
             Never Played
           </LinkMenuItem>
-          <LinkMenuItem to='/favorite-albums' icon={<StarsIcon />} onClick={this.close}>
+          <LinkMenuItem to='/favorite-albums' icon={<StarsIcon />} onClick={uiStore.closeDrawer}>
             Favorite Albums
           </LinkMenuItem>
           {
             musicStore.demoMode ? null : <Divider />
           }
-          <LinkMenuItem to='/tracks' icon={<MusicNoteIcon />} onClick={this.close}>
+          <LinkMenuItem to='/tracks' icon={<MusicNoteIcon />} onClick={uiStore.closeDrawer}>
             All Tracks
           </LinkMenuItem>
           {
             musicStore.demoMode ? null :
               <div>
-                <LinkMenuItem to='/playlists' icon={<QueueMusicIcon />} onClick={this.close}>
+                <LinkMenuItem to='/playlists' icon={<QueueMusicIcon />} onClick={uiStore.closeDrawer}>
                   Playlists
                 </LinkMenuItem>
-                <LinkMenuItem to='/shuffle' icon={<ShuffleIcon />} onClick={this.close}>
+                <LinkMenuItem to='/shuffle' icon={<ShuffleIcon />} onClick={uiStore.closeDrawer}>
                   Shuffle
                 </LinkMenuItem>
                 <Divider />
-                <LinkMenuItem to='/scan' icon={<SearchIcon />} onClick={this.close}>
+                <LinkMenuItem to='/scan' icon={<SearchIcon />} onClick={uiStore.closeDrawer}>
                   Scan
                 </LinkMenuItem>
               </div>
@@ -119,16 +103,6 @@ class LeftNavComponent extends Component {
         </List>
       </Drawer>
     );
-  }
-
-  close = () => {
-    this.setState({
-      open: false
-    });
-
-    if(this.props.onClose) {
-      this.props.onClose();
-    }
   }
 }
 

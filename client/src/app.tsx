@@ -4,7 +4,7 @@ import {Route, Switch} from 'react-router';
 import {HashRouter} from 'react-router-dom';
 import {inject, observer, Provider} from 'mobx-react';
 
-import {DbStore, LyricsStore, MusicStore, ScrobbleStore} from './stores';
+import {DbStore, LyricsStore, MusicStore, ScrobbleStore, UiStore} from './stores';
 
 import GaplessPlayer from './lib/GaplessPlayer';
 import CurrentTimeSlider from './lib/CurrentTimeSlider';
@@ -59,11 +59,11 @@ interface Props {
 interface InjectedProps extends Props {
   musicStore: MusicStore,
   scrobbleStore: ScrobbleStore,
+  uiStore: UiStore,
 }
 
 interface State {
   demoSnackbarClosed: boolean,
-  drawerOpen: boolean,
 };
 
 const styles = {
@@ -73,7 +73,7 @@ const styles = {
 };
 
 @withStyles(styles)
-@inject('musicStore', 'scrobbleStore')
+@inject('musicStore', 'scrobbleStore', 'uiStore')
 @observer
 class Master extends Component<Props, State> {
   constructor(props: Props) {
@@ -81,9 +81,6 @@ class Master extends Component<Props, State> {
 
     this.state = {
       demoSnackbarClosed: false,
-
-      // automatically show the menu if the initial page is the home page
-      drawerOpen: window.location.hash === '#/',
     };
   }
 
@@ -104,18 +101,6 @@ class Master extends Component<Props, State> {
     }
   }
 
-  openDrawer = () => {
-    this.setState({
-      drawerOpen: true
-    });
-  }
-
-  onDrawerClose = () => {
-    this.setState({
-      drawerOpen: false
-    });
-  }
-
   onDemoSnackbarClose = () => {
     this.setState({
       demoSnackbarClosed: true
@@ -124,7 +109,7 @@ class Master extends Component<Props, State> {
 
   render() {
     const {classes} = this.props;
-    const {musicStore, scrobbleStore} = this.injected;
+    const {musicStore, scrobbleStore, uiStore} = this.injected;
     const playButtonEnabled = musicStore.playlist.length > 0;
     const playOrPauseIcon = musicStore.playerState === PlayerState.PLAYING ?
       <PauseIcon /> : <PlayArrowIcon />;
@@ -149,7 +134,7 @@ class Master extends Component<Props, State> {
 
     const toolbar = (
       <Toolbar className={classes.toolbar}>
-        <IconButton color="inherit" onClick={this.openDrawer}>
+        <IconButton color="inherit" onClick={uiStore.openDrawer}>
           <MenuIcon />
         </IconButton>
 
@@ -192,17 +177,17 @@ class Master extends Component<Props, State> {
 
         <HashRouter>
           <Switch>
-            <Route exact path='/' component={this.renderRoute(HomePage)} />
-            <Route path='/lyrics' component={this.renderRoute(LyricsPage)} />
-            <Route path='/albums' component={this.renderRoute(AlbumsPage)} />
-            <Route path='/not-recently-played' component={this.renderRoute(NotRecentlyPlayedPage)} />
-            <Route path='/never-played' component={this.renderRoute(NeverPlayedPage)} />
-            <Route path='/favorite-albums' component={this.renderRoute(FavoriteAlbumsPage)} />
-            <Route path='/tracks' component={this.renderRoute(AllTracksPage)} />
-            <Route path='/shuffle' component={this.renderRoute(ShufflePage)} />
-            <Route path='/scan' component={this.renderRoute(ScanPage)} />
-            <Route path='/playlists' component={this.renderRoute(PlaylistsPage)} />
-            <Route path='*' component={this.renderRoute(HomePage)} />
+            <Route exact path='/'><Wrap><HomePage /></Wrap></Route>
+            <Route path='/lyrics'><Wrap><LyricsPage /></Wrap></Route>
+            <Route path='/albums'><Wrap><AlbumsPage /></Wrap></Route>
+            <Route path='/not-recently-played'><Wrap><NotRecentlyPlayedPage /></Wrap></Route>
+            <Route path='/never-played'><Wrap><NeverPlayedPage /></Wrap></Route>
+            <Route path='/favorite-albums'><Wrap><FavoriteAlbumsPage /></Wrap></Route>
+            <Route path='/tracks'><Wrap><AllTracksPage /></Wrap></Route>
+            <Route path='/shuffle'><Wrap><ShufflePage /></Wrap></Route>
+            <Route path='/scan'><Wrap><ScanPage /></Wrap></Route>
+            <Route path='/playlists'><Wrap><PlaylistsPage /></Wrap></Route>
+            <Route path='*'><Wrap><HomePage /></Wrap></Route>
           </Switch>
         </HashRouter>
 
@@ -223,17 +208,20 @@ class Master extends Component<Props, State> {
       </div>
     );
   }
+}
 
-  renderRoute(Comp: typeof Component | React.StatelessComponent) {
-    return () => (
+class Wrap extends Component {
+  render() {
+    const {children} = this.props;
+    return (
       <div>
-        <LeftNavComponent open={this.state.drawerOpen} onClose={this.onDrawerClose} />
+        <LeftNavComponent />
 
         <div style={{position: 'relative', top: 64}}>
-          <Comp />
+          {children}
         </div>
       </div>
-    );
+    )
   }
 }
 
@@ -241,6 +229,7 @@ const dbStore = new DbStore();
 const musicStore = new MusicStore(dbStore);
 const lyricsStore = new LyricsStore(musicStore);
 const scrobbleStore = new ScrobbleStore(musicStore, dbStore);
+const uiStore = new UiStore();
 
 const muiTheme = createMuiTheme({
   palette: {
@@ -261,6 +250,7 @@ const router = (
       dbStore={dbStore}
       lyricsStore={lyricsStore}
       scrobbleStore={scrobbleStore}
+      uiStore={uiStore}
     >
       <Master />
     </Provider>
