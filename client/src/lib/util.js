@@ -1,8 +1,22 @@
 export function secondsToTimeString(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  const remainderSeconds = seconds % 60;
-  const leadingZero = remainderSeconds < 10 ? "0" : "";
-  return minutes + ":" + leadingZero + remainderSeconds;
+  const hh = Math.floor(seconds / 3600);
+  let mm = Math.floor((seconds - (hh * 3600)) / 60);
+  let ss = seconds - (hh * 3600) - (mm * 60);
+
+  if(ss < 10) {
+    ss = "0" + ss;
+  }
+
+  if(hh > 0) {
+    if(mm < 10) {
+      mm = "0" + mm;
+    }
+
+    return hh + ':' + mm + ':' + ss;
+  }
+
+
+  return mm + ':' + ss;
 }
 
 export function timeStringToSeconds(timeString) {

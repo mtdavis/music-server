@@ -2,15 +2,19 @@ import {action, autorun, observable} from 'mobx';
 import PlayerState from '../lib/PlayerState';
 import ScrobbleState from '../lib/ScrobbleState';
 import pauseable from 'pauseable';
+import MusicStore from './MusicStore';
+import DbStore from './DbStore';
 
 export default class ScrobbleStore {
-  @observable scrobbleState = ScrobbleState.NO_TRACK;
-  previousPlayerState = null;
-  previousTrackId = null;
-  playTimer = null;
-  nowPlayingTimer = null;
+  @observable scrobbleState: ScrobbleState = ScrobbleState.NO_TRACK;
+  previousPlayerState: PlayerState | null = null;
+  previousTrackId: number | null = null;
+  playTimer: pauseable.timer | null = null;
+  nowPlayingTimer: pauseable.timer | null = null;
+  musicStore: MusicStore;
+  dbStore: DbStore;
 
-  constructor(musicStore, dbStore) {
+  constructor(musicStore: MusicStore, dbStore: any) {
     this.musicStore = musicStore;
     this.dbStore = dbStore;
 
@@ -59,6 +63,10 @@ export default class ScrobbleStore {
     const trackStartedPlaying = Math.floor(Date.now() / 1000);
     const trackToScrobble = this.musicStore.currentTrack;
 
+    if(!trackToScrobble) {
+      return;
+    }
+
     const nowPlayingDelayMs = 5000;
 
     if(trackToScrobble.duration * 1000 > nowPlayingDelayMs) {
@@ -80,7 +88,7 @@ export default class ScrobbleStore {
     const playDelayMs = trackToScrobble.duration / 2.0 * 1000;
     this.playTimer = pauseable.setTimeout(() => {
       if(trackToScrobble.id === this.musicStore.currentTrackId &&
-          this.playerState !== PlayerState.STOPPED) {
+          this.musicStore.playerState !== PlayerState.STOPPED) {
         const postData = {
           id: trackToScrobble.id,
           started_playing: trackStartedPlaying

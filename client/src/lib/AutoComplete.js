@@ -1,5 +1,5 @@
-// from:
-// https://github.com/mui-org/material-ui/blob/be6b5a679b8a63bec1e6b964bb7fd4661a760f81/docs/src/pages/demos/autocomplete/IntegrationReactSelect.js
+// eslint-disable-next-line max-len
+// from: https://github.com/mui-org/material-ui/blob/be6b5a679b8a63bec1e6b964bb7fd4661a760f81/docs/src/pages/demos/autocomplete/IntegrationReactSelect.js
 
 import React from 'react';
 import PropTypes from 'prop-types';

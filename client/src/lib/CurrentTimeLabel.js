@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import {
-  colors,
   Typography,
 } from '@material-ui/core';
 import {withStyles} from '@material-ui/core/styles';

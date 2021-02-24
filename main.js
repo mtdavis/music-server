@@ -413,7 +413,7 @@ function startServer(router) {
     app.use("/art", serveStatic(musicServerSettings.files.base_stream_path, {
         maxAge: '365d'
     }));
-    app.use("/", serveStatic("./client/build"));
+    app.use("/", serveStatic("./client/dist"));
     app.use(router);
 
     app.use(function(req, res, next) {
@@ -444,7 +444,6 @@ function startServer(router) {
 }
 
 async function checkScrobbleBacklog() {
-    console.log('checking backlog');
     const track = await db.getTrackFromScrobbleBacklog();
 
     if(track) {

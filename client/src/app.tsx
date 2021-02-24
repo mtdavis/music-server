@@ -1,10 +1,10 @@
 import React, {Component} from 'react';
 import {render} from 'react-dom';
-import {Route, Switch, withRouter} from 'react-router';
+import {Route, Switch} from 'react-router';
 import {HashRouter} from 'react-router-dom';
 import {inject, observer, Provider} from 'mobx-react';
 
-import {DbStore, LyricsStore, MusicStore, ScrobbleStore} from './stores';
+import {DbStore, LyricsStore, MusicStore, ScrobbleStore, UiStore} from './stores';
 
 import GaplessPlayer from './lib/GaplessPlayer';
 import CurrentTimeSlider from './lib/CurrentTimeSlider';
@@ -26,7 +26,8 @@ import {
 } from '@material-ui/core';
 import {
   createMuiTheme,
-  MuiThemeProvider
+  MuiThemeProvider,
+  withStyles,
 } from '@material-ui/core/styles';
 
 import MenuIcon from '@material-ui/icons/Menu';
@@ -36,6 +37,7 @@ import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
 import StopIcon from '@material-ui/icons/Stop';
 import SkipNextIcon from '@material-ui/icons/SkipNext';
 
+import Title from './lib/Title';
 import HomePage from './pages/HomePage';
 import LyricsPage from './pages/LyricsPage';
 import AlbumsPage from './pages/AlbumsPage';
@@ -47,57 +49,56 @@ import ShufflePage from './pages/ShufflePage';
 import PlaylistsPage from './pages/PlaylistsPage';
 import ScanPage from './pages/ScanPage';
 
-const titles = {
-  '/': "Now Playing",
-  '/lyrics': "Lyrics",
-  '/albums': "All Albums",
-  '/not-recently-played': "Not Recently Played",
-  '/never-played': "Never Played",
-  '/favorite-albums': "Favorite Albums",
-  '/tracks': "All Tracks",
-  '/shuffle': "Shuffle",
-  '/scan': "Scan",
-  '/playlists': "Playlists",
+import './style/main.css';
+import './style/bootstrap.css';
+import './style/icomoon/style.css';
+
+interface Props {
 };
 
-@withRouter
-@inject('musicStore', 'scrobbleStore')
+interface InjectedProps extends Props {
+  musicStore: MusicStore,
+  scrobbleStore: ScrobbleStore,
+  uiStore: UiStore,
+}
+
+interface State {
+  demoSnackbarClosed: boolean,
+};
+
+const styles = {
+  toolbar: {
+    paddingLeft: 12,
+  },
+};
+
+@withStyles(styles)
+@inject('musicStore', 'scrobbleStore', 'uiStore')
 @observer
-class Master extends Component {
-  constructor(props) {
+class Master extends Component<Props, State> {
+  constructor(props: Props) {
     super(props);
 
     this.state = {
       demoSnackbarClosed: false,
-
-      // automatically show the menu if the initial page is the home page
-      drawerOpen: window.location.hash === '#/',
     };
+  }
+
+  get injected() {
+    return this.props as InjectedProps;
   }
 
   openLastFm = () => {
     window.open("https://last.fm/user/ogreatone43");
   }
 
-  onStopButtonClick = (event) => {
+  onStopButtonClick = (event: KeyboardEvent) => {
     if(event.ctrlKey || event.metaKey) {
-      this.props.musicStore.toggleStopAfterCurrent();
+      this.injected.musicStore.toggleStopAfterCurrent();
     }
     else {
-      this.props.musicStore.stopPlayback();
+      this.injected.musicStore.stopPlayback();
     }
-  }
-
-  openDrawer = () => {
-    this.setState({
-      drawerOpen: true
-    });
-  }
-
-  onDrawerClose = () => {
-    this.setState({
-      drawerOpen: false
-    });
   }
 
   onDemoSnackbarClose = () => {
@@ -107,7 +108,8 @@ class Master extends Component {
   }
 
   render() {
-    const {musicStore, scrobbleStore} = this.props;
+    const {classes} = this.props;
+    const {musicStore, scrobbleStore, uiStore} = this.injected;
     const playButtonEnabled = musicStore.playlist.length > 0;
     const playOrPauseIcon = musicStore.playerState === PlayerState.PLAYING ?
       <PauseIcon /> : <PlayArrowIcon />;
@@ -117,13 +119,12 @@ class Master extends Component {
     const nextButtonEnabled = musicStore.playlist.length > 1 &&
       musicStore.currentTrackIndex < musicStore.playlist.length - 1;
 
-    const scrobbleTooltip = {};
-    scrobbleTooltip[ScrobbleState.NO_TRACK] = "last.fm";
-    scrobbleTooltip[ScrobbleState.TRACK_QUEUED] = "Queued";
-    scrobbleTooltip[ScrobbleState.TRACK_SCROBBLED] = "Scrobbled";
-    scrobbleTooltip[ScrobbleState.SCROBBLE_FAILED] = "Scrobble failed!";
-
-    const title = titles[this.props.location.pathname] || 'Now Playing';
+    const scrobbleTooltip: {[key in ScrobbleState]: string} = {
+      [ScrobbleState.NO_TRACK]: "last.fm",
+      [ScrobbleState.TRACK_QUEUED]: "Queued",
+      [ScrobbleState.TRACK_SCROBBLED]: "Scrobbled",
+      [ScrobbleState.SCROBBLE_FAILED]: "Scrobble failed!",
+    };
 
     const lastFmIcon = (
       <Tooltip title={scrobbleTooltip[scrobbleStore.scrobbleState]}>
@@ -132,13 +133,12 @@ class Master extends Component {
     );
 
     const toolbar = (
-      <Toolbar>
-        <IconButton color="inherit" onClick={this.openDrawer}>
+      <Toolbar className={classes.toolbar}>
+        <IconButton color="inherit" onClick={uiStore.openDrawer}>
           <MenuIcon />
         </IconButton>
-        <Typography variant="title" color="inherit">
-          {title}
-        </Typography>
+
+        <Title />
 
         <GaplessPlayer />
 
@@ -175,11 +175,21 @@ class Master extends Component {
           {toolbar}
         </AppBar>
 
-        <LeftNavComponent open={this.state.drawerOpen} onClose={this.onDrawerClose} />
-
-        <div style={{position: 'relative', top: 64}}>
-          {this.props.children}
-        </div>
+        <HashRouter>
+          <Switch>
+            <Route exact path='/'><Wrap><HomePage /></Wrap></Route>
+            <Route path='/lyrics'><Wrap><LyricsPage /></Wrap></Route>
+            <Route path='/albums'><Wrap><AlbumsPage /></Wrap></Route>
+            <Route path='/not-recently-played'><Wrap><NotRecentlyPlayedPage /></Wrap></Route>
+            <Route path='/never-played'><Wrap><NeverPlayedPage /></Wrap></Route>
+            <Route path='/favorite-albums'><Wrap><FavoriteAlbumsPage /></Wrap></Route>
+            <Route path='/tracks'><Wrap><AllTracksPage /></Wrap></Route>
+            <Route path='/shuffle'><Wrap><ShufflePage /></Wrap></Route>
+            <Route path='/scan'><Wrap><ScanPage /></Wrap></Route>
+            <Route path='/playlists'><Wrap><PlaylistsPage /></Wrap></Route>
+            <Route path='*'><Wrap><HomePage /></Wrap></Route>
+          </Switch>
+        </HashRouter>
 
         <Snackbar open={scrobbleStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED}
           message='Scrobble failed.' />
@@ -200,10 +210,26 @@ class Master extends Component {
   }
 }
 
-const musicStore = new MusicStore();
+class Wrap extends Component {
+  render() {
+    const {children} = this.props;
+    return (
+      <div>
+        <LeftNavComponent />
+
+        <div style={{position: 'relative', top: 64}}>
+          {children}
+        </div>
+      </div>
+    )
+  }
+}
+
 const dbStore = new DbStore();
+const musicStore = new MusicStore(dbStore);
 const lyricsStore = new LyricsStore(musicStore);
 const scrobbleStore = new ScrobbleStore(musicStore, dbStore);
+const uiStore = new UiStore();
 
 const muiTheme = createMuiTheme({
   palette: {
@@ -223,25 +249,10 @@ const router = (
       musicStore={musicStore}
       dbStore={dbStore}
       lyricsStore={lyricsStore}
-      scrobbleStore={scrobbleStore}>
-
-      <HashRouter>
-        <Master>
-          <Switch>
-            <Route exact path='/' component={HomePage} />
-            <Route path='/lyrics' component={LyricsPage} />
-            <Route path='/albums' component={AlbumsPage} />
-            <Route path='/not-recently-played' component={NotRecentlyPlayedPage} />
-            <Route path='/never-played' component={NeverPlayedPage} />
-            <Route path='/favorite-albums' component={FavoriteAlbumsPage} />
-            <Route path='/tracks' component={AllTracksPage} />
-            <Route path='/shuffle' component={ShufflePage} />
-            <Route path='/scan' component={ScanPage} />
-            <Route path='/playlists' component={PlaylistsPage} />
-            <Route path='*' component={HomePage} />
-          </Switch>
-        </Master>
-      </HashRouter>
+      scrobbleStore={scrobbleStore}
+      uiStore={uiStore}
+    >
+      <Master />
     </Provider>
   </MuiThemeProvider>
 );

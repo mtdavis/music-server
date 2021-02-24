@@ -3,8 +3,14 @@ import PropTypes from 'prop-types';
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 
-export default class SortIcon extends React.Component {
-  constructor(props) {
+interface Props {
+  sortingActive: boolean,
+  sortOrder: 1 | -1,
+  hover: boolean
+}
+
+export default class SortIcon extends React.Component<Props> {
+  constructor(props: Props) {
     super(props);
   }
 
@@ -12,6 +18,7 @@ export default class SortIcon extends React.Component {
     const style = {
       transform: 'scale(.66)',
       transitionProperty: 'none',
+      opacity: 1,
     };
 
     let Icon;
@@ -34,11 +41,3 @@ export default class SortIcon extends React.Component {
     );
   }
 }
-
-SortIcon.propTypes = {
-  sortingActive: PropTypes.bool,
-
-  sortOrder: PropTypes.oneOf([1, -1]),
-
-  hover: PropTypes.bool
-};
