@@ -1,6 +1,6 @@
 const Promise = require("bluebird");
 const sqlite3 = Promise.promisifyAll(require("sqlite3"));
-const musicServerSettings = require("./music-server-settings.json");
+const musicServerSettings = require("../music-server-settings.json");
 
 class MusicServerDb {
     constructor() {

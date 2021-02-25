@@ -1,6 +1,6 @@
 const Promise = require("bluebird");
 const SimpleLastfm = require("simple-lastfm");
-const musicServerSettings = require("./music-server-settings.json");
+const musicServerSettings = require("../music-server-settings.json");
 const http = require("http");
 const url = require("url");
 

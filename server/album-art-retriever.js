@@ -2,7 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const http = require("http");
 
-const musicServerSettings = require("./music-server-settings.json");
+const musicServerSettings = require("../music-server-settings.json");
 const lastfm = require("./music-server-lastfm").MusicServerLastfm();
 const albums = require("./albums.json");
 const musicServerUtil = require("./music-server-util");

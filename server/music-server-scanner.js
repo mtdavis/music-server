@@ -5,7 +5,7 @@ const fs = Promise.promisifyAll(require("fs"));
 
 const MusicServerDb = require("./music-server-db").MusicServerDb;
 const db = new MusicServerDb();
-const musicServerSettings = require("./music-server-settings.json");
+const musicServerSettings = require("../music-server-settings.json");
 const util = require("./music-server-util");
 
 function checkForChangedMetadata(root, fileStats, next) {

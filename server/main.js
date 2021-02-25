@@ -7,7 +7,7 @@ const serveStatic = require("serve-static");
 const connectRoute = require("connect-route");
 const url = require("url");
 const bodyParser = require("body-parser");
-const musicServerSettings = require("./music-server-settings.json");
+const musicServerSettings = require("../music-server-settings.json");
 const fs = Promise.promisifyAll(require("fs"));
 const path = require("path");
 const lyricist = Promise.promisifyAll(require("lyricist")(musicServerSettings.genius.access_token));
@@ -413,7 +413,7 @@ function startServer(router) {
     app.use("/art", serveStatic(musicServerSettings.files.base_stream_path, {
         maxAge: '365d'
     }));
-    app.use("/", serveStatic("./client/dist"));
+    app.use("/", serveStatic("../client/dist"));
     app.use(router);
 
     app.use(function(req, res, next) {
