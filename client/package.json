@@ -25,13 +25,11 @@
     "eslint-config-google": "^0.7.1",
     "eslint-plugin-babel": "^5.1.0",
     "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-jest": "^21.25.1",
     "eslint-plugin-react": "7.11.1",
     "exports-loader": "^0.7.0",
     "file-loader": "^2.0.0",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
-    "jest-cli": "^23.5.0",
     "script-loader": "^0.7.2",
     "style-loader": "^0.23.1",
     "ts-loader": "^5.2.2",
@@ -44,9 +42,7 @@
     "@material-ui/icons": "^3.0.0",
     "@material-ui/lab": "^3.0.0-alpha.14",
     "@mdi/js": "^5.0.45",
-    "ajv": "^6.0.0",
     "debounce": "^1.1.0",
-    "deep-equal": "1.0.1",
     "jsep": "0.3.0",
     "mdi-material-ui": "^5.24.2",
     "mobx": "^5.0.2",
@@ -62,8 +58,5 @@
     "react-select": "^2.0.0",
     "stable": "^0.1.5",
     "weighted": "0.3.0"
-  },
-  "jest": {
-    "unmockedModulePathPatterns": []
   }
 }
