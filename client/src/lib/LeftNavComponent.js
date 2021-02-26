@@ -18,7 +18,6 @@ import MenuIcon from '@material-ui/icons/Menu';
 import MusicNoteIcon from '@material-ui/icons/MusicNote';
 import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
 import QueueMusicIcon from '@material-ui/icons/QueueMusic';
-import SearchIcon from '@material-ui/icons/Search';
 import ShuffleIcon from '@material-ui/icons/Shuffle';
 import StarsIcon from '@material-ui/icons/Stars';
 import WatchLaterIcon from '@material-ui/icons/WatchLater';
@@ -93,10 +92,6 @@ class LeftNavComponent extends Component {
                 </LinkMenuItem>
                 <LinkMenuItem to='/shuffle' icon={<ShuffleIcon />} onClick={uiStore.closeDrawer}>
                   Shuffle
-                </LinkMenuItem>
-                <Divider />
-                <LinkMenuItem to='/scan' icon={<SearchIcon />} onClick={uiStore.closeDrawer}>
-                  Scan
                 </LinkMenuItem>
               </div>
           }

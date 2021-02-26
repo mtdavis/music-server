@@ -29,12 +29,6 @@ class MusicServerDb {
         const statement = this.db.prepare("SELECT id FROM artist WHERE name = $name");
         let artistIdRow = await statement.getAsync({$name: name});
 
-        if(!artistIdRow) {
-            const insert = this.db.prepare("INSERT INTO artist (name) VALUES ($name)");
-            await insert.runAsync({$name: name});
-            artistIdRow = await statement.getAsync({$name: name});
-        }
-
         return artistIdRow.id;
     }
 
@@ -49,63 +43,7 @@ class MusicServerDb {
             "SELECT id FROM album WHERE title = $title AND artist_id = $artist_id");
         let albumIdRow = await statement.getAsync({$title: title, $artist_id: albumArtistId});
 
-        if(!albumIdRow) {
-            const insert = this.db.prepare(
-                "INSERT INTO album (title, artist_id) VALUES ($title, $artist_id)");
-            await insert.runAsync({$title: title, $artist_id: albumArtistId});
-            albumIdRow = await statement.getAsync({$title: title, $artist_id: albumArtistId});
-        }
-
         return albumIdRow.id;
-    }
-
-    async updateTrackFromMetadataAsync(track) {
-        const artistId = await this.getArtistId(track.artist);
-        const albumId = await this.getAlbumId(track.album, track.album_artist);
-
-        const currentTime = Math.floor(Date.now() / 1000);
-        const statement = this.db.prepare(
-            "UPDATE track " +
-            "SET title = $title, artist_id = $artist_id, album_id = $album_id, " +
-            "    genre = $genre, track_number = $track_number, year = $year, " +
-            "    row_modified = $current_time " +
-            "WHERE id = $id");
-
-        return statement.runAsync({
-            $title: track.title,
-            $artist_id: artistId,
-            $album_id: albumId,
-            $genre: track.genre,
-            $track_number: track.track_number,
-            $year: track.year,
-            $current_time: currentTime,
-            $id: track.id
-        });
-    }
-
-    async addTrackFromMetadataAsync(track) {
-        const artistId = await this.getArtistId(track.artist);
-        const albumId = await this.getAlbumId(track.album, track.album_artist);
-
-        const currentTime = Math.floor(Date.now() / 1000);
-        const statement = this.db.prepare(
-            "INSERT INTO track (title, artist_id, album_id, genre, duration, " +
-            "                   track_number, year, path, row_modified) " +
-            "VALUES ($title, $artist_id, $album_id, $genre, $duration, " +
-            "        $track_number, $year, $path, $current_time)"
-        );
-
-        return statement.runAsync({
-            $title: track.title,
-            $artist_id: artistId,
-            $album_id: albumId,
-            $genre: track.genre,
-            $duration: track.duration,
-            $track_number: track.track_number,
-            $year: track.year,
-            $path: track.path,
-            $current_time: currentTime
-        });
     }
 
     async selectTrackByInfoAsync(track) {
@@ -136,20 +74,6 @@ class MusicServerDb {
             $album_id: albumId,
             $track_number: track.track_number,
             $year: track.year
-        });
-    }
-
-    updateTrackPathAsync(trackId, relativePath) {
-        const currentTime = Math.floor(Date.now() / 1000);
-        const statement = this.db.prepare(
-            "UPDATE track " +
-            "SET path = $path, row_modified = $current_time " +
-            "WHERE id = $id");
-
-        return statement.runAsync({
-            $path: relativePath,
-            $id: trackId,
-            $current_time: currentTime
         });
     }
 

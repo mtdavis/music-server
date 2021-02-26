@@ -47,7 +47,6 @@ import FavoriteAlbumsPage from './pages/FavoriteAlbumsPage';
 import AllTracksPage from './pages/AllTracksPage';
 import ShufflePage from './pages/ShufflePage';
 import PlaylistsPage from './pages/PlaylistsPage';
-import ScanPage from './pages/ScanPage';
 
 import './style/main.css';
 import './style/bootstrap.css';
@@ -185,7 +184,6 @@ class Master extends Component<Props, State> {
             <Route path='/favorite-albums'><Wrap><FavoriteAlbumsPage /></Wrap></Route>
             <Route path='/tracks'><Wrap><AllTracksPage /></Wrap></Route>
             <Route path='/shuffle'><Wrap><ShufflePage /></Wrap></Route>
-            <Route path='/scan'><Wrap><ScanPage /></Wrap></Route>
             <Route path='/playlists'><Wrap><PlaylistsPage /></Wrap></Route>
             <Route path='*'><Wrap><HomePage /></Wrap></Route>
           </Switch>
