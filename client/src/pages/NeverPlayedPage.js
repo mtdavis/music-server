@@ -24,13 +24,7 @@ export default class NeverPlayedPage extends Component {
     ];
 
     return (
-      <div className='never-played-page container-fluid'>
-        <div className="row">
-          <div className="col-xs-12">
-            <AlbumList albums={albumsNeverPlayed} initialSortSpecs={initialSortSpecs} />
-          </div>
-        </div>
-      </div>
+      <AlbumList albums={albumsNeverPlayed} initialSortSpecs={initialSortSpecs} />
     );
   }
 }

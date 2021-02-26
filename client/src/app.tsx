@@ -36,6 +36,7 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
 import StopIcon from '@material-ui/icons/Stop';
 import SkipNextIcon from '@material-ui/icons/SkipNext';
+import LastFmIcon from './lib/LastFmIcon';
 
 import Title from './lib/Title';
 import HomePage from './pages/HomePage';
@@ -49,8 +50,6 @@ import ShufflePage from './pages/ShufflePage';
 import PlaylistsPage from './pages/PlaylistsPage';
 
 import './style/main.css';
-import './style/bootstrap.css';
-import './style/icomoon/style.css';
 
 interface Props {
 };
@@ -127,7 +126,7 @@ class Master extends Component<Props, State> {
 
     const lastFmIcon = (
       <Tooltip title={scrobbleTooltip[scrobbleStore.scrobbleState]}>
-        <Icon className='icon-lastfm' />
+        <LastFmIcon />
       </Tooltip>
     );
 
@@ -215,7 +214,7 @@ class Wrap extends Component {
       <div>
         <LeftNavComponent />
 
-        <div style={{position: 'relative', top: 64}}>
+        <div style={{position: 'relative', top: 64, padding: 16}}>
           {children}
         </div>
       </div>

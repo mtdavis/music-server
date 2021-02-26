@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import {inject, observer} from 'mobx-react';
 import Playlist from '../lib/Playlist';
 import {
+  Grid,
   Paper,
 } from '@material-ui/core';
 
@@ -62,31 +63,29 @@ export default class HomePage extends Component {
     const {musicStore} = this.props;
     if(musicStore.playlist.length === 0 || musicStore.playlist[0].album === null) {
       content = (
-        <div className="row">
-          <div className="col-xs-12">
-            <Playlist />
-          </div>
-        </div>
+        <Grid item xs={12}>
+          <Playlist />
+        </Grid>
       );
     }
     else {
       content = (
-        <div className="row">
-          <div className="col-xs-12 col-sm-7 col-md-6">
-            <AlbumArt key="art" track={musicStore.playlist[0]} />
-          </div>
-
-          <div className="col-xs-12 col-sm-5 col-md-6">
+        <>
+          <Grid item xs={12} sm={12} md={5} lg={6}>
             <Playlist />
-          </div>
-        </div>
+          </Grid>
+
+          <Grid item xs={12} sm={12} md={7} lg={6}>
+            <AlbumArt key="art" track={musicStore.playlist[0]} />
+          </Grid>
+        </>
       );
     }
 
     return (
-      <div className='home-page container-fluid'>
+      <Grid container spacing={16}>
         {content}
-      </div>
+      </Grid>
     );
   }
 }

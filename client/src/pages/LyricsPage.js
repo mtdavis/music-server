@@ -13,6 +13,10 @@ function styles(theme) {
   return {
     link: {
       textDecoration: 'none',
+      color: theme.palette.primary.main,
+      '&:hover': {
+        textDecoration: 'underline',
+      },
     },
     header: {
       textAlign: 'center',
@@ -104,14 +108,6 @@ export default class LyricsPage extends Component {
       );
     }
 
-    return (
-      <div className='container-fluid'>
-        <div className="row">
-          <div className="col-xs-12">
-            {content}
-          </div>
-        </div>
-      </div>
-    );
+    return content;
   }
 }

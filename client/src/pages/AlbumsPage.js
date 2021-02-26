@@ -13,13 +13,7 @@ export default class AlbumsPage extends Component {
     ];
 
     return (
-      <div className='albums-page container-fluid'>
-        <div className="row">
-          <div className="col-xs-12">
-            <AlbumList albums={dbStore.albums} initialSortSpecs={initialSortSpecs} />
-          </div>
-        </div>
-      </div>
+      <AlbumList albums={dbStore.albums} initialSortSpecs={initialSortSpecs} />
     );
   }
 }

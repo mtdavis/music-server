@@ -25,13 +25,7 @@ export default class NotRecentlyPlayedPage extends Component {
     ];
 
     return (
-      <div className='not-recently-played-page container-fluid'>
-        <div className="row">
-          <div className="col-xs-12">
-            <AlbumList albums={albumsNotRecentlyPlayed} initialSortSpecs={initialSortSpecs} />
-          </div>
-        </div>
-      </div>
+      <AlbumList albums={albumsNotRecentlyPlayed} initialSortSpecs={initialSortSpecs} />
     );
   }
 }

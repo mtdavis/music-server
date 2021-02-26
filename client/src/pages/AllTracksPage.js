@@ -14,13 +14,7 @@ export default class AllTracksPage extends Component {
     ];
 
     return (
-      <div className='tracks-page container-fluid'>
-        <div className="row">
-          <div className="col-xs-12">
-            <TrackList tracks={dbStore.tracks} initialSortSpecs={initialSortSpecs} />
-          </div>
-        </div>
-      </div>
+      <TrackList tracks={dbStore.tracks} initialSortSpecs={initialSortSpecs} />
     );
   }
 }

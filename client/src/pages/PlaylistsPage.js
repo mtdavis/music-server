@@ -12,13 +12,7 @@ export default class PlaylistsPage extends Component {
     ];
 
     return (
-      <div className='tracks-page container-fluid'>
-        <div className="row">
-          <div className="col-xs-12">
-            <PlaylistList playlists={dbStore.playlists} initialSortSpecs={initialSortSpecs} />
-          </div>
-        </div>
-      </div>
+      <PlaylistList playlists={dbStore.playlists} initialSortSpecs={initialSortSpecs} />
     );
   }
 }

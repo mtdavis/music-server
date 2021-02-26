@@ -5,6 +5,11 @@ import MTable from './table/MTable';
 import renderIcon from './table/renderIcon';
 import PlayerState from './PlayerState';
 import {secondsToTimeString} from './util';
+import MusicNoteIcon from '@material-ui/icons/MusicNote';
+import MusicCircleIcon from 'mdi-material-ui/MusicCircleOutline';
+import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
+import PauseCircleFilledIcon from '@material-ui/icons/PauseCircleFilled';
+import StopCircle from 'mdi-material-ui/StopCircle';
 
 @inject('musicStore')
 @observer
@@ -26,17 +31,17 @@ export default class Playlist extends Component {
     }
 
     const playlistItems = musicStore.playlist.map(function(track, index) {
-      let icon = "icon-music";
+      let icon = <MusicCircleIcon />;
 
       if(track === musicStore.currentTrack) {
         if(musicStore.playerState === PlayerState.PLAYING) {
-          icon = "icon-play2";
+          icon = <PlayCircleFilledIcon color='primary' />;
         }
         else if(musicStore.playerState === PlayerState.PAUSED) {
-          icon = "icon-pause2";
+          icon = <PauseCircleFilledIcon color='primary' />;
         }
         else if(musicStore.playerState === PlayerState.STOPPED) {
-          icon = "icon-stop2";
+          icon = <StopCircle color='primary' />;
         }
       }
 
