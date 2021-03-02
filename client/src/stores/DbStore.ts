@@ -6,29 +6,23 @@ export default class DbStore {
   @observable playlists: IObservableArray<Playlist> = observable.array([]);
 
   constructor() {
-    $.getJSON("/albums", (albums) => {
+    fetch('/albums').then(response => {
+      return response.json();
+    }).then(albums => {
       this.albums.replace(albums);
     });
 
-    $.getJSON("/tracks", (tracks) => {
+    fetch('/tracks').then(response => {
+      return response.json();
+    }).then(tracks => {
       this.tracks.replace(tracks);
     });
 
-    $.getJSON("/playlists", (playlists) => {
+    fetch('/playlists').then(response => {
+      return response.json();
+    }).then(playlists => {
       this.playlists.replace(playlists);
     });
-  }
-
-  scanForChangedMetadata() {
-    $.post("/tools/scan-for-changed-metadata");
-  }
-
-  scanForMovedFiles() {
-    $.post("/tools/scan-for-moved-files");
-  }
-
-  scanForNewFiles() {
-    $.post("/tools/scan-for-new-files");
   }
 
   @action

@@ -72,12 +72,14 @@ export default class ScrobbleStore {
     if(trackToScrobble.duration * 1000 > nowPlayingDelayMs) {
       // submit the now-playing update in 5 seconds if it's still playing.
       this.nowPlayingTimer = pauseable.setTimeout(() => {
-        if(trackToScrobble.id === this.musicStore.currentTrackId &&
-            this.musicStore.playerState !== PlayerState.STOPPED) {
-          const postData = {
-            id: trackToScrobble.id
-          };
-          $.post("/submit-now-playing", postData);
+        if(
+          trackToScrobble.id === this.musicStore.currentTrackId &&
+          this.musicStore.playerState !== PlayerState.STOPPED
+        ) {
+          fetch('/submit-now-playing', {
+            method: 'POST',
+            body: new URLSearchParams(`id=${trackToScrobble.id}`),
+          });
         }
 
         this.nowPlayingTimer = null;
@@ -96,10 +98,13 @@ export default class ScrobbleStore {
 
         this.dbStore.incrementPlayCount(trackToScrobble.id, trackStartedPlaying);
 
-        $.post("/submit-play", postData).done(() => {
-          this.scrobbleState = ScrobbleState.TRACK_SCROBBLED;
-        }).fail(() => {
-          this.scrobbleState = ScrobbleState.SCROBBLE_FAILED;
+        fetch('/submit-play', {
+          method: 'POST',
+          body: new URLSearchParams(`id=${trackToScrobble.id}&started_playing=${trackStartedPlaying}`),
+        }).then(response => {
+          this.scrobbleState = response.ok ? 
+            ScrobbleState.TRACK_SCROBBLED :
+            ScrobbleState.SCROBBLE_FAILED;
         });
       }
 

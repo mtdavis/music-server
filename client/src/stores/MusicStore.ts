@@ -17,7 +17,9 @@ export default class MusicStore {
 
   constructor(dbStore: DbStore) {
     this.dbStore = dbStore;
-    $.getJSON("/demo-mode", (demoMode) => {
+    fetch('/demo-mode').then(response => {
+      return response.json();
+    }).then(demoMode => {
       this.demoMode = demoMode;
     });
   }
@@ -52,32 +54,22 @@ export default class MusicStore {
 
   @action
   enqueueAlbum(album: Album) {
-    const query = {
-      album_artist: album.album_artist,
-      album: album.album
-    };
+    const tracks = this.dbStore.getAlbumTracks(album.id);
 
-    $.getJSON("/tracks", query, (tracks) => {
-      if(!this.api) {
-        throw Error('Gapless5 instance is not initialized');
-      }
-
-      for(let i = 0; i < tracks.length; i++) {
-        this.playlist.push(tracks[i]);
-        const path = tracks[i].path.replace(/#/, "%23");
-        this.api.addTrack("/stream/" + path);
-      }
-
-    });
+    for(let i = 0; i < tracks.length; i++) {
+      this.playlist.push(tracks[i]);
+      const path = tracks[i].path.replace(/#/, "%23");
+      this.api.addTrack("/stream/" + path);
+    }
   }
 
   @action
   playPlaylist(playlist: Playlist) {
-    const query = {
-      playlist_id: playlist.id
-    };
+    const url = `/playlist-tracks?playlist_id=${encodeURIComponent(playlist.id)}`;
 
-    $.getJSON("/playlist-tracks", query, (tracks) => {
+    fetch(url).then(response => {
+      return response.json();
+    }).then(tracks => {
       this.stopPlayback();
       this.setPlaylist(tracks);
       this.playOrPausePlayback();
@@ -105,7 +97,9 @@ export default class MusicStore {
 
   @action
   playShuffle(minutes: number) {
-    $.getJSON("/shuffle", (tracks) => {
+    fetch('/shuffle').then(response => {
+      return response.json();
+    }).then(tracks => {
       if(!this.api) {
         throw Error('Gapless5 instance is not initialized');
       }

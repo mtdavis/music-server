@@ -26,18 +26,21 @@ export default class LyricsStore {
           this.lyricsState = LyricsState.LOADING;
           this.lyricsTrackId = nowPlayingId;
 
-          $.ajax("/lyrics", {
-            data: {id: nowPlayingId},
-            success: (result) => {
-              this.lyrics = result.lyrics;
-              this.url = result.url;
-              this.lyricsState = LyricsState.SUCCESSFUL;
-            },
-            error: () => {
-              this.lyrics = null;
-              this.url = null;
-              this.lyricsState = LyricsState.FAILED;
+          const url = `/lyrics?id=${encodeURIComponent(nowPlayingId)}`;
+          fetch(url).then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
             }
+
+            return response.json();
+          }).then(result => {
+            this.lyrics = result.lyrics;
+            this.url = result.url;
+            this.lyricsState = LyricsState.SUCCESSFUL;
+          }).catch(() => {
+            this.lyrics = null;
+            this.url = null;
+            this.lyricsState = LyricsState.FAILED;
           });
         }
       }
