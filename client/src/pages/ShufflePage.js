@@ -12,7 +12,7 @@ class ShuffleButton extends Component {
   render() {
     return (
       <Button variant='contained' color='primary' onClick={this.onClick}>
-        <ShuffleIcon style={{ marginRight: 8 }} />
+        <ShuffleIcon style={{marginRight: 8}} />
         {this.props.minutes + ' Minutes'}
       </Button>
     );

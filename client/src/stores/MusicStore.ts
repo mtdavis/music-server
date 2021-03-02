@@ -54,6 +54,10 @@ export default class MusicStore {
 
   @action
   enqueueAlbum(album: Album) {
+    if(!this.api) {
+      throw Error('Gapless5 instance is not initialized');
+    }
+
     const tracks = this.dbStore.getAlbumTracks(album.id);
 
     for(let i = 0; i < tracks.length; i++) {
@@ -65,7 +69,7 @@ export default class MusicStore {
 
   @action
   playPlaylist(playlist: Playlist) {
-    const url = `/playlist-tracks?playlist_id=${encodeURIComponent(playlist.id)}`;
+    const url = `/playlist-tracks?playlist_id=${playlist.id}`;
 
     fetch(url).then(response => {
       return response.json();

@@ -58,6 +58,9 @@ interface InjectedProps extends Props {
   musicStore: MusicStore,
   scrobbleStore: ScrobbleStore,
   uiStore: UiStore,
+  classes: {
+    toolbar: string,
+  },
 }
 
 interface State {
@@ -106,8 +109,7 @@ class Master extends Component<Props, State> {
   }
 
   render() {
-    const {classes} = this.props;
-    const {musicStore, scrobbleStore, uiStore} = this.injected;
+    const {classes, musicStore, scrobbleStore, uiStore} = this.injected;
     const playButtonEnabled = musicStore.playlist.length > 0;
     const playOrPauseIcon = musicStore.playerState === PlayerState.PLAYING ?
       PauseIcon : PlayArrowIcon;

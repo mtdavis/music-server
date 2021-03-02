@@ -8,14 +8,16 @@ import VolumeMuteIcon from '@material-ui/icons/VolumeMute';
 import VolumeDownIcon from '@material-ui/icons/VolumeDown';
 import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 
-const styles = (theme) => ({
-  root: {
-    display: 'flex',
-    height: 150,
-    padding: theme.spacing.unit * 3,
-    overflow: 'hidden',
-  },
-});
+function styles(theme) {
+  return {
+    root: {
+      display: 'flex',
+      height: 150,
+      padding: theme.spacing.unit * 3,
+      overflow: 'hidden',
+    },
+  };
+}
 
 @inject('musicStore')
 @observer

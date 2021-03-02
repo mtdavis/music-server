@@ -71,11 +71,11 @@ class AlbumImage extends Component {
   }
 
   onMouseOver = () => {
-    this.setState({ hover: true });
+    this.setState({hover: true});
   };
 
   onMouseOut = () => {
-    this.setState({ hover: false });
+    this.setState({hover: false});
   }
 }
 
@@ -85,12 +85,11 @@ AlbumImage.propTypes = {
   })
 };
 
-@withStyles(styles)
 @inject('dbStore')
 @observer
 export default class FavoriteAlbumsPage extends Component {
   render() {
-    const {classes, dbStore} = this.props;
+    const {dbStore} = this.props;
 
     let content;
 

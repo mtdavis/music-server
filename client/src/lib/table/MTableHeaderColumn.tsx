@@ -24,6 +24,11 @@ interface Props extends TableCellProps {
   sortOrder: 1 | -1,
 
   setSortColumnKey: (key: string) => void,
+
+  classes: {
+    cell: string,
+    div: string,
+  },
 };
 
 interface State {

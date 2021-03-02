@@ -26,7 +26,7 @@ export default class LyricsStore {
           this.lyricsState = LyricsState.LOADING;
           this.lyricsTrackId = nowPlayingId;
 
-          const url = `/lyrics?id=${encodeURIComponent(nowPlayingId)}`;
+          const url = `/lyrics?id=${nowPlayingId}`;
           fetch(url).then(response => {
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);

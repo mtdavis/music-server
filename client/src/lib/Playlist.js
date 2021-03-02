@@ -5,7 +5,6 @@ import MTable from './table/MTable';
 import renderIcon from './table/renderIcon';
 import PlayerState from './PlayerState';
 import {secondsToTimeString} from './util';
-import MusicNoteIcon from '@material-ui/icons/MusicNote';
 import MusicCircleIcon from 'mdi-material-ui/MusicCircleOutline';
 import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
 import PauseCircleFilledIcon from '@material-ui/icons/PauseCircleFilled';
