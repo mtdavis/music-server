@@ -110,7 +110,7 @@ class Master extends Component<Props, State> {
     const {musicStore, scrobbleStore, uiStore} = this.injected;
     const playButtonEnabled = musicStore.playlist.length > 0;
     const playOrPauseIcon = musicStore.playerState === PlayerState.PLAYING ?
-      <PauseIcon /> : <PlayArrowIcon />;
+      PauseIcon : PlayArrowIcon;
     const stopButtonEnabled = musicStore.playerState !== PlayerState.STOPPED;
     const prevButtonEnabled = musicStore.playlist.length > 1 &&
       musicStore.currentTrackIndex > 0;
@@ -124,12 +124,6 @@ class Master extends Component<Props, State> {
       [ScrobbleState.SCROBBLE_FAILED]: "Scrobble failed!",
     };
 
-    const lastFmIcon = (
-      <Tooltip title={scrobbleTooltip[scrobbleStore.scrobbleState]}>
-        <LastFmIcon />
-      </Tooltip>
-    );
-
     const toolbar = (
       <Toolbar className={classes.toolbar}>
         <IconButton color="inherit" onClick={uiStore.openDrawer}>
@@ -142,27 +136,38 @@ class Master extends Component<Props, State> {
 
         <CurrentTimeSlider />
 
-        <AppBarIconButton icon={<SkipPreviousIcon />}
+        <AppBarIconButton
+          Icon={SkipPreviousIcon}
           disabled={!prevButtonEnabled}
-          onClick={() => musicStore.jumpToPreviousTrack()} />
-        <AppBarIconButton icon={playOrPauseIcon}
+          onClick={() => musicStore.jumpToPreviousTrack()}
+        />
+        <AppBarIconButton
+          Icon={playOrPauseIcon}
           disabled={!playButtonEnabled}
-          onClick={() => musicStore.playOrPausePlayback()} />
-        <AppBarIconButton icon={<StopIcon />}
+          onClick={() => musicStore.playOrPausePlayback()}
+        />
+        <AppBarIconButton
+          Icon={StopIcon}
           className={musicStore.willStopAfterCurrent ? "pulsate" : ""}
           disabled={!stopButtonEnabled}
-          onClick={this.onStopButtonClick} />
-        <AppBarIconButton icon={<SkipNextIcon />}
+          onClick={this.onStopButtonClick}
+        />
+        <AppBarIconButton
+          Icon={SkipNextIcon}
           disabled={!nextButtonEnabled}
-          onClick={() => musicStore.jumpToNextTrack()} />
+          onClick={() => musicStore.jumpToNextTrack()}
+        />
 
         <VolumeButton />
 
         {
           musicStore.demoMode ? null :
-          <AppBarIconButton icon={lastFmIcon}
-            tooltip={scrobbleTooltip[scrobbleStore.scrobbleState]}
-            onClick={this.openLastFm} />
+          <Tooltip title={scrobbleTooltip[scrobbleStore.scrobbleState]}>
+            <AppBarIconButton
+              Icon={LastFmIcon}
+              onClick={this.openLastFm}
+            />
+          </Tooltip>
         }
       </Toolbar>
     );
@@ -237,7 +242,10 @@ const muiTheme = createMuiTheme({
       main: colors.deepOrange['200'],
     },
     contrastThreshold: 3,
-  }
+  },
+  typography: {
+    useNextVariants: true,
+  },
 });
 
 const router = (

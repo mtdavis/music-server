@@ -26,7 +26,7 @@ export default class Title extends Component {
 
   renderTitle(title: string) {
     return () => (
-      <Typography variant="title" color="inherit">
+      <Typography variant="h6" color="inherit">
         {title}
       </Typography>
     );

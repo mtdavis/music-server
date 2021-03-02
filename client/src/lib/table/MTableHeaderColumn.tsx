@@ -41,7 +41,6 @@ const styles = {
   },
   div: {
     height: '100%',
-    width: '100%',
     top: 0,
     left: 0,
     display: 'flex',
@@ -49,7 +48,7 @@ const styles = {
     padding: '0 12px',
     cursor: 'pointer',
     justifyContent: 'flex-start',
-    // userSelect: 'none',
+    userSelect: 'none',
   },
 };
 

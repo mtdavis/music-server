@@ -13,8 +13,8 @@ import {withStyles} from '@material-ui/core/styles';
 
 import AlbumIcon from '@material-ui/icons/Album';
 import CancelIcon from '@material-ui/icons/Cancel';
+import CloseIcon from '@material-ui/icons/Close';
 import FormatAlignCenterIcon from '@material-ui/icons/FormatAlignCenter';
-import MenuIcon from '@material-ui/icons/Menu';
 import MusicNoteIcon from '@material-ui/icons/MusicNote';
 import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
 import QueueMusicIcon from '@material-ui/icons/QueueMusic';
@@ -51,9 +51,9 @@ class LeftNavComponent extends Component {
         <AppBar title="Mike's Music Player" className={classes.appBar}>
           <Toolbar className={classes.toolbar}>
             <IconButton color="inherit" onClick={uiStore.closeDrawer}>
-              <MenuIcon />
+              <CloseIcon />
             </IconButton>
-            <Typography variant="title" color="inherit">
+            <Typography variant="h6" color="inherit">
               Mike's Music Player
             </Typography>
           </Toolbar>

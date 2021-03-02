@@ -1,15 +1,25 @@
 import React, {Component} from 'react';
 import {inject, observer} from 'mobx-react';
 import {Popover} from '@material-ui/core';
+import {withStyles} from '@material-ui/core/styles';
 import {Slider} from '@material-ui/lab';
 import AppBarIconButton from './AppBarIconButton';
 import VolumeMuteIcon from '@material-ui/icons/VolumeMute';
 import VolumeDownIcon from '@material-ui/icons/VolumeDown';
 import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 
+const styles = (theme) => ({
+  root: {
+    display: 'flex',
+    height: 150,
+    padding: theme.spacing.unit * 3,
+    overflow: 'hidden',
+  },
+});
+
 @inject('musicStore')
 @observer
-export default class VolumeButton extends Component {
+class VolumeButton extends Component {
   constructor(props) {
     super(props);
 
@@ -20,22 +30,24 @@ export default class VolumeButton extends Component {
   }
 
   render() {
+    const {classes} = this.props;
+
     let icon;
     if(this.state.volume < .01) {
-      icon = <VolumeMuteIcon />;
+      icon = VolumeMuteIcon;
     }
     else if(this.state.volume < .5) {
-      icon = <VolumeDownIcon />;
+      icon = VolumeDownIcon;
     }
     else {
-      icon = <VolumeUpIcon />;
+      icon = VolumeUpIcon;
     }
 
     return (
       <div>
         <div ref='button'>
           <AppBarIconButton
-            icon={icon}
+            Icon={icon}
             onClick={this.toggleVolumePopover} />
         </div>
 
@@ -45,15 +57,17 @@ export default class VolumeButton extends Component {
           anchorEl={this.refs.button}
           transformOrigin={{horizontal:'center', vertical:'top'}}
           anchorOrigin={{horizontal:"center", vertical:"bottom"}}
-          style={{zDepth: 2}}>
-          <Slider
-            style={{height: 148, padding: 24}}
-            max={1}
-            step={.01}
-            vertical={true}
-            reverse={true}
-            value={this.state.volume}
-            onChange={this.onVolumeChange} />
+          style={{zDepth: 2}}
+        >
+          <div className={classes.root}>
+            <Slider
+              max={1}
+              step={.01}
+              vertical
+              value={this.state.volume}
+              onChange={this.onVolumeChange}
+            />
+          </div>
         </Popover>
       </div>
     );
@@ -78,3 +92,6 @@ export default class VolumeButton extends Component {
     });
   }
 }
+
+
+export default withStyles(styles, {withTheme: true})(VolumeButton);

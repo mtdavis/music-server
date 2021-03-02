@@ -13,12 +13,10 @@ function styles(theme) {
     },
     display1: {
       // playing
-      ...theme.typography.title,
       color: theme.palette.primary.contrastText,
     },
     display2: {
       // stopped
-      ...theme.typography.title,
       color: theme.palette.text.disabled,
     },
   };
@@ -29,7 +27,7 @@ class CurrentTimeLabel extends Component {
   render() {
     const {classes, enabled, seconds} = this.props;
 
-    const timeLabelVariant = enabled ? 'display1' : 'display2';
+    const timeLabelClass = enabled ? classes.display1 : classes.display2;
 
     let timeString = secondsToTimeString(seconds);
     // strip off decimal
@@ -38,7 +36,12 @@ class CurrentTimeLabel extends Component {
     }
 
     return (
-      <Typography variant={timeLabelVariant} color="inherit" classes={classes}>
+      <Typography
+        variant="h6"
+        color="inherit"
+        className={timeLabelClass}
+        classes={{root: classes.root}}
+      >
         {timeString}
       </Typography>
     );
