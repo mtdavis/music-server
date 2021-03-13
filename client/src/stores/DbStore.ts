@@ -1,8 +1,13 @@
 import {action, IObservableArray, observable} from 'mobx';
 
 export default class DbStore {
+  @observable albumsLoading = true;
   @observable albums: IObservableArray<Album> = observable.array([]);
+
+  @observable tracksLoading = true;
   @observable tracks: IObservableArray<Track> = observable.array([]);
+
+  @observable playlistsLoading = true;
   @observable playlists: IObservableArray<Playlist> = observable.array([]);
 
   constructor() {
@@ -10,18 +15,21 @@ export default class DbStore {
       return response.json();
     }).then(albums => {
       this.albums.replace(albums);
+      this.albumsLoading = false;
     });
 
     fetch('/tracks').then(response => {
       return response.json();
     }).then(tracks => {
       this.tracks.replace(tracks);
+      this.tracksLoading = false;
     });
 
     fetch('/playlists').then(response => {
       return response.json();
     }).then(playlists => {
       this.playlists.replace(playlists);
+      this.playlistsLoading = false;
     });
   }
 

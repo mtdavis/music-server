@@ -13,10 +13,13 @@
     "@babel/preset-env": "^7.1.0",
     "@babel/preset-react": "^7.0.0",
     "@babel/preset-typescript": "^7.1.0",
+    "@types/classnames": "^2.2.11",
+    "@types/debounce": "^1.2.0",
     "@types/jquery": "^3.3.15",
     "@types/react-dom": "^16.0.9",
     "@types/react-router": "^4.0.32",
     "@types/react-router-dom": "^4.3.1",
+    "@types/react-virtualized": "^9.21.11",
     "@types/weighted": "0.0.5",
     "babel-eslint": "^8.2.3",
     "babel-loader": "^8.0.4",
@@ -38,12 +41,12 @@
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
-    "@material-ui/core": "^3.0.0",
+    "@material-ui/core": "3.9.3",
     "@material-ui/icons": "^3.0.0",
     "@material-ui/lab": "^3.0.0-alpha.14",
     "@mdi/js": "^5.0.45",
     "debounce": "^1.1.0",
-    "jsep": "0.3.0",
+    "jsep": "0.3.5",
     "mdi-material-ui": "^5.24.2",
     "mobx": "^5.0.2",
     "mobx-react": "^5.2.3",
@@ -56,7 +59,7 @@
     "react-router": "4.3.1",
     "react-router-dom": "4.3.1",
     "react-select": "^2.0.0",
-    "stable": "^0.1.5",
+    "react-virtualized": "^9.22.3",
     "weighted": "0.3.0"
   }
 }

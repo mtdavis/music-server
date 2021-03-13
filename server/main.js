@@ -214,8 +214,8 @@ function shuffleHandler() {
     const shuffleSql = "SELECT * FROM track_view " +
         "WHERE (play_count >= 5) AND (duration >= 50) AND (duration < 1000) " +
         "AND (last_play < strftime('%s', 'now') - 90*24*60*60) " +
-        "AND (album = '' OR album NOT IN (" +
-        "    SELECT title FROM album_view WHERE play_count >= 5 " +
+        "AND (album_id IS NULL OR album_id NOT IN (" +
+        "    SELECT id FROM album_view WHERE play_count >= 5 " +
         ")) " +
         "ORDER BY last_play";
 

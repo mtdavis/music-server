@@ -11,6 +11,8 @@ import multiprocessing
 import time
 
 import eyed3
+from progress.bar import Bar
+from tabulate import tabulate
 
 
 @functools.cache
@@ -34,7 +36,12 @@ class Database:
         self.conn = sqlite3.connect(self.db_path)
         self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
-        self.modified = False
+
+        self.new_artists = []
+        self.new_albums = []
+        self.new_tracks = []
+        self.modified_tracks = []
+        self.deleted_tracks = []
 
         return self
 
@@ -43,6 +50,7 @@ class Database:
             print('Rolling back')
             self.conn.rollback()
         elif self.modified:
+            self.print_changes()
             print('Ctrl+c to quit, enter to commit')
             try:
                 input()
@@ -51,6 +59,8 @@ class Database:
                 print()
                 print('Rolling back')
                 self.conn.rollback()
+        else:
+            print('No changes found')
 
         self.conn.close()
 
@@ -58,9 +68,39 @@ class Database:
         self.cursor.execute(query, kwargs)
         return self.cursor.fetchall()
 
-    def note_change(self, message):
-        print(message)
-        self.modified = True
+    @property
+    def modified(self):
+        return (
+            self.new_artists or self.new_albums or
+            self.new_tracks or self.modified_tracks or
+            self.deleted_tracks
+        )
+
+    def print_changes(self):
+        if self.new_artists:
+            print('New artists:')
+            print(tabulate(sorted(self.new_artists)))
+            print()
+
+        if self.new_albums:
+            print('New albums:')
+            print(tabulate(sorted(self.new_albums)))
+            print()
+
+        if self.new_tracks:
+            print('New tracks:')
+            print(tabulate(sorted(self.new_tracks)))
+            print()
+
+        if self.modified_tracks:
+            print('Modified tracks:')
+            print(tabulate(sorted(self.modified_tracks)))
+            print()
+
+        if self.deleted_tracks:
+            print('Deleted tracks:')
+            print(tabulate(sorted(self.deleted_tracks)))
+            print()
 
     @functools.cache
     def get_artist_id(self, artist_name):
@@ -71,7 +111,7 @@ class Database:
         if artist_id_result:
             return artist_id_result[0]['id']
 
-        self.note_change(f'Adding artist: {artist_name}')
+        self.new_artists.append([artist_name])
         self.execute("""
             INSERT INTO artist (name) VALUES (:name)
         """, name=artist_name)
@@ -89,7 +129,8 @@ class Database:
         if album_id_result:
             return album_id_result[0]['id']
 
-        self.note_change(f'Adding album: {album_artist_name} - {album_title}')
+        self.new_albums.append([album_artist_name, album_title])
+
         self.execute("""
             INSERT INTO album (title, artist_id) VALUES ($title, $artist_id)
         """, title=album_title, artist_id=album_artist_id)
@@ -108,7 +149,15 @@ class Database:
         else:
             album_id = None
 
-        self.note_change(f"Adding track: {metadata['artist']} - {metadata['title']}")
+        self.new_tracks.append([
+            metadata['artist'],
+            metadata['album'],
+            metadata['track_number'],
+            metadata['title'],
+            metadata['year'],
+            metadata['genre'],
+            path_relative_to_root,
+        ])
 
         self.execute("""
             INSERT INTO track (
@@ -132,21 +181,24 @@ class Database:
         )
 
     def update_track(self, existing_info, metadata):
+        if metadata['album'] and metadata['album_artist'] is None:
+            raise ValueError(f'No album artist for {path_relative_to_root}')
+
         existing_info_tuple = (
-            existing_info['title'],
             existing_info['artist'],
             existing_info['album'],
-            existing_info['year'],
             existing_info['track_number'],
+            existing_info['title'],
+            existing_info['year'],
             existing_info['genre'],
         )
 
         metadata_tuple = (
-            metadata['title'],
             metadata['artist'],
             metadata['album'],
-            metadata['year'],
             metadata['track_number'],
+            metadata['title'],
+            metadata['year'],
             metadata['genre'],
         )
 
@@ -154,14 +206,13 @@ class Database:
             return
 
         artist_id = self.get_artist_id(metadata['artist'])
-        album_artist_id = self.get_artist_id(metadata['album_artist'])
 
         if metadata['album']:
             album_id = self.get_album_id(metadata['album_artist'], metadata['album'])
         else:
             album_id = None
 
-        self.note_change(f"Updating track: {metadata['artist']} - {metadata['title']}")
+        self.modified_tracks.append([item or '' for item in metadata_tuple])
 
         self.execute("""
             UPDATE track
@@ -181,7 +232,7 @@ class Database:
         )
 
     def delete_track(self, path_relative_to_root):
-        self.note_change(f'Deleting track: {path_relative_to_root}')
+        self.deleted_tracks.append([path_relative_to_root])
 
         self.execute("""
             DELETE FROM track
@@ -252,10 +303,12 @@ def get_all_metadata(root):
             paths.append(full_path)
 
     with multiprocessing.Pool(8, init_logger) as pool:
+        progress_bar = Bar('Scanning metadata', max=len(paths))
+
         return {
             path: metadata
             for path, metadata
-            in pool.map(get_metadata, paths)
+            in progress_bar.iter(pool.imap(get_metadata, paths))
         }
 
 

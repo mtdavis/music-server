@@ -39,8 +39,37 @@ declare class Gapless5 {
   onnext(): void;
 }
 
-declare interface Album {
+// from: https://github.com/loktar00/react-lazy-load/issues/126#issuecomment-715669016
+declare module 'react-lazy-load' {
+  interface Props {
+    className?: string;
+    height?: number | string;
+    width?: number | string;
+    debounce?: boolean;
+    elementType?: string;
+    offset?: number;
+    offsetBottom?: number;
+    offsetHorizontal?: number;
+    offsetLeft?: number;
+    offsetRight?: number;
+    offsetTop?: number;
+    offsetVertical?: number;
+    threshold?: number;
+    children?: React.ReactNode;
+    throttle?: number | boolean;
+    onContentVisible?: () => void;
+  }
+
+  const LazyLoad: React.FC<Props>;
+  export default LazyLoad;
+}
+
+interface RowData {
   id: number;
+  [key: string]: any;
+}
+
+declare interface Album extends RowData {
   album_artist: string;
   album: string;
   genre: string;
@@ -52,8 +81,7 @@ declare interface Album {
   play_count: number;
 }
 
-declare interface Track {
-  id: number;
+declare interface Track extends RowData {
   title: string;
   artist: string;
   album: string | null;
@@ -69,8 +97,7 @@ declare interface Track {
   year: number;
 }
 
-declare interface Playlist {
-  id: number;
+declare interface Playlist extends RowData {
   title: string;
   tracks: number;
   duration: number;
@@ -78,4 +105,17 @@ declare interface Playlist {
   play_count: number;
 }
 
-type RowData = {[key: string]: {val: any}};
+declare interface ColumnConfig {
+  key: string;
+  label?: string;
+  align?: 'left' | 'right';
+  renderer?: (value: any) => (string | number | React.ReactNode);
+  wrap?: boolean;
+}
+
+type SortOrder = 1 | -1;
+
+declare interface SortSpec {
+  columnKey: string;
+  order: SortOrder;
+}

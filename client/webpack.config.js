@@ -4,7 +4,7 @@ const HtmlWebPackPlugin = require('html-webpack-plugin');
 module.exports = {
   devtool: 'source-map',
   entry: {
-    main: './src/app.tsx',
+    main: './src/main.tsx',
     jquery: './bower_components/jquery/dist/jquery.min.js',
     gapless5: './bower_components/gapless5/gapless5.js'
   },
