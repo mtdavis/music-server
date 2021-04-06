@@ -1,86 +1,77 @@
-import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-import {inject, observer} from 'mobx-react';
+import React from 'react';
+import {observer} from 'mobx-react-lite';
 import {
   secondsToTimeString,
   unixTimestampToDateString,
 } from './util';
-import VTable, {Props as VTableProps} from './table/VTable';
+import VTable from './table/VTable';
 import FilteredTable from './table/FilteredTable';
-import {MusicStore} from '../stores';
+import {useStores} from 'stores';
 
 interface Props {
   rows: Playlist[];
   loading?: boolean;
-  initialSortSpecs?: SortSpec[],
+  initialSortSpecs?: SortSpec<Playlist>[],
 }
 
-interface InjectedProps extends Props {
-  musicStore: MusicStore;
-}
+const COLUMNS = [
+  {
+    key: "title",
+    label: "Title"
+  },
+  {
+    key: "tracks",
+    label: "Tracks",
+    align: 'right' as const,
+  },
+  {
+    key: "duration",
+    label: "Duration",
+    renderer: secondsToTimeString,
+    align: 'right' as const,
+    wrap: false,
+  },
+  {
+    key: "play_count",
+    label: "Play Count",
+    align: 'right' as const,
+  },
+  {
+    key: "last_play",
+    label: "Last Play",
+    renderer: unixTimestampToDateString,
+    align: 'right' as const,
+    wrap: false,
+  },
+];
 
-@inject('musicStore')
-@observer
-export default class PlaylistList extends Component<Props> {
-  get injected() {
-    return this.props as InjectedProps;
-  }
+const PlaylistList = ({
+  rows,
+  ...props
+}: Props) => {
+  const {musicStore} = useStores();
 
-  render() {
-    const columns = [
-      {
-        key: "title",
-        label: "Title"
-      },
-      {
-        key: "tracks",
-        label: "Tracks",
-        align: 'right' as 'right',
-      },
-      {
-        key: "duration",
-        label: "Duration",
-        renderer: secondsToTimeString,
-        align: 'right' as 'right',
-        wrap: false,
-      },
-      {
-        key: "play_count",
-        label: "Play Count",
-        align: 'right' as 'right',
-      },
-      {
-        key: "last_play",
-        label: "Last Play",
-        renderer: unixTimestampToDateString,
-        align: 'right' as 'right',
-        wrap: false,
-      },
-    ];
+  const onPlaylistClick = (playlist: Playlist): void => {
+    musicStore.playPlaylist(playlist);
+  };
 
-    const {rows, ...props} = this.props;
+  return (
+    <FilteredTable<Playlist>
+      rows={rows}
+      columns={COLUMNS}
+      filterKeys={[]}
+    >
+      {filteredRows =>
+        <VTable<Playlist>
+          {...props}
+          rows={filteredRows}
+          columns={COLUMNS}
+          onRowClick={onPlaylistClick}
+          placeholderText='No playlists found for these filters.'
+        />
+      }
+    </FilteredTable>
+  );
+};
 
-    return (
-      <FilteredTable
-        rows={rows}
-        columns={columns}
-        filterKeys={[]}
-      >
-        {filteredRows =>
-          <VTable
-            {...props}
-            rows={filteredRows}
-            columns={columns}
-            onRowClick={this.onPlaylistClick as (row: RowData) => void} // FIXME?!
-            onRowCtrlClick={undefined} // FIXME?!
-            placeholderText='No playlists found for these filters.'
-          />
-        }
-      </FilteredTable>
-    );
-  }
-
-  onPlaylistClick = (playlist: Playlist) => {
-    this.injected.musicStore.playPlaylist(playlist);
-  }
-}
+export default observer(PlaylistList);

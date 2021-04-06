@@ -1,18 +1,15 @@
 import React from 'react';
-import {inject, observer} from 'mobx-react';
+import {observer} from 'mobx-react-lite';
 import {
   Grid,
   Paper,
 } from '@material-ui/core';
-import {
-  withStyles,
-  WithStyles,
-} from '@material-ui/core/styles';
+import {makeStyles} from '@material-ui/styles';
 import LazyLoad from 'react-lazy-load';
 
-import {MusicStore} from '../stores';
+import {useStores} from 'stores';
 
-const styles = {
+const useStyles = makeStyles(() => ({
   albumPaper: {
     lineHeight: 0,
     transition: 'all 450ms cubic-bezier(0.23, 1, 0.32, 1)',
@@ -24,80 +21,59 @@ const styles = {
     width: '100%',
     cursor: 'pointer',
   },
-};
+}));
 
-interface Props extends WithStyles<typeof styles> {
+interface Props {
   album: Album;
   trackId: number;
 }
 
-interface InjectedProps extends Props {
-  musicStore: MusicStore;
-}
+const AlbumImage = ({
+  album,
+  trackId,
+}: Props) => {
+  const classes = useStyles();
+  const {musicStore} = useStores();
 
-interface State {
-  placeholderHeight: number | undefined;
-  opacity: number;
-  hover: boolean;
-}
+  const [placeholderHeight, setPlaceholderHeight] = React.useState<number | undefined>(250);
+  const [opacity, setOpacity] = React.useState(0);
+  const [hover, setHover] = React.useState(false);
 
-@inject('musicStore')
-@observer
-class AlbumImage extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      placeholderHeight: 250,
-      opacity: 0,
-      hover: false,
-    };
-  }
-
-  get injected() {
-    return this.props as InjectedProps;
-  }
-
-  render() {
-    const {classes} = this.props;
-
-    return (
-      <Grid item xs={6} sm={4} md={3} lg={2}>
-        <Paper
-          style={{opacity: this.state.opacity}}
-          square={true}
-          className={classes.albumPaper}
-          onMouseOver={this.onMouseOver}
-          onMouseOut={this.onMouseOut}
-          elevation={this.state.hover ? 4 : 2}
-        >
-          <LazyLoad height={this.state.placeholderHeight} offset={1000} debounce={false}>
-            <img src={'/album-art?id=' + this.props.trackId}
-              className={classes.albumImage}
-              onClick={this.onClick} onLoad={this.onLoad}/>
-          </LazyLoad>
-        </Paper>
-      </Grid>
-    );
-  }
-
-  onLoad = () => {
-    this.setState({
-      placeholderHeight: undefined,
-      opacity: 1,
-    });
-  }
-
-  onClick = () => {
-    this.injected.musicStore.playAlbum(this.props.album);
-  }
-
-  onMouseOver = () => {
-    this.setState({hover: true});
+  const onLoad = () => {
+    setPlaceholderHeight(undefined);
+    setOpacity(1);
   };
 
-  onMouseOut = () => {
-    this.setState({hover: false});
-  }
-}
+  const onClick = () => {
+    musicStore.playAlbum(album);
+  };
 
-export default withStyles(styles)(AlbumImage);
+  const onMouseOver = () => {
+    setHover(true);
+  };
+
+  const onMouseOut = () => {
+    setHover(false);
+  };
+
+  return (
+    <Grid item xs={6} sm={4} md={3} lg={2}>
+      <Paper
+        style={{opacity: opacity}}
+        square={true}
+        className={classes.albumPaper}
+        onMouseOver={onMouseOver}
+        onMouseOut={onMouseOut}
+        elevation={hover ? 4 : 2}
+      >
+        <LazyLoad height={placeholderHeight} offset={1000} debounce={false}>
+          <img src={`/track/${trackId}/art`}
+            className={classes.albumImage}
+            onClick={onClick} onLoad={onLoad}/>
+        </LazyLoad>
+      </Paper>
+    </Grid>
+  );
+};
+
+export default observer(AlbumImage);

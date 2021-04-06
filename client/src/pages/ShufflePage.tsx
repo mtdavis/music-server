@@ -1,53 +1,121 @@
-import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-import {inject} from 'mobx-react';
+import React from 'react';
 import {
   Button,
+  Card,
+  CardContent,
+  CardActions,
+  Divider,
   Grid,
+  MenuItem,
+  TextField,
 } from '@material-ui/core';
-import ShuffleIcon from '@material-ui/icons/Shuffle';
-import {MusicStore} from '../stores';
+import {makeStyles} from '@material-ui/styles';
+import ShuffleVariantIcon from 'mdi-material-ui/ShuffleVariant';
 
-interface ShuffleButtonProps {
-  minutes: number;
-}
+import {useStores} from 'stores';
 
-interface InjectedProps extends ShuffleButtonProps {
-  musicStore: MusicStore;
-}
+const ROCK_ETC = [
+  'Blues Rock',
+  'Classic Rock',
+  'Grunge',
+  'Hard Rock',
+  'Heavy Metal',
+  'Indie Rock',
+  'Psychedelic Rock',
+  'Rock',
+  'Stoner Rock',
+];
 
-@inject('musicStore')
-class ShuffleButton extends Component<ShuffleButtonProps> {
-  get injected() {
-    return this.props as InjectedProps
-  }
+const NON_ROCK = [
+  'Alternative',
+  'Classical',
+  'Comedy',
+  'Country',
+  'Electronic',
+  'Folk',
+  'Funk',
+  'Game',
+  'Hip Hop',
+  'Jazz',
+  'Pop',
+  'Punk',
+  'Soul',
+  'Soundtrack',
+  'Swing',
+  'Trip Hop',
+];
 
-  render() {
-    return (
-      <Button variant='contained' color='primary' onClick={this.onClick}>
-        <ShuffleIcon style={{marginRight: 8}} />
-        {this.props.minutes + ' Minutes'}
-      </Button>
-    );
-  }
+const useStyles = makeStyles(() => ({
+  page: {
+    display: 'flex',
+    justifyContent: 'center',
+    height: '100%',
+    alignItems: 'center',
+  },
+  paper: {
+    width: 200,
+  },
+  actions: {
+    display: 'flex',
+    justifyContent: 'center',
+  },
+}));
 
-  onClick = () => {
-    this.injected.musicStore.playShuffle(this.props.minutes);
-  }
-}
+const ShufflePage = (): React.ReactElement => {
+  const {musicStore} = useStores();
+  const classes = useStyles();
+  const [duration, setDuration] = React.useState(30);
+  const [genres, setGenres] = React.useState(['*']);
 
-export default function ShufflePage() {
+  const onShuffle = () => {
+    musicStore.playShuffle(duration, genres);
+  };
+
   return (
-    <Grid container spacing={16} direction='column' alignItems='center'>
-      <Grid item>
-        <ShuffleButton minutes={30} />
-      </Grid>
-      <Grid item>
-        <ShuffleButton minutes={60} />
-      </Grid>
-      <Grid item>
-        <ShuffleButton minutes={90} />
-      </Grid>
-    </Grid>
+    <div className={classes.page}>
+      <Card className={classes.paper}>
+        <CardContent>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <TextField
+                select
+                fullWidth
+                label='Duration'
+                value={duration}
+                onChange={event => setDuration(Number(event.target.value))}
+              >
+                <MenuItem value={30}>30 minutes</MenuItem>
+                <MenuItem value={60}>60 minutes</MenuItem>
+                <MenuItem value={90}>90 minutes</MenuItem>
+              </TextField>
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                select
+                fullWidth
+                label='Genre'
+                value={JSON.stringify(genres)}
+                onChange={event => setGenres(JSON.parse(event.target.value))}
+              >
+                <MenuItem value={JSON.stringify(['*'])}>Any</MenuItem>
+                <MenuItem value={JSON.stringify(ROCK_ETC)}>Rock, etc.</MenuItem>
+                <MenuItem value={JSON.stringify(NON_ROCK)}>Everything else</MenuItem>
+              </TextField>
+            </Grid>
+          </Grid>
+        </CardContent>
+
+        <Divider />
+
+        <CardActions className={classes.actions}>
+          <Button color='primary' onClick={onShuffle} startIcon={<ShuffleVariantIcon />}>
+            Play Shuffle
+          </Button>
+        </CardActions>
+      </Card>
+    </div>
   );
-}
+};
+
+export default ShufflePage;

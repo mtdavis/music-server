@@ -1,20 +1,17 @@
-import React, {Component} from 'react';
-import {inject, observer} from 'mobx-react';
+import React from 'react';
+import {observer} from 'mobx-react-lite';
 import {
   CircularProgress,
   Paper,
   Typography,
 } from '@material-ui/core';
-import {
-  Theme,
-  withStyles,
-  WithStyles,
-} from '@material-ui/core/styles';
-import LyricsState from '../lib/LyricsState';
-import Notice from '../lib/Notice';
-import {MusicStore, LyricsStore} from '../stores';
+import {Theme} from '@material-ui/core/styles';
+import {makeStyles} from '@material-ui/styles';
+import LyricsState from 'lib/LyricsState';
+import Notice from 'lib/Notice';
+import {useStores} from 'stores';
 
-const styles = (theme: Theme) => ({
+const useStyles = makeStyles((theme: Theme) => ({
   link: {
     textDecoration: 'none',
     color: theme.palette.primary.main,
@@ -23,7 +20,7 @@ const styles = (theme: Theme) => ({
     },
   },
   header: {
-    textAlign: 'center' as 'center',
+    textAlign: 'center' as const,
     borderBottom: '1px solid #eee',
     paddingTop: '12px',
     paddingBottom: '12px',
@@ -32,82 +29,66 @@ const styles = (theme: Theme) => ({
   lyrics: {
     fontFamily: theme.typography.fontFamily,
     lineHeight: '1.333',
-    textAlign: 'center' as 'center',
-    whiteSpace: 'pre-wrap' as 'pre-wrap',
+    textAlign: 'center' as const,
+    whiteSpace: 'pre-wrap' as const,
     marginTop: 12,
   },
   paper: {
     paddingBottom: 12,
   },
-});
+}));
 
-interface Props extends WithStyles<typeof styles> {}
+const LyricsPage = (): React.ReactElement => {
+  const classes = useStyles();
+  const {lyricsStore, musicStore} = useStores();
 
-interface InjectedProps extends Props {
-  musicStore: MusicStore;
-  lyricsStore: LyricsStore;
-}
+  React.useEffect(() => {
+    lyricsStore.setLyricsVisible(true);
+    return () => {
+      lyricsStore.setLyricsVisible(false);
+    };
+  }, [lyricsStore]);
 
-@inject('musicStore', 'lyricsStore')
-@observer
-class LyricsPage extends Component<Props> {
-  componentDidMount() {
-    this.injected.lyricsStore.setLyricsVisible(true);
-  }
-
-  componentWillUnmount() {
-    this.injected.lyricsStore.setLyricsVisible(false);
-  }
-
-  get injected() {
-    return this.props as InjectedProps;
-  }
-
-  render() {
-    const {classes} = this.props;
-    const {lyricsStore, musicStore} = this.injected;
-
-    if(lyricsStore.lyricsState === LyricsState.NO_TRACK) {
-      return (
-        <Notice>Nothing to see here!</Notice>
-      );
-    }
-    
-    if(lyricsStore.lyricsState === LyricsState.FAILED) {
-      return (
-        <Notice>There was a problem loading the lyrics.</Notice>
-      );
-    }
-
-    const track = musicStore.currentTrack;
-    let header = track === null ? null : <>{track.artist} – {track.title}</>;
-    let lyrics;
-
-    if(lyricsStore.lyricsState === LyricsState.LOADING) {
-      lyrics = <CircularProgress />;
-    }
-    else if(lyricsStore.lyricsState === LyricsState.SUCCESSFUL) {
-      if(lyricsStore.url !== null) {
-        header = (
-          <a href={lyricsStore.url} className={classes.link} target='_blank'>
-            {header}
-          </a>
-        );
-      }
-      lyrics = lyricsStore.lyrics;
-    }
-
+  if(lyricsStore.lyricsState === LyricsState.NO_TRACK) {
     return (
-      <Paper className={classes.paper}>
-        <div className={classes.header}>
-          <Typography variant="h6" color="inherit">{header}</Typography>
-        </div>
-        <div className={classes.lyrics}>
-          {lyrics}
-        </div>
-      </Paper>
+      <Notice>Nothing to see here!</Notice>
     );
   }
-}
 
-export default withStyles(styles)(LyricsPage);
+  if(lyricsStore.lyricsState === LyricsState.FAILED) {
+    return (
+      <Notice>There was a problem loading the lyrics.</Notice>
+    );
+  }
+
+  const track = musicStore.currentTrack;
+  let header = track === null ? null : <>{track.artist} – {track.title}</>;
+  let lyrics;
+
+  if(lyricsStore.lyricsState === LyricsState.LOADING) {
+    lyrics = <CircularProgress />;
+  }
+  else if(lyricsStore.lyricsState === LyricsState.SUCCESSFUL) {
+    if(lyricsStore.url !== null) {
+      header = (
+        <a href={lyricsStore.url} className={classes.link} target='_blank'>
+          {header}
+        </a>
+      );
+    }
+    lyrics = lyricsStore.lyrics;
+  }
+
+  return (
+    <Paper className={classes.paper}>
+      <div className={classes.header}>
+        <Typography variant="h6" color="inherit">{header}</Typography>
+      </div>
+      <div className={classes.lyrics}>
+        {lyrics}
+      </div>
+    </Paper>
+  );
+};
+
+export default observer(LyricsPage);

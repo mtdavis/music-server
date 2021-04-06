@@ -1,52 +1,57 @@
 import React from 'react';
 import classNames from 'classnames';
-import TableCell from '@material-ui/core/TableCell';
-import TableSortLabel from '@material-ui/core/TableSortLabel';
 import {
-  withStyles,
-  WithStyles,
-} from '@material-ui/core/styles';
+  TableCell,
+  TableSortLabel,
+} from '@material-ui/core';
+import {makeStyles} from '@material-ui/styles';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   flexContainer: {
     display: 'flex',
     alignItems: 'center',
-    boxSizing: 'border-box' as 'border-box',
+    boxSizing: 'border-box' as const,
   },
   tableCell: {
     flex: 1,
+    fontSize: '0.8rem',
+    lineHeight: 1.43,
   },
-});
+}));
 
-interface Props extends WithStyles<typeof styles> {
-  column: ColumnConfig;
+interface Props<R extends RowData> {
+  column: ColumnConfig<R>;
   headerHeight: number;
-  topSortSpec: SortSpec | null;
-  setSortColumnKey: (key: string) => void;
+  topSortSpec: SortSpec<R> | null;
+  setSortColumnKey: (key: keyof R) => void;
 }
 
-class VTableHeader extends React.Component<Props> {
-  render() {
-    const {column, headerHeight, topSortSpec, setSortColumnKey, classes} = this.props;
+function VTableHeader<R extends RowData>({
+  column,
+  headerHeight,
+  topSortSpec,
+  setSortColumnKey,
+}: Props<R>): React.ReactElement {
+  const classes = useStyles();
 
-    return (
-      <TableCell
-        component="div"
-        className={classNames(classes.tableCell, classes.flexContainer)}
-        onClick={() => setSortColumnKey(column.key)}
-        variant="head"
-        style={{height: headerHeight, userSelect: 'none'}}
-        align={column.align}
+  return (
+    <TableCell
+      component="div"
+      className={classNames(classes.tableCell, classes.flexContainer)}
+      onClick={() => setSortColumnKey(column.key)}
+      variant="head"
+      style={{height: headerHeight, userSelect: 'none'}}
+      align={column.align}
+      size="small"
+    >
+      <TableSortLabel
+        active={topSortSpec !== null && topSortSpec.columnKey === column.key}
+        direction={topSortSpec !== null && topSortSpec.order === 1 ? 'desc' : 'asc'}
       >
-        <TableSortLabel
-          active={topSortSpec !== null  && topSortSpec.columnKey === column.key}
-          direction={topSortSpec !== null && topSortSpec.order === 1 ? 'desc' : 'asc'}
-        >
-          {column.label}
-        </TableSortLabel>
-      </TableCell>
-    );
-  }
+        {column.label}
+      </TableSortLabel>
+    </TableCell>
+  );
 }
 
-export default withStyles(styles)(VTableHeader);
+export default VTableHeader;

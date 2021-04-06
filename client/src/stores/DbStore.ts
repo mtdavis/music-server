@@ -1,40 +1,83 @@
-import {action, IObservableArray, observable} from 'mobx';
+import {
+  action,
+  IObservableArray,
+  makeObservable,
+  observable,
+} from 'mobx';
+import {get, put} from 'lib/util';
 
 export default class DbStore {
-  @observable albumsLoading = true;
-  @observable albums: IObservableArray<Album> = observable.array([]);
+  albumsLoading = true;
+  albums: IObservableArray<Album> = observable.array([]);
 
-  @observable tracksLoading = true;
-  @observable tracks: IObservableArray<Track> = observable.array([]);
+  tracksLoading = true;
+  tracks: IObservableArray<Track> = observable.array([]);
 
-  @observable playlistsLoading = true;
-  @observable playlists: IObservableArray<Playlist> = observable.array([]);
+  playlistsLoading = true;
+  playlists: IObservableArray<Playlist> = observable.array([]);
+
+  scanning = false;
+  scanResult = '';
 
   constructor() {
-    fetch('/albums').then(response => {
-      return response.json();
-    }).then(albums => {
-      this.albums.replace(albums);
-      this.albumsLoading = false;
+    makeObservable(this, {
+      albumsLoading: observable,
+      albums: observable,
+      tracksLoading: observable,
+      tracks: observable,
+      playlistsLoading: observable,
+      playlists: observable,
+      scanning: observable,
+      scanResult: observable,
+      fetchAlbums: observable,
+      fetchTracks: observable,
+      fetchPlaylists: observable,
+      incrementPlayCount: action,
+      scan: action,
     });
 
-    fetch('/tracks').then(response => {
-      return response.json();
-    }).then(tracks => {
-      this.tracks.replace(tracks);
-      this.tracksLoading = false;
-    });
+    this.fetchAlbums();
+    this.fetchTracks();
+    this.fetchPlaylists();
+  }
 
-    fetch('/playlists').then(response => {
-      return response.json();
-    }).then(playlists => {
-      this.playlists.replace(playlists);
-      this.playlistsLoading = false;
+  fetchAlbums(): void {
+    this.albumsLoading = true;
+
+    get({
+      url: '/albums',
+      onSuccess: action((albums: Album[]) => {
+        this.albums.replace(albums);
+        this.albumsLoading = false;
+      }),
     });
   }
 
-  @action
-  incrementPlayCount(trackId: number, timestamp: number) {
+  fetchTracks(): void {
+    this.tracksLoading = true;
+
+    get({
+      url: '/tracks',
+      onSuccess: action((tracks: Track[]) => {
+        this.tracks.replace(tracks);
+        this.tracksLoading = false;
+      }),
+    });
+  }
+
+  fetchPlaylists(): void {
+    this.playlistsLoading = true;
+
+    get({
+      url: '/playlists',
+      onSuccess: action((playlists: Playlist[]) => {
+        this.playlists.replace(playlists);
+        this.playlistsLoading = false;
+      }),
+    });
+  }
+
+  incrementPlayCount(trackId: number, timestamp: number): void {
     const track = this.tracks.find((t) => t.id === trackId);
 
     if(!track) {
@@ -65,7 +108,7 @@ export default class DbStore {
     }
   }
 
-  getAlbumTracks(albumId: number) {
+  getAlbumTracks(albumId: number): Array<Track> {
     const result: Array<Track> = this.tracks.filter((t) => t.album_id === albumId);
     result.sort((first, second) => {
       if(first.track_number === null && second.track_number === null) {
@@ -81,5 +124,28 @@ export default class DbStore {
       return first.track_number - second.track_number;
     });
     return result;
+  }
+
+  scan({
+    dryRun
+  }: {
+    dryRun: boolean
+  }): void {
+    this.scanning = true;
+    this.scanResult = '';
+
+    put({
+      url: '/scan',
+      data: {dry_run: dryRun},
+      onSuccess: action((result: string) => {
+        this.scanning = false;
+        this.scanResult = result;
+
+        if(!dryRun) {
+          this.fetchAlbums();
+          this.fetchTracks();
+        }
+      }),
+    });
   }
 }

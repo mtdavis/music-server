@@ -1,7 +1,7 @@
 # music-server
 Music server + client.
 
-Written with Node.js on the backend, and React and [Material-UI](http://www.material-ui.com/) on the frontend.
+Written with flask on the backend, and React and [Material-UI](http://www.material-ui.com/) on the frontend.
 
 [Demo instance available here](https://music-server.mtdavis.org/) (with public-domain music and a few features disabled).
 

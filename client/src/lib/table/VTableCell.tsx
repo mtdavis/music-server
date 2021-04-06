@@ -1,20 +1,20 @@
 import React from 'react';
 import classNames from 'classnames';
-import TableCell from '@material-ui/core/TableCell';
 import {
-  withStyles,
-  WithStyles,
-} from '@material-ui/core/styles';
+  TableCell,
+} from '@material-ui/core';
+import {makeStyles} from '@material-ui/styles';
 import {renderIcon} from './util';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   flexContainer: {
     display: 'flex',
     alignItems: 'center',
-    boxSizing: 'border-box' as 'border-box',
+    boxSizing: 'border-box' as const,
   },
   tableCell: {
     flex: 1,
+    fontSize: '0.8rem',
   },
   icon: {
     paddingLeft: 12,
@@ -23,53 +23,65 @@ const styles = () => ({
       paddingRight: 12,
     },
   },
-});
+}));
 
-export const renderValue = (
-  value: any,
-  column: ColumnConfig
-): string => {
-  let renderedValue = value;
+export function renderValue<R extends RowData>(
+  value: RowDataValue,
+  column: ColumnConfig<R>,
+  icons?: {[key: string]: React.ReactElement},
+): number | string | React.ReactElement {
+  let renderedValue: number | string | React.ReactElement;
 
-  if(value === null || value === undefined) {
-    renderedValue = '-';
+  if(value === null) {
+    renderedValue = '';
+  }
+  else if(column.renderer === renderIcon && icons && icons[value]) {
+    renderedValue = icons[value];
   }
   else if(column.renderer) {
     renderedValue = column.renderer(value);
   }
+  else {
+    renderedValue = value;
+  }
 
   return renderedValue;
-};
+}
 
-interface Props extends WithStyles<typeof styles> {
-  value: any;
-  column: ColumnConfig;
+interface Props<R extends RowData> {
+  value: RowDataValue;
+  column: ColumnConfig<R>;
   rowHeight: number;
+  icons?: {[key: string]: React.ReactElement};
 }
 
-class VTableCell extends React.Component<Props> {
-  render() {
-    const {value, column, rowHeight, classes} = this.props;
+function VTableCell<R extends RowData>({
+  value,
+  column,
+  rowHeight,
+  icons = {},
+}: Props<R>): React.ReactElement {
+  const classes = useStyles();
 
-    const renderedValue = renderValue(value, column);
+  const renderedValue = renderValue(value, column, icons);
 
-    return (
-      <TableCell
-        component="div"
-        className={classNames(classes.tableCell, classes.flexContainer, {
-          [classes.icon]: column.renderer === renderIcon,
-        })}
-        variant="body"
-        style={{
-          height: rowHeight,
-          whiteSpace: column.wrap === false ? 'nowrap': 'normal',
-        }}
-        align={column.align}
-      >
-        {renderedValue}
-      </TableCell>
-    );
-  }
+  return (
+    <TableCell
+      component="div"
+      className={classNames(classes.tableCell, classes.flexContainer, {
+        [classes.icon]: column.renderer === renderIcon,
+      })}
+      variant="body"
+      style={{
+        height: rowHeight,
+        whiteSpace: column.wrap === false ? 'nowrap': 'normal',
+      }}
+      align={column.align}
+      size="small"
+    >
+      {renderedValue}
+    </TableCell>
+  );
 }
 
-export default withStyles(styles)(VTableCell);
+export default VTableCell;

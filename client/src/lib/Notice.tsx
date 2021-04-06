@@ -5,43 +5,43 @@ import {
   Paper,
   Typography,
 } from '@material-ui/core';
-import {
-  Theme,
-  withStyles,
-  WithStyles,
-} from '@material-ui/core/styles';
+import {makeStyles} from '@material-ui/styles';
+import {Theme} from '@material-ui/core/styles';
 
-const styles = (theme: Theme) => ({
+const useStyles = makeStyles((theme: Theme) => ({
   notice: {
-    padding: theme.spacing.unit * 2,
+    padding: theme.spacing(2),
   },
-});
+}));
 
-interface Props extends WithStyles<typeof styles> {
+interface Props {
   children: React.ReactNode;
   loading?: boolean;
-};
+}
 
 const Notice = ({
   children,
-  classes,
   loading=false
-}: Props) => (
-  <Paper className={classes.notice}>
-    <Grid container direction='row' spacing={16} alignItems='center'>
-      {loading &&
+}: Props): React.ReactElement => {
+  const classes = useStyles();
+
+  return (
+    <Paper className={classes.notice}>
+      <Grid container direction='row' spacing={2} alignItems='center'>
+        {loading &&
+          <Grid item>
+            <CircularProgress />
+          </Grid>
+        }
+
         <Grid item>
-          <CircularProgress />
+          <Typography variant='body2'>
+            {children}
+          </Typography>
         </Grid>
-      }
-
-      <Grid item>
-        <Typography variant='body2'>
-          {children}
-        </Typography>
       </Grid>
-    </Grid>
-  </Paper>
-);
+    </Paper>
+  );
+};
 
-export default withStyles(styles)(Notice);
+export default Notice;

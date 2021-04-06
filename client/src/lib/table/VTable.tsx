@@ -1,12 +1,8 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import equal from 'fast-deep-equal';
-import {
-  Theme,
-  withStyles,
-  WithStyles,
-} from '@material-ui/core/styles';
+import {toJS} from 'mobx';
+import {Theme} from '@material-ui/core/styles';
+import {makeStyles} from '@material-ui/styles';
 import {
   Column,
   Table,
@@ -15,19 +11,19 @@ import {
 } from 'react-virtualized';
 
 import VTablePaper from './VTablePaper';
-import VTableCell, {renderValue} from './VTableCell';
+import VTableCell from './VTableCell';
 import VTableHeader from './VTableHeader';
-import Notice from '../Notice';
-import {renderIcon, sortBySpecs} from './util';
+import Notice from 'lib/Notice';
+import {calculateColumnWidths, renderIcon, sortBySpecs} from './util';
 
-const styles = (theme: Theme) => ({
+const useStyles = makeStyles((theme: Theme) => ({
   table: {
     fontFamily: theme.typography.fontFamily,
   },
   flexContainer: {
     display: 'flex',
     alignItems: 'center',
-    boxSizing: 'border-box' as 'border-box',
+    boxSizing: 'border-box' as const,
   },
   tableRow: {
     cursor: 'pointer',
@@ -37,10 +33,10 @@ const styles = (theme: Theme) => ({
       backgroundColor: theme.palette.grey[200],
     },
   },
-});
+}));
 
-export interface Props<R extends RowData> extends WithStyles<typeof styles> {
-  columns: ColumnConfig[];
+export interface Props<R extends RowData> {
+  columns: ColumnConfig<R>[];
   rows: R[];
   headerHeight?: number;
   rowHeight?: number;
@@ -49,78 +45,53 @@ export interface Props<R extends RowData> extends WithStyles<typeof styles> {
   onRowClick?: (row: R) => void;
   onRowCtrlClick?: (row: R) => void;
   placeholderText: string;
-  initialSortSpecs?: SortSpec[],
+  initialSortSpecs?: SortSpec<R>[],
+  icons?: {[key: string]: React.ReactElement},
 }
 
-interface State {
-  sortSpecs: SortSpec[];
-  columnWidths: {[key: string]: number};
-}
+function VTable<R extends RowData>({
+  columns,
+  rows,
+  headerHeight = 48,
+  rowHeight = 48,
+  loading = false,
+  showHeader = true,
+  onRowClick = () => {},
+  onRowCtrlClick = () => {},
+  placeholderText,
+  initialSortSpecs = [],
+  icons = {},
+}: Props<R>): React.ReactElement {
+  const classes = useStyles();
+  const [sortSpecs, setSortSpecs] = React.useState<SortSpec<R>[]>(initialSortSpecs);
 
-class VTable<R extends RowData> extends React.Component<Props<R>, State> {
-  constructor(props: Props<R>) {
-    super(props);
-    this.state = {
-      sortSpecs: this.props.initialSortSpecs || [],
-      columnWidths: {},
-    };
-  }
+  const sortedRows = sortBySpecs(toJS(rows), sortSpecs);
 
-  componentWillMount() {
-    this.calculateColumnWidths();
-  }
+  const columnWidths = calculateColumnWidths(toJS(rows), columns);
 
-  componentDidUpdate() {
-    this.calculateColumnWidths();
-  }
-
-  calculateColumnWidths() {
-    const {columns, rows} = this.props;
-    const columnWidths: {[key: string]: number} = {};
-
-    columns.forEach(column => {
-      columnWidths[column.key] = 4; // arbitrary good starting point
-
-      rows.forEach(row => {
-        const renderedValue = renderValue(row[column.key], column);
-        const length = String(renderedValue).length;
-
-        if(columnWidths[column.key] < length) {
-          columnWidths[column.key] = length;
-        }
-      });
-    });
-
-    if(!equal(this.state.columnWidths, columnWidths)) {
-      this.setState({columnWidths});
-    }
-  }
-
-  getRowClassName = ({
+  const getRowClassName = ({
     index
-  }: {index: number}) => {
-    const {classes, onRowClick} = this.props;
-
-    return classNames(classes.tableRow, classes.flexContainer, {
+  }: {index: number}) => (
+    classNames(classes.tableRow, classes.flexContainer, {
       [classes.tableRowHover]: index !== -1 && onRowClick,
-    });
-  }
+    })
+  );
 
-  onRowClick = ({
+  const _onRowClick = ({
     event,
     rowData,
   }: RowMouseEventHandlerParams) => {
-    if((event.ctrlKey || event.metaKey) && this.props.onRowCtrlClick) {
+    if((event.ctrlKey || event.metaKey) && onRowCtrlClick) {
       event.preventDefault();
-      this.props.onRowCtrlClick(rowData);
+      onRowCtrlClick(rowData);
     }
-    else if(this.props.onRowClick) {
-      this.props.onRowClick(rowData);
+    else if(onRowClick) {
+      onRowClick(rowData);
     }
-  }
+  };
 
-  setSortColumnKey = (newSortColumnKey: string) => {
-    const newSortSpecs = this.state.sortSpecs.slice();
+  const setSortColumnKey = (newSortColumnKey: keyof R) => {
+    const newSortSpecs = sortSpecs.slice();
 
     // check if newSortColumnKey is already in sortSpecs
     const existingIndex = newSortSpecs.findIndex(
@@ -152,94 +123,42 @@ class VTable<R extends RowData> extends React.Component<Props<R>, State> {
       });
     }
 
-    this.setState({sortSpecs: newSortSpecs});
-  }
+    setSortSpecs(newSortSpecs);
+  };
 
-  getTopSortSpec() {
-    const {sortSpecs} = this.state;
+  const getTopSortSpec = () => {
     if(sortSpecs.length === 0) {
       return null;
     }
 
     return sortSpecs[sortSpecs.length - 1];
-  }
+  };
 
-  render() {
-    const {
-      classes,
-      columns,
-      headerHeight = 64,
-      loading = false,
-      placeholderText,
-      rowHeight = 56,
-      showHeader = true,
-    } = this.props;
-
-    if(loading) {
-      return (
-        <Notice loading>Loading...</Notice>
-      );
-    }
-
-    if(this.props.rows.length === 0 && placeholderText) {
-      return (
-        <Notice>{placeholderText}</Notice>
-      );
-    }
-
-    const rows = sortBySpecs(this.props.rows, this.state.sortSpecs);
-
-    return (
-      <VTablePaper rowCount={rows.length} showHeader={showHeader} rowHeight={rowHeight} headerHeight={headerHeight}>
-        {autoSizerProps =>
-          <Table
-            {...autoSizerProps}
-            className={classes.table}
-            rowCount={rows.length}
-            rowGetter={({index}) => rows[index]}
-            rowHeight={rowHeight}
-            headerHeight={showHeader ? headerHeight : 0}
-            onRowClick={this.onRowClick}
-            rowClassName={this.getRowClassName}
-          >
-            {columns.map(this.renderColumn)}
-          </Table>
-        }
-      </VTablePaper>
-    );
-  }
-
-  renderColumn = (column: ColumnConfig) => {
-    const {
-      classes,
-      headerHeight = 64,
-      rowHeight = 56,
-      showHeader = true,
-    } = this.props;
-
+  const renderColumn = (column: ColumnConfig<R>) => {
     const headerRenderer = showHeader ? (() => (
-      <VTableHeader
+      <VTableHeader<R>
         column={column}
         headerHeight={headerHeight}
-        topSortSpec={this.getTopSortSpec()}
-        setSortColumnKey={this.setSortColumnKey}
+        topSortSpec={getTopSortSpec()}
+        setSortColumnKey={setSortColumnKey}
       />
     )) : undefined;
 
     const cellRenderer = ({cellData}: TableCellProps) => (
-      <VTableCell
+      <VTableCell<R>
         value={cellData}
         column={column}
         rowHeight={rowHeight}
+        icons={icons}
       />
     );
 
-    const width = Math.sqrt(this.state.columnWidths[column.key]);
+    const width = Math.sqrt(columnWidths[column.key]);
 
     return (
       <Column
-        key={column.key}
-        dataKey={column.key}
+        key={column.key as string}
+        dataKey={column.key as string}
 
         className={classes.flexContainer}
 
@@ -253,7 +172,38 @@ class VTable<R extends RowData> extends React.Component<Props<R>, State> {
         maxWidth={column.renderer === renderIcon ? 48 : undefined}
       />
     );
+  };
+
+  if(loading) {
+    return (
+      <Notice loading>Loading...</Notice>
+    );
   }
+
+  if(rows.length === 0 && placeholderText) {
+    return (
+      <Notice>{placeholderText}</Notice>
+    );
+  }
+
+  return (
+    <VTablePaper rowCount={sortedRows.length} showHeader={showHeader} rowHeight={rowHeight} headerHeight={headerHeight}>
+      {autoSizerProps =>
+        <Table
+          {...autoSizerProps}
+          className={classes.table}
+          rowCount={sortedRows.length}
+          rowGetter={({index}) => sortedRows[index]}
+          rowHeight={rowHeight}
+          headerHeight={showHeader ? headerHeight : 0}
+          onRowClick={_onRowClick}
+          rowClassName={getRowClassName}
+        >
+          {columns.map(renderColumn)}
+        </Table>
+      }
+    </VTablePaper>
+  );
 }
 
-export default withStyles(styles)(VTable);
+export default VTable;

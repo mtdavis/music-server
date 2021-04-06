@@ -13,23 +13,25 @@ interface Props {
   children: AutoSizerProps['children'];
 }
 
-class VTablePaper extends React.Component<Props> {
-  render() {
-    const {rowCount, showHeader, rowHeight, headerHeight} = this.props;
+const VTablePaper = ({
+  rowCount,
+  showHeader,
+  rowHeight,
+  headerHeight,
+  children,
+}: Props): React.ReactElement => {
+  const heightBasedOnRows = (rowCount * rowHeight) + (showHeader ? headerHeight : 0);
 
-    const heightBasedOnRows = (rowCount * rowHeight) + (showHeader ? headerHeight : 0);
-
-    return (
-      <Paper style={{
-        height: `min(${heightBasedOnRows}px, 100%)`,
-        width: '100%',
-      }}>
-        <AutoSizer>
-          {this.props.children}
-        </AutoSizer>
-      </Paper>
-    );
-  }
-}
+  return (
+    <Paper style={{
+      height: `min(${heightBasedOnRows}px, 100%)`,
+      width: '100%',
+    }}>
+      <AutoSizer>
+        {children}
+      </AutoSizer>
+    </Paper>
+  );
+};
 
 export default VTablePaper;

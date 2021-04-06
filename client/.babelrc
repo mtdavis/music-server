@@ -6,7 +6,6 @@
   ],
   "plugins": [
     "@babel/plugin-transform-spread",
-    ["@babel/plugin-proposal-decorators", {"legacy": true}],
     ["@babel/plugin-proposal-class-properties", {"loose": true}],
   ]
 }

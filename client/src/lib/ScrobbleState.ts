@@ -3,6 +3,6 @@ enum ScrobbleState {
   TRACK_QUEUED = "TRACK_QUEUED",
   TRACK_SCROBBLED = "TRACK_SCROBBLED",
   SCROBBLE_FAILED = "SCROBBLE_FAILED",
-};
+}
 
 export default ScrobbleState;

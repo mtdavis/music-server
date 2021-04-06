@@ -1,10 +1,12 @@
+declare const __DEMO_MODE__: boolean;
+
 declare module 'pauseable' {
   export class timer {
     pause(): void;
     resume(): void;
     clear(): void;
   }
-  export function setTimeout(fn: () => any, ms: number): timer
+  export function setTimeout(fn: () => void, ms: number): timer
 }
 
 declare module 'nosleep.js' {
@@ -13,6 +15,10 @@ declare module 'nosleep.js' {
     enable(): void;
     disable(): void;
   }
+}
+
+declare module 'splitargs' {
+  export default function splitargs(input: string, sep?: string, keepQuotes?: boolean): string[];
 }
 
 declare class Gapless5 {
@@ -29,7 +35,7 @@ declare class Gapless5 {
   setGain(position: number): void;
   getCurrentTrackPosition(): number;
 
-  //callbacks
+  // callbacks
   onplay(): void;
   onpause(): void;
   onstop(): void;
@@ -64,12 +70,18 @@ declare module 'react-lazy-load' {
   export default LazyLoad;
 }
 
+type NullableString = string | null;
+type NullableNumber = number | null;
+
+type RowDataValue = NullableNumber | NullableString;
+
 interface RowData {
   id: number;
-  [key: string]: any;
+  [key: string]: RowDataValue;
 }
 
 declare interface Album extends RowData {
+  /* eslint-disable camelcase */
   album_artist: string;
   album: string;
   genre: string;
@@ -77,45 +89,51 @@ declare interface Album extends RowData {
   tracks: number;
   year: number;
   release_date: number;
-  last_play: number | null;
+  last_play: NullableNumber;
   play_count: number;
+  /* eslint-enable camelcase */
 }
 
 declare interface Track extends RowData {
+  /* eslint-disable camelcase */
   title: string;
   artist: string;
-  album: string | null;
-  album_id: number | null;
+  album: NullableString;
+  album_id: NullableNumber;
   genre: string;
-  track_number: number | null;
-  release_date: number | null;
+  track_number: NullableNumber;
+  release_date: NullableNumber;
   duration: number;
   path: string;
-  last_play: number | null;
+  last_play: NullableNumber;
   play_count: number;
   last_modified: number;
   year: number;
+  /* eslint-enable camelcase */
 }
 
 declare interface Playlist extends RowData {
+  /* eslint-disable camelcase */
   title: string;
   tracks: number;
   duration: number;
-  last_play: number | null;
+  last_play: NullableNumber;
   play_count: number;
+  /* eslint-enable camelcase */
 }
 
-declare interface ColumnConfig {
-  key: string;
+declare interface ColumnConfig<T extends RowData> {
+  key: keyof T;
   label?: string;
-  align?: 'left' | 'right';
-  renderer?: (value: any) => (string | number | React.ReactNode);
+  align?: "left" | "right";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  renderer?: (value: any) => (string | number);
   wrap?: boolean;
 }
 
 type SortOrder = 1 | -1;
 
-declare interface SortSpec {
-  columnKey: string;
+declare interface SortSpec<R extends RowData> {
+  columnKey: keyof R;
   order: SortOrder;
 }

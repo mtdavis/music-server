@@ -1,34 +1,26 @@
-import React, {Component} from 'react';
-import {inject, observer} from 'mobx-react';
-import TrackList from '../lib/TrackList';
-import {DbStore} from '../stores';
+import React from 'react';
+import {observer} from 'mobx-react-lite';
 
-interface InjectedProps {
-  dbStore: DbStore;
-}
+import TrackList from 'lib/TrackList';
+import {useStores} from 'stores';
 
-@inject('dbStore')
-@observer
-export default class AllTracksPage extends Component {
-  get injected() {
-    return this.props as InjectedProps
-  }
+const AllTracksPage = () => {
+  const {dbStore} = useStores();
 
-  render() {
-    const {dbStore} = this.injected;
-    const initialSortSpecs = [
-      {columnKey: 'title', order: 1 as 1},
-      {columnKey: 'track_number', order: 1 as 1},
-      {columnKey: 'album', order: 1 as 1},
-      {columnKey: 'artist', order: 1 as 1},
-    ];
+  const initialSortSpecs = [
+    {columnKey: 'title', order: 1 as const},
+    {columnKey: 'track_number', order: 1 as const},
+    {columnKey: 'album', order: 1 as const},
+    {columnKey: 'artist', order: 1 as const},
+  ];
 
-    return (
-      <TrackList
-        rows={dbStore.tracks}
-        loading={dbStore.tracksLoading}
-        initialSortSpecs={initialSortSpecs}
-      />
-    );
-  }
-}
+  return (
+    <TrackList
+      rows={dbStore.tracks}
+      loading={dbStore.tracksLoading}
+      initialSortSpecs={initialSortSpecs}
+    />
+  );
+};
+
+export default observer(AllTracksPage);

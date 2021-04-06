@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import {inject, observer} from 'mobx-react';
+import React from 'react';
+import {observer} from 'mobx-react-lite';
 import MusicCircleIcon from 'mdi-material-ui/MusicCircleOutline';
 import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
 import PauseCircleFilledIcon from '@material-ui/icons/PauseCircleFilled';
@@ -9,91 +9,80 @@ import VTable from './table/VTable';
 import {renderIcon} from './table/util';
 import PlayerState from './PlayerState';
 import {secondsToTimeString} from './util';
-import {MusicStore} from '../stores';
+import {useStores} from 'stores';
 
-interface Props {
+interface PlaylistItem extends RowData {
+  icon: string;
+  text: string;
+  duration: number;
 }
 
-interface InjectedProps extends Props{
-  musicStore: MusicStore;
-}
-
-@inject('musicStore')
-@observer
-export default class Playlist extends Component<Props> {
-  get injected() {
-    return this.props as InjectedProps;
+const COLUMNS = [
+  {
+    key: 'icon',
+    renderer: renderIcon,
+  },
+  {
+    key: 'text',
+  },
+  {
+    key: 'duration',
+    renderer: secondsToTimeString,
+    align: 'right' as const,
   }
+];
 
-  render() {
-    const {musicStore} = this.injected;
+const Playlist = () => {
+  const {musicStore} = useStores();
 
-    // check whether all artists are equal.
-    let allArtistsEqual = true;
-    let artist = null;
-    for(let i = 0; i < musicStore.playlist.length; i++) {
-      if(artist === null) {
-        artist = musicStore.playlist[i].artist;
-      }
-      else if(artist !== musicStore.playlist[i].artist) {
-        allArtistsEqual = false;
-      }
+  // check whether all artists are equal.
+  let allArtistsEqual = true;
+  let artist = null;
+  for(let i = 0; i < musicStore.playlist.length; i++) {
+    if(artist === null) {
+      artist = musicStore.playlist[i].artist;
     }
-
-    const playlistItems = musicStore.playlist.map(function(track, index) {
-      let icon = <MusicCircleIcon />;
-
-      if(track === musicStore.currentTrack) {
-        if(musicStore.playerState === PlayerState.PLAYING) {
-          icon = <PlayCircleFilledIcon color='primary' />;
-        }
-        else if(musicStore.playerState === PlayerState.PAUSED) {
-          icon = <PauseCircleFilledIcon color='primary' />;
-        }
-        else if(musicStore.playerState === PlayerState.STOPPED) {
-          icon = <StopCircle color='primary' />;
-        }
-      }
-
-      const text = allArtistsEqual ?
-        `${index + 1}. ${track.title}` :
-        `${index + 1}. ${track.artist} - ${track.title}`;
-
-      return {
-        id: index,
-        icon: icon,
-        text: text,
-        duration: track.duration
-      };
-    });
-
-    const columns = [
-      {
-        key: 'icon',
-        renderer: renderIcon,
-      },
-      {
-        key: 'text',
-      },
-      {
-        key: 'duration',
-        renderer: secondsToTimeString,
-        align: 'right' as 'right',
-      }
-    ];
-
-    return (
-      <VTable
-        rows={playlistItems}
-        showHeader={false}
-        columns={columns}
-        onRowClick={this.onTrackClick}
-        placeholderText='The playlist is empty!'
-      />
-    );
+    else if(artist !== musicStore.playlist[i].artist) {
+      allArtistsEqual = false;
+    }
   }
 
-  onTrackClick = (item: RowData) => {
-    this.injected.musicStore.jumpToPlaylistItem(item.id);
-  }
-}
+  const playlistItems = musicStore.playlist.map(function(track, index) {
+    const icon = track === musicStore.currentTrack ? musicStore.playerState : 'default';
+
+    const text = allArtistsEqual ?
+      `${index + 1}. ${track.title}` :
+      `${index + 1}. ${track.artist} - ${track.title}`;
+
+    return {
+      id: index,
+      icon: icon,
+      text: text,
+      duration: track.duration
+    };
+  });
+
+  const icons = {
+    default: <MusicCircleIcon />,
+    [PlayerState.PLAYING]: <PlayCircleFilledIcon color='secondary' />,
+    [PlayerState.PAUSED]: <PauseCircleFilledIcon color='primary' />,
+    [PlayerState.STOPPED]: <StopCircle color='primary' />,
+  };
+
+  const onTrackClick = (item: PlaylistItem): void => {
+    musicStore.jumpToPlaylistItem(item.id);
+  };
+
+  return (
+    <VTable<PlaylistItem>
+      rows={playlistItems}
+      showHeader={false}
+      columns={COLUMNS}
+      onRowClick={onTrackClick}
+      placeholderText='The playlist is empty!'
+      icons={icons}
+    />
+  );
+};
+
+export default observer(Playlist);

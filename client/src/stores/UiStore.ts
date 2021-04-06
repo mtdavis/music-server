@@ -1,20 +1,30 @@
-import {action, observable} from 'mobx';
+import {
+  action,
+  makeObservable,
+  observable,
+} from 'mobx';
 
 export default class UiStore {
-  @observable drawerOpen = false;
+  drawerOpen = false;
 
-  @action
-  openDrawer = () => {
+  constructor() {
+    makeObservable(this, {
+      drawerOpen: observable,
+      openDrawer: action,
+      closeDrawer: action,
+      toggleDrawer: action,
+    });
+  }
+
+  openDrawer: () => void = () => {
     this.drawerOpen = true;
   }
 
-  @action
-  closeDrawer = () => {
+  closeDrawer: () => void = () => {
     this.drawerOpen = false;
   }
 
-  @action
-  toggleDrawer = () => {
+  toggleDrawer: () => void = () => {
     this.drawerOpen = !this.drawerOpen;
   }
 }

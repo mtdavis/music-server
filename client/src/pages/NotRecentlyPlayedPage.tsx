@@ -1,44 +1,35 @@
-import React, {Component} from 'react';
-import {inject, observer} from 'mobx-react';
-import AlbumList from '../lib/AlbumList';
-import {DbStore} from '../stores';
+import React from 'react';
+import {observer} from 'mobx-react-lite';
 
-interface InjectedProps {
-  dbStore: DbStore;
-}
+import AlbumList from 'lib/AlbumList';
+import {useStores} from 'stores';
 
-@inject('dbStore')
-@observer
-export default class NotRecentlyPlayedPage extends Component {
-  get injected() {
-    return this.props as InjectedProps
-  }
+const NotRecentlyPlayedPage = () => {
+  const {dbStore} = useStores();
 
-  render() {
-    const {dbStore} = this.injected;
+  const daysAgo = 120;
+  const secondsAgo = daysAgo * 24 * 60 * 60;
+  const beforeTimestamp = Math.floor(new Date().getTime() / 1000) - secondsAgo;
 
-    const daysAgo = 120;
-    const secondsAgo = daysAgo * 24 * 60 * 60;
-    const beforeTimestamp = Math.floor(new Date().getTime() / 1000) - secondsAgo;
+  const albumsNotRecentlyPlayed: Album[] = [];
 
-    const albumsNotRecentlyPlayed: Album[] = [];
+  dbStore.albums.forEach(album => {
+    if(album.last_play === null || album.last_play < beforeTimestamp) {
+      albumsNotRecentlyPlayed.push(album);
+    }
+  });
 
-    dbStore.albums.forEach(album => {
-      if(album.last_play === null || album.last_play < beforeTimestamp) {
-        albumsNotRecentlyPlayed.push(album);
-      }
-    });
+  const initialSortSpecs = [
+    {columnKey: 'last_play', order: -1 as -1}
+  ];
 
-    const initialSortSpecs = [
-      {columnKey: 'last_play', order: -1 as -1}
-    ];
+  return (
+    <AlbumList
+      rows={albumsNotRecentlyPlayed}
+      loading={dbStore.albumsLoading}
+      initialSortSpecs={initialSortSpecs}
+    />
+  );
+};
 
-    return (
-      <AlbumList
-        rows={albumsNotRecentlyPlayed}
-        loading={dbStore.albumsLoading}
-        initialSortSpecs={initialSortSpecs}
-      />
-    );
-  }
-}
+export default observer(NotRecentlyPlayedPage);

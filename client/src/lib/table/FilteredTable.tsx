@@ -1,179 +1,103 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import {observer} from 'mobx-react';
-import debounce from 'debounce';
+import {useLocalObservable, observer} from 'mobx-react-lite';
 import {
   Grid,
   Paper,
-  TextField,
   Typography,
 } from '@material-ui/core';
-import {
-  withStyles,
-  WithStyles,
-} from '@material-ui/core/styles';
+import {makeStyles} from '@material-ui/styles';
 
-import MultiSelectAutoComplete from '../MultiSelectAutoComplete';
-import {rowPassesFilter, getUniqueValues} from './util';
+import FilterStore from './FilterStore';
+import FilterSelect from './FilterSelect';
+import FilterText from './FilterText';
 
-const styles = {
+const useStyles = makeStyles(() => ({
   itemCount: {
     marginLeft: 16,
-    textAlign: 'right' as 'right',
+    textAlign: 'right' as const,
   },
   filterBox: {
     padding: 16,
   },
   wrapper: {
     display: 'flex',
-    flexDirection: 'column' as 'column',
+    flexDirection: 'column' as const,
     height: '100%',
   },
   tableWrapper: {
     flex: 1,
     marginTop: 16,
   },
-};
+}));
 
-type SelectedFilters = {[key: string]: (string | null)[]};
-
-type TextFieldChangeEvent =
-  React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement> |
-  React.KeyboardEvent<HTMLDivElement>;
-
-interface Props<R extends RowData> extends WithStyles<typeof styles> {
+interface Props<R extends RowData> {
   rows: R[];
   filterKeys: string[];
-  columns: ColumnConfig[];
+  columns: ColumnConfig<R>[];
   children: (rows: R[]) => React.ReactNode;
 }
 
-interface State {
-  selectedFilters: SelectedFilters;
-  filterText: string;
-}
+function FilteredTable<R extends RowData>({
+  rows,
+  filterKeys,
+  columns,
+  children,
+}: Props<R>): React.ReactElement {
+  const classes = useStyles();
 
-@observer
-class FilteredTable<R extends RowData> extends React.Component<Props<R>, State> {
-  constructor(props: Props<R>) {
-    super(props);
+  const filterStore = useLocalObservable(() => new FilterStore(rows, columns, filterKeys));
 
-    const selectedFilters: SelectedFilters = {};
-    for(const filterKey of props.filterKeys) {
-      selectedFilters[filterKey] = [];
-    }
+  React.useEffect(() => {
+    filterStore.setBaseRows(rows);
+  }, [rows, rows.length]);
 
-    this.state = {
-      selectedFilters,
-      filterText: '',
-    };
-  }
+  const selectElems: React.ReactNode[] = [];
 
-  render() {
-    const {classes, filterKeys} = this.props;
-    let {rows} = this.props;
+  const selectWidth = (filterKeys.length <= 4 ? 12 / filterKeys.length : 4) as (1 | 2 | 3 | 4);
 
-    const filterElems: React.ReactNode[] = [];
+  filterKeys.forEach(filterKey => {
+    selectElems.push(
+      <Grid item xs={12} md={selectWidth} key={filterKey}>
+        <FilterSelect
+          filterStore={filterStore}
+          filterKey={filterKey}
+        />
+      </Grid>
+    );
+  });
 
-    filterKeys.forEach(filterKey => {
-      const selectedFilters = this.state.selectedFilters[filterKey];
+  const numRows = filterStore.filteredRows.length;
 
-      // first determine the options that have not already been selected
-      // or filtered out by a previous filter.
-      const filterOptions = getUniqueValues(rows, filterKey).filter(
-        val => !selectedFilters.includes(val));
+  const filterBox = (
+    <Paper className={classes.filterBox}>
+      <Grid container spacing={2}>
+        {selectElems}
 
-      const hint = filterKey.charAt(0).toUpperCase() +
-        filterKey.substring(1).replace(/_/g, ' ') +
-        '...';
-
-      const md = (filterKeys.length <= 4 ? 12 / filterKeys.length : 4) as (1 | 2 | 3 | 4);
-
-      filterElems.push(
-        <Grid item xs={12} md={md} key={filterKey}>
-          <MultiSelectAutoComplete
-            options={filterOptions}
-            hintText={hint}
-            onSelectedItemsUpdate={selectedItems =>
-              this.onSelectedFilterChange(filterKey, selectedItems)}
-          />
-        </Grid>
-      );
-
-      // now filter the rows by those selected filters.
-      if(selectedFilters.length > 0) {
-        rows = rows.filter(rowData =>
-          selectedFilters.includes(rowData[filterKey])
-        );
-      }
-    });
-
-    // filter by the text.
-
-    let filterTextValid = true;
-
-    try {
-      rows = rows.filter(rowData =>
-        rowPassesFilter(rowData, this.state.filterText, this.props.columns)
-      );
-    }
-    catch(ex) {
-      filterTextValid = false;
-    }
-
-    const filterBox = (
-      <Paper className={classes.filterBox}>
-        <Grid container spacing={16}>
-          <Grid item xs={12}>
-            <div style={{display: 'flex'}}>
-              <div style={{flex: 1}}>
-                <TextField
-                  fullWidth
-                  placeholder="Text or query..."
-                  error={!filterTextValid}
-                  onChange={this.onTextFilterChange}
-                  onKeyUp={this.onTextFilterChange} />
-              </div>
-              {rows.length > 0 &&
-                <Typography variant='body2' className={classes.itemCount}>
-                  {rows.length} item{rows.length === 1 ? '' : 's'}
-                </Typography>
-              }
+        <Grid item xs={12}>
+          <div style={{display: 'flex', alignItems: 'end'}}>
+            <div style={{flex: 1}}>
+              <FilterText filterStore={filterStore} />
             </div>
-          </Grid>
-
-          {filterElems}
+            {numRows > 0 &&
+              <Typography variant='body2' className={classes.itemCount}>
+                {numRows} item{numRows === 1 ? '' : 's'}
+              </Typography>
+            }
+          </div>
         </Grid>
-      </Paper>
-    );
+      </Grid>
+    </Paper>
+  );
 
-    return (
-      <div className={classes.wrapper}>
-        {filterBox}
+  return (
+    <div className={classes.wrapper}>
+      {filterBox}
 
-        <div className={classes.tableWrapper}>
-          {this.props.children(rows)}
-        </div>
+      <div className={classes.tableWrapper}>
+        {children(filterStore.filteredRows)}
       </div>
-    );
-  }
-
-  onTextFilterChange = (event: TextFieldChangeEvent) => {
-    event.persist();
-    this.delayedOnTextFilterChange(event);
-  }
-
-  delayedOnTextFilterChange = debounce((event: TextFieldChangeEvent) => {
-    this.setState({
-      filterText: (event.target as HTMLInputElement).value
-    });
-  }, 200)
-
-  onSelectedFilterChange = (filterKey: string, selectedItems: (string | null)[]) => {
-    const selectedFilters = Object.assign({}, this.state.selectedFilters);
-    selectedFilters[filterKey] = selectedItems.slice();
-    this.setState({selectedFilters});
-  }
+    </div>
+  );
 }
 
-export default withStyles(styles)(FilteredTable);
+export default observer(FilteredTable);

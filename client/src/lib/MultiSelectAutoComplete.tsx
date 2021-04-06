@@ -1,108 +1,105 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Chip,
   Grid,
+  TextField,
 } from '@material-ui/core';
+import {Autocomplete} from '@material-ui/lab';
 
-import AutoComplete from './AutoComplete';
+type Item = string | number | null;
 
 interface Props {
   hintText: string;
-  options: (string | null)[];
-  onSelectedItemsUpdate: (items: (string | null)[]) => void;
+  options: (Item)[];
+  onSelectedItemsUpdate: (items: (Item)[]) => void;
 }
 
-interface State {
-  selectedItems: (string | null)[];
-  currentSelectedValue: string | null;
-}
+const MultiSelectAutoComplete = ({
+  hintText,
+  options,
+  onSelectedItemsUpdate,
+}: Props): React.ReactElement => {
+  const [selectedItems, setSelectedItems] = React.useState<Item[]>([]);
+  const [autocompleteValue, setAutocompleteValue] = React.useState(null);
+  const [autocompleteInputValue, setAutocompleteInputValue] = React.useState('');
 
-class MultiSelectAutoComplete extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      selectedItems: [],
-      currentSelectedValue: null,
-    };
-  }
-
-  render() {
-    const chips = this.state.selectedItems.map(this.renderChip);
-
-    let {options} = this.props;
-    if(options.indexOf(null) !== -1) {
-      options = options.slice();
-      options.splice(options.indexOf(null), 1); // remove null
-      options.splice(0, 0, '(None)');
+  const deselectItem = (item: Item): void => {
+    if(item === '(None)') {
+      item = null;
     }
 
-    return (
-      <Grid container direction='column' spacing={8}>
-        <Grid item>
-          <AutoComplete
-            hintText={this.props.hintText}
-            options={options}
-            value={this.state.currentSelectedValue}
-            onChange={this.selectItem} />
-        </Grid>
+    const index = selectedItems.indexOf(item);
+    if(index !== -1) {
+      const newSelectedItems = selectedItems.slice();
+      newSelectedItems.splice(index, 1);
+      setSelectedItems(newSelectedItems);
 
-        <Grid item>
-          <Grid container direction='row' spacing={8}>
-            {chips}
-          </Grid>
-        </Grid>
-      </Grid>
-    );
-  }
+      if(onSelectedItemsUpdate) {
+        onSelectedItemsUpdate(newSelectedItems);
+      }
+    }
+  };
 
-  renderChip = (item: string | null) => (
+  const renderChip = (item: Item): React.ReactElement => (
     <Grid item key={item || '(None)'}>
       <Chip
         label={item || '(None)'}
-        onDelete={() => this.deselectItem(item)}
+        onDelete={() => deselectItem(item)}
       />
     </Grid>
-  )
+  );
 
-  deselectItem(item: string | null) {
+  const onAutocompleteChange = (event: React.ChangeEvent<unknown>, item: Item): void => {
     if(item === '(None)') {
       item = null;
     }
 
-    const index = this.state.selectedItems.indexOf(item);
-    if(index !== -1) {
-      const selectedItems = this.state.selectedItems.slice();
-      selectedItems.splice(index, 1);
-      this.setState({selectedItems});
+    if(options.includes(item) && !selectedItems.includes(item)) {
+      const newSelectedItems = selectedItems.slice();
+      newSelectedItems.push(item);
 
-      if(this.props.onSelectedItemsUpdate) {
-        this.props.onSelectedItemsUpdate(selectedItems);
+      setSelectedItems(newSelectedItems);
+      setAutocompleteValue(null);
+      setAutocompleteInputValue('');
+
+      if(onSelectedItemsUpdate) {
+        onSelectedItemsUpdate(newSelectedItems);
       }
     }
+  };
 
+  const onAutocompleteInputChange = (event: React.ChangeEvent<unknown>, value: string): void => {
+    setAutocompleteInputValue(value);
+  };
+
+  const chips = selectedItems.map(renderChip);
+
+  if(options.indexOf(null) !== -1) {
+    options = options.slice();
+    options.splice(options.indexOf(null), 1); // remove null
+    options.splice(0, 0, '(None)');
   }
 
-  selectItem = (item: string | null) => {
-    if(item === '(None)') {
-      item = null;
-    }
+  return (
+    <Grid container direction='column' spacing={1}>
+      <Grid item>
+        <Autocomplete
+          options={options}
+          value={autocompleteValue}
+          inputValue={autocompleteInputValue}
+          onChange={onAutocompleteChange}
+          onInputChange={onAutocompleteInputChange}
+          renderInput={(params) => <TextField {...params} placeholder={hintText} />}
+        />
+      </Grid>
 
-    if(this.props.options.includes(item) &&
-      !this.state.selectedItems.includes(item)) {
-
-      const selectedItems = this.state.selectedItems.slice();
-      selectedItems.push(item);
-      this.setState({
-        selectedItems,
-        currentSelectedValue: null,
-      });
-
-      if(this.props.onSelectedItemsUpdate) {
-        this.props.onSelectedItemsUpdate(selectedItems);
-      }
-    }
-  }
-}
+      <Grid item>
+        <Grid container direction='row' spacing={1}>
+          {chips}
+        </Grid>
+      </Grid>
+    </Grid>
+  );
+};
 
 export default MultiSelectAutoComplete;

@@ -1,31 +1,22 @@
-import React, {Component} from 'react';
-import {inject, observer} from 'mobx-react';
-import PlaylistList from '../lib/PlaylistList';
-import {DbStore} from '../stores';
+import React from 'react';
+import {observer} from 'mobx-react-lite';
 
-interface InjectedProps {
-  dbStore: DbStore;
-}
+import PlaylistList from 'lib/PlaylistList';
+import {useStores} from 'stores';
 
-@inject('dbStore')
-@observer
-export default class PlaylistsPage extends Component {
-  get injected() {
-    return this.props as InjectedProps
-  }
+const PlaylistsPage = () => {
+  const {dbStore} = useStores();
+  const initialSortSpecs = [
+    {columnKey: 'title', order: 1 as const}
+  ];
 
-  render() {
-    const {dbStore} = this.injected;
-    const initialSortSpecs = [
-      {columnKey: 'title', order: 1 as 1}
-    ];
+  return (
+    <PlaylistList
+      rows={dbStore.playlists}
+      loading={dbStore.playlistsLoading}
+      initialSortSpecs={initialSortSpecs}
+    />
+  );
+};
 
-    return (
-      <PlaylistList
-        rows={dbStore.playlists}
-        loading={dbStore.playlistsLoading}
-        initialSortSpecs={initialSortSpecs}
-      />
-    );
-  }
-}
+export default observer(PlaylistsPage);

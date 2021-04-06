@@ -3,21 +3,26 @@
         "browser": true,
         "es6": true
     },
-    "extends": "eslint:recommended",
-    "parser": "babel-eslint",
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "ecmaVersion": 2017,
+        "ecmaVersion": 2018,
         "ecmaFeatures": {
             "jsx": true
         },
         "sourceType": "module"
     },
     "plugins": [
+        "@typescript-eslint",
         "babel",
         "react"
     ],
     "globals": {
-        "$": false,
+        "__DEMO_MODE__": false,
         "Gapless5": false
     },
     "rules": {
@@ -56,7 +61,7 @@
             }
         ],
         "capitalized-comments": "off",
-        "class-methods-use-this": "error",
+        "class-methods-use-this": "off",
         "comma-dangle": "off",
         "comma-spacing": [
             "error",
@@ -137,7 +142,8 @@
         "no-div-regex": "error",
         "no-duplicate-imports": "error",
         "no-else-return": "off",
-        "no-empty-function": "error",
+        "no-empty-function": "off",
+        "@typescript-eslint/no-empty-function": "off",
         "no-eq-null": "error",
         "no-eval": "error",
         "no-extend-native": "error",
@@ -152,6 +158,7 @@
             "error",
             "functions"
         ],
+        "no-invalid-this": "off",
         "babel/no-invalid-this": "error",
         "no-iterator": "error",
         "no-label-var": "error",
@@ -198,7 +205,8 @@
         "no-script-url": "error",
         "no-self-compare": "error",
         "no-sequences": "error",
-        "no-shadow": "error",
+        "no-shadow": "off",
+        "@typescript-eslint/no-shadow": "error",
         "no-shadow-restricted-names": "error",
         "no-spaced-func": "error",
         "no-sync": "error",
@@ -212,7 +220,8 @@
         "no-unmodified-loop-condition": "error",
         "no-unneeded-ternary": "error",
         "no-unused-expressions": "error",
-        "no-use-before-define": "error",
+        "no-use-before-define": "off",
+        "@typescript-eslint/no-use-before-define": "error",
         "no-useless-call": "error",
         "no-useless-computed-key": "error",
         "no-useless-concat": "error",
@@ -318,6 +327,21 @@
         ],
 
         "react/jsx-uses-react": "error",
-        "react/jsx-uses-vars": "error"
+        "react/jsx-uses-vars": "error",
+
+        "@typescript-eslint/no-empty-interface": "off",
+        "@typescript-eslint/no-unused-vars": [
+            "warn",
+            {
+                "argsIgnorePattern": "^_"
+            }
+        ]
+    },
+    "settings": {
+        "import/resolver": {
+            "node": {
+                "extensions": [".js", ".jsx", ".ts", ".tsx"]
+            }
+        }
     }
 }

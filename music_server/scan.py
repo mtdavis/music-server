@@ -1,24 +1,16 @@
-#!/usr/bin/env python3
-
 import functools
-import json
+import io
 import logging
 import os
 import pathlib
 import sqlite3
-import sys
 import multiprocessing
 import time
 
 import eyed3
-from progress.bar import Bar
 from tabulate import tabulate
 
-
-@functools.cache
-def get_settings():
-    with open('../music-server-settings.json') as settings_file:
-        return json.load(settings_file)
+from .util import get_config
 
 
 def get_year(metadata):
@@ -29,8 +21,9 @@ def get_year(metadata):
 
 
 class Database:
-    def __init__(self, db_path):
+    def __init__(self, db_path, dry_run):
         self.db_path = db_path
+        self.dry_run = dry_run
 
     def __enter__(self):
         self.conn = sqlite3.connect(self.db_path)
@@ -46,21 +39,14 @@ class Database:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if exc_type or '--dry-run' in sys.argv:
-            print('Rolling back')
+        if exc_type or self.dry_run:
+            print('Rolling back...')
             self.conn.rollback()
         elif self.modified:
-            self.print_changes()
-            print('Ctrl+c to quit, enter to commit')
-            try:
-                input()
-                self.conn.commit()
-            except KeyboardInterrupt:
-                print()
-                print('Rolling back')
-                self.conn.rollback()
+            print('Committing...')
+            self.conn.commit()
         else:
-            print('No changes found')
+            print('No changes found.')
 
         self.conn.close()
 
@@ -76,31 +62,38 @@ class Database:
             self.deleted_tracks
         )
 
-    def print_changes(self):
+    def get_results(self):
+        results = io.StringIO()
+
         if self.new_artists:
-            print('New artists:')
-            print(tabulate(sorted(self.new_artists)))
-            print()
+            print('New artists:', file=results)
+            print(tabulate(sorted(self.new_artists)), file=results)
+            print(file=results)
 
         if self.new_albums:
-            print('New albums:')
-            print(tabulate(sorted(self.new_albums)))
-            print()
+            print('New albums:', file=results)
+            print(tabulate(sorted(self.new_albums)), file=results)
+            print(file=results)
 
         if self.new_tracks:
-            print('New tracks:')
-            print(tabulate(sorted(self.new_tracks)))
-            print()
+            print('New tracks:', file=results)
+            print(tabulate(sorted(self.new_tracks)), file=results)
+            print(file=results)
 
         if self.modified_tracks:
-            print('Modified tracks:')
-            print(tabulate(sorted(self.modified_tracks)))
-            print()
+            print('Modified tracks:', file=results)
+            print(tabulate(sorted(self.modified_tracks)), file=results)
+            print(file=results)
 
         if self.deleted_tracks:
-            print('Deleted tracks:')
-            print(tabulate(sorted(self.deleted_tracks)))
-            print()
+            print('Deleted tracks:', file=results)
+            print(tabulate(sorted(self.deleted_tracks)), file=results)
+            print(file=results)
+
+        if not self.modified:
+            print('No changes found.', file=results)
+
+        return results.getvalue()
 
     @functools.cache
     def get_artist_id(self, artist_name):
@@ -252,26 +245,24 @@ class Database:
         return result
 
 
-def clean_garbage(path, metadata, field):
+def clean_garbage(path, metadata, field, dry_run):
     value = getattr(metadata.tag, field)
     if value and '\ufeff' in value:
         setattr(metadata.tag, field, value.lstrip('\ufeff'))
-        print('cleaning', field, path)
 
-        if '--dry-run' not in sys.argv:
+        if not dry_run:
             metadata.tag.save()
 
 
-def get_metadata(path):
-    root = get_settings()['files']['base_stream_path']
+def get_metadata(path, root, dry_run):
     path_relative_to_root = str(path.relative_to(root))
 
     metadata = eyed3.load(path)
 
-    clean_garbage(path, metadata, 'artist')
-    clean_garbage(path, metadata, 'album_artist')
-    clean_garbage(path, metadata, 'title')
-    clean_garbage(path, metadata, 'album')
+    clean_garbage(path, metadata, 'artist', dry_run)
+    clean_garbage(path, metadata, 'album_artist', dry_run)
+    clean_garbage(path, metadata, 'title', dry_run)
+    clean_garbage(path, metadata, 'album', dry_run)
 
     return (
         path_relative_to_root, {
@@ -287,8 +278,8 @@ def get_metadata(path):
     )
 
 
-def get_all_metadata(root):
-    paths = []
+def get_all_metadata(root, dry_run):
+    param_tuples = []
 
     for dirpath, _, filenames in os.walk(root):
         if '$New' in dirpath:
@@ -300,15 +291,13 @@ def get_all_metadata(root):
             if full_path.suffix != '.mp3':
                 continue
 
-            paths.append(full_path)
+            param_tuples.append((full_path, root, dry_run))
 
     with multiprocessing.Pool(8, init_logger) as pool:
-        progress_bar = Bar('Scanning metadata', max=len(paths))
-
         return {
             path: metadata
             for path, metadata
-            in progress_bar.iter(pool.imap(get_metadata, paths))
+            in pool.starmap(get_metadata, param_tuples)
         }
 
 
@@ -316,12 +305,14 @@ def init_logger():
     logging.getLogger('eyed3').setLevel(logging.ERROR)
 
 
-def main():
-    root = get_settings()['files']['base_stream_path']
-    all_metadata = get_all_metadata(root)
+def scan(dry_run=False):
+    init_logger()
 
-    db_path = get_settings()['files']['db_path']
-    database = Database(db_path)
+    root = get_config('files')['base_stream_path']
+    all_metadata = get_all_metadata(root, dry_run)
+
+    db_path = get_config('files')['db_path']
+    database = Database(db_path, dry_run)
 
     with database:
         existing_tracks = database.get_existing_tracks()
@@ -340,8 +331,4 @@ def main():
         for unfound_path in existing_tracks:
             database.delete_track(unfound_path)
 
-
-if __name__ == '__main__':
-    init_logger()
-
-    main()
+        return database.get_results()

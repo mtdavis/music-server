@@ -1,17 +1,39 @@
-import {action, autorun, observable} from 'mobx';
-import LyricsState from '../lib/LyricsState';
+import {
+  action,
+  autorun,
+  makeObservable,
+  observable,
+  runInAction,
+} from 'mobx';
+
+import {get} from 'lib/util';
+import LyricsState from 'lib/LyricsState';
 import MusicStore from './MusicStore';
 
+interface GetResult {
+  lyrics: string;
+  url: string;
+}
+
 export default class LyricsStore {
-  @observable lyricsState = LyricsState.NO_TRACK;
-  @observable lyricsTrackId: number | null = null;
-  @observable lyrics: string | null = null;
-  @observable url: string | null = null;
-  @observable lyricsVisible = false;
+  lyricsState = LyricsState.NO_TRACK;
+  lyricsTrackId: number | null = null;
+  lyrics: string | null = null;
+  url: string | null = null;
+  lyricsVisible = false;
   musicStore: MusicStore;
 
   constructor(musicStore: MusicStore) {
     this.musicStore = musicStore;
+
+    makeObservable(this, {
+      lyricsState: observable,
+      lyricsTrackId: observable,
+      lyrics: observable,
+      url: observable,
+      lyricsVisible: observable,
+      setLyricsVisible: action,
+    });
 
     autorun(() => {
       if(!this.lyricsVisible) {
@@ -22,38 +44,38 @@ export default class LyricsStore {
         const nowPlayingId = this.musicStore.currentTrack.id;
 
         if(nowPlayingId !== this.lyricsTrackId) {
-          this.lyrics = null;
-          this.lyricsState = LyricsState.LOADING;
-          this.lyricsTrackId = nowPlayingId;
-
-          const url = `/lyrics?id=${nowPlayingId}`;
-          fetch(url).then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            return response.json();
-          }).then(result => {
-            this.lyrics = result.lyrics;
-            this.url = result.url;
-            this.lyricsState = LyricsState.SUCCESSFUL;
-          }).catch(() => {
+          runInAction(() => {
             this.lyrics = null;
-            this.url = null;
-            this.lyricsState = LyricsState.FAILED;
+            this.lyricsState = LyricsState.LOADING;
+            this.lyricsTrackId = nowPlayingId;
+          });
+
+          get({
+            url: `/track/${nowPlayingId}/lyrics`,
+            onSuccess: action((result: GetResult) => {
+              this.lyrics = result.lyrics;
+              this.url = result.url;
+              this.lyricsState = LyricsState.SUCCESSFUL;
+            }),
+            onError: action((_error: string) => {
+              this.lyrics = null;
+              this.url = null;
+              this.lyricsState = LyricsState.FAILED;
+            }),
           });
         }
       }
       else {
-        this.lyrics = null;
-        this.lyricsState = LyricsState.NO_TRACK;
-        this.lyricsTrackId = null;
+        runInAction(() => {
+          this.lyrics = null;
+          this.lyricsState = LyricsState.NO_TRACK;
+          this.lyricsTrackId = null;
+        });
       }
     });
   }
 
-  @action
-  setLyricsVisible(visible: boolean) {
+  setLyricsVisible(visible: boolean): void {
     this.lyricsVisible = visible;
   }
 }

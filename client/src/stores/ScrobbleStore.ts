@@ -1,12 +1,19 @@
-import {action, autorun, observable} from 'mobx';
-import PlayerState from '../lib/PlayerState';
-import ScrobbleState from '../lib/ScrobbleState';
+import {
+  action,
+  autorun,
+  makeObservable,
+  observable,
+} from 'mobx';
 import pauseable from 'pauseable';
+
+import PlayerState from 'lib/PlayerState';
+import ScrobbleState from 'lib/ScrobbleState';
+import {put} from 'lib/util';
 import MusicStore from './MusicStore';
 import DbStore from './DbStore';
 
 export default class ScrobbleStore {
-  @observable scrobbleState: ScrobbleState = ScrobbleState.NO_TRACK;
+  scrobbleState: ScrobbleState = ScrobbleState.NO_TRACK;
   previousPlayerState: PlayerState | null = null;
   previousTrackId: number | null = null;
   playTimer: pauseable.timer | null = null;
@@ -14,9 +21,15 @@ export default class ScrobbleStore {
   musicStore: MusicStore;
   dbStore: DbStore;
 
-  constructor(musicStore: MusicStore, dbStore: any) {
+  constructor(musicStore: MusicStore, dbStore: DbStore) {
     this.musicStore = musicStore;
     this.dbStore = dbStore;
+
+    makeObservable(this, {
+      scrobbleState: observable,
+      startTimers: action,
+      clearTimers: action,
+    });
 
     autorun(() => {
       const trackChanged = musicStore.currentTrackId !== this.previousTrackId;
@@ -58,8 +71,7 @@ export default class ScrobbleStore {
     });
   }
 
-  @action
-  startTimers() {
+  startTimers(): void {
     const trackStartedPlaying = Math.floor(Date.now() / 1000);
     const trackToScrobble = this.musicStore.currentTrack;
 
@@ -76,9 +88,8 @@ export default class ScrobbleStore {
           trackToScrobble.id === this.musicStore.currentTrackId &&
           this.musicStore.playerState !== PlayerState.STOPPED
         ) {
-          fetch('/submit-now-playing', {
-            method: 'POST',
-            body: new URLSearchParams(`id=${trackToScrobble.id}`),
+          put({
+            url: `/track/${trackToScrobble.id}/submit-now-playing`,
           });
         }
 
@@ -89,22 +100,23 @@ export default class ScrobbleStore {
     // submit the play in (duration / 2) seconds if it's still playing.
     const playDelayMs = trackToScrobble.duration / 2.0 * 1000;
     this.playTimer = pauseable.setTimeout(() => {
-      if(trackToScrobble.id === this.musicStore.currentTrackId &&
-          this.musicStore.playerState !== PlayerState.STOPPED) {
-        const postData = {
-          id: trackToScrobble.id,
-          started_playing: trackStartedPlaying
-        };
-
+      if(
+        trackToScrobble.id === this.musicStore.currentTrackId &&
+        this.musicStore.playerState !== PlayerState.STOPPED
+      ) {
         this.dbStore.incrementPlayCount(trackToScrobble.id, trackStartedPlaying);
 
-        fetch('/submit-play', {
-          method: 'POST',
-          body: new URLSearchParams(`id=${trackToScrobble.id}&started_playing=${trackStartedPlaying}`),
-        }).then(response => {
-          this.scrobbleState = response.ok ? 
-            ScrobbleState.TRACK_SCROBBLED :
-            ScrobbleState.SCROBBLE_FAILED;
+        put({
+          url: `/track/${trackToScrobble.id}/submit-play`,
+          data: {
+            timestamp: trackStartedPlaying
+          },
+          onSuccess: action(() => {
+            this.scrobbleState = ScrobbleState.TRACK_SCROBBLED;
+          }),
+          onError: action(() => {
+            this.scrobbleState = ScrobbleState.SCROBBLE_FAILED;
+          }),
         });
       }
 
@@ -114,7 +126,7 @@ export default class ScrobbleStore {
     this.scrobbleState = ScrobbleState.TRACK_QUEUED;
   }
 
-  pauseTimers() {
+  pauseTimers(): void {
     if(this.playTimer) {
       this.playTimer.pause();
     }
@@ -124,7 +136,7 @@ export default class ScrobbleStore {
     }
   }
 
-  resumeTimers() {
+  resumeTimers(): void {
     if(this.playTimer) {
       this.playTimer.resume();
     }
@@ -134,8 +146,7 @@ export default class ScrobbleStore {
     }
   }
 
-  @action
-  clearTimers() {
+  clearTimers(): void {
     this.scrobbleState = ScrobbleState.NO_TRACK;
 
     if(this.playTimer) {

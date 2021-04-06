@@ -1,3 +1,51 @@
+interface GetParams<T> {
+  url: string;
+  onSuccess: (json: T) => void;
+  onError?: (error: string) => void;
+}
+
+export function get<T>({
+  url,
+  onSuccess,
+  onError = (error: string) => { console.error(error); },
+}: GetParams<T>): void {
+  fetch(url).then(response => {
+    if(!response.ok) {
+      throw new Error(`${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
+  }).then(onSuccess).catch(onError);
+}
+
+interface PutParams<T> {
+  url: string;
+  data?: {[key: string]: number | string | boolean | null};
+  onSuccess?: (json: T) => void;
+  onError?: (error: string) => void;
+}
+
+export function put<T>({
+  url,
+  data,
+  onSuccess = (_json: T) => {},
+  onError = (error: string) => { console.error(error); },
+}: PutParams<T>): void {
+  fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: data === undefined ? undefined : JSON.stringify(data),
+  }).then(response => {
+    if(!response.ok) {
+      throw new Error(`${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
+  }).then(onSuccess).catch(onError);
+}
+
 export function secondsToTimeString(epochSeconds: number): string {
   const hours = Math.floor(epochSeconds / 3600);
   const minutes = Math.floor((epochSeconds - (hours * 3600)) / 60);
@@ -32,22 +80,21 @@ export function unixTimestampToYear(timestamp: number): number {
   return dateObj.getUTCFullYear();
 }
 
-export function compare<T extends any>(valA: T, valB: T): number {
-  if(typeof(valA) === "string") {
-    valA = valA.toLowerCase();
-
-    if(valA.startsWith("the ")) {
-      valA = valA.substring(4);
-    }
+function cleanString(str: string): string {
+  str = str.toLowerCase();
+  if(str.startsWith('the ')) {
+    str = str.substring(4);
   }
+  return str;
+}
 
-  if(typeof(valB) === "string") {
-    valB = valB.toLowerCase();
+function compareNumbers(valA: number, valB: number): number {
+  return valA - valB;
+}
 
-    if(valB.startsWith("the ")) {
-      valB = valB.substring(4);
-    }
-  }
+function compareStrings(valA: string, valB: string): number {
+  valA = cleanString(valA);
+  valB = cleanString(valB);
 
   if(valA < valB) {
     return -1;
@@ -57,5 +104,20 @@ export function compare<T extends any>(valA: T, valB: T): number {
   }
   else {
     return 1;
+  }
+}
+
+export function compare<T extends RowDataValue>(valA: T, valB: T): number {
+  if(valA === null) {
+    return valB === null ? 0 : -1;
+  }
+  else if(valB === null) {
+    return 1;
+  }
+  else if(typeof valA === 'number' && typeof valB === 'number') {
+    return compareNumbers(valA, valB);
+  }
+  else {
+    return compareStrings(String(valA), String(valB));
   }
 }

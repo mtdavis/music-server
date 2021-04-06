@@ -3,6 +3,6 @@ enum LyricsState {
   LOADING = "LOADING",
   SUCCESSFUL = "SUCCESSFUL",
   FAILED = "FAILED",
-};
+}
 
 export default LyricsState;

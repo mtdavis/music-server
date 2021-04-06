@@ -1,6 +1,5 @@
-import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-import {inject, observer} from 'mobx-react';
+import React from 'react';
+import {observer} from 'mobx-react-lite';
 import {Snackbar} from '@material-ui/core';
 
 import {
@@ -8,120 +7,102 @@ import {
   unixTimestampToDateString,
   unixTimestampToYear,
 } from './util';
-import VTable, {Props as VTableProps} from './table/VTable';
+import VTable from './table/VTable';
 import FilteredTable from './table/FilteredTable';
-import {MusicStore} from '../stores';
+import {useStores} from 'stores';
 
 interface Props {
   rows: Album[];
   loading?: boolean;
-  initialSortSpecs?: SortSpec[],
+  initialSortSpecs?: SortSpec<Album>[],
 }
 
-interface InjectedProps extends Props {
-  musicStore: MusicStore;
-}
+const COLUMNS = [
+  {
+    key: "album_artist",
+    label: "Album Artist",
+  },
+  {
+    key: "album",
+    label: "Album",
+  },
+  {
+    key: "release_date",
+    label: "Year",
+    renderer: unixTimestampToYear,
+    align: 'right' as const,
+  },
+  {
+    key: "tracks",
+    label: "Tracks",
+    align: 'right' as const,
+  },
+  {
+    key: "duration",
+    label: "Duration",
+    renderer: secondsToTimeString,
+    align: 'right' as const,
+    wrap: false,
+  },
+  {
+    key: "play_count",
+    label: "Play Count",
+    align: 'right' as const,
+  },
+  {
+    key: "last_play",
+    label: "Last Play",
+    renderer: unixTimestampToDateString,
+    align: 'right' as const,
+    wrap: false,
+  },
+];
 
-interface State {
-  enqueueSnackbarOpen: boolean;
-}
+const AlbumList = ({
+  rows,
+  ...props
+}: Props) => {
+  const {musicStore} = useStores();
+  const [enqueueSnackbarOpen, setEnqueueSnackbarOpen] = React.useState(false);
 
-@inject('musicStore')
-@observer
-export default class AlbumList extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
+  const onAlbumClick = (album: Album) => {
+    musicStore.playAlbum(album);
+  };
 
-    this.state = {
-      enqueueSnackbarOpen: false
-    };
-  }
-
-  get injected() {
-    return this.props as InjectedProps;
-  }
-
-  render() {
-    const columns = [
-      {
-        key: "album_artist",
-        label: "Album Artist",
-      },
-      {
-        key: "album",
-        label: "Album",
-      },
-      {
-        key: "release_date",
-        label: "Year",
-        renderer: unixTimestampToYear,
-        align: 'right' as 'right',
-      },
-      {
-        key: "tracks",
-        label: "Tracks",
-        align: 'right' as 'right',
-      },
-      {
-        key: "duration",
-        label: "Duration",
-        renderer: secondsToTimeString,
-        align: 'right' as 'right',
-        wrap: false,
-      },
-      {
-        key: "play_count",
-        label: "Play Count",
-        align: 'right' as 'right',
-      },
-      {
-        key: "last_play",
-        label: "Last Play",
-        renderer: unixTimestampToDateString,
-        align: 'right' as 'right',
-        wrap: false,
-      },
-    ];
-
-    const {rows, ...props} = this.props;
-
-    return (
-      <>
-        <FilteredTable
-          rows={rows}
-          columns={columns}
-          filterKeys={['genre', 'album_artist']}
-        >
-          {filteredRows =>
-            <VTable
-              {...props}
-              columns={columns}
-              rows={filteredRows}
-              onRowClick={this.onAlbumClick as (row: RowData) => void} // FIXME?!
-              onRowCtrlClick={this.onAlbumCtrlClick as (row: RowData) => void} // FIXME?!
-              placeholderText='No albums found for these filters.'
-            />
-          }
-        </FilteredTable>
-
-        <Snackbar
-          message="Album enqueued."
-          open={this.state.enqueueSnackbarOpen}
-        />
-      </>
-    );
-  }
-
-  onAlbumClick = (album: Album) => {
-    this.injected.musicStore.playAlbum(album);
-  }
-
-  onAlbumCtrlClick = (album: Album) => {
-    this.setState({enqueueSnackbarOpen: true});
-    this.injected.musicStore.enqueueAlbum(album);
+  const onAlbumCtrlClick = (album: Album) => {
+    setEnqueueSnackbarOpen(true);
+    musicStore.enqueueAlbum(album);
 
     setTimeout(() => {
-      this.setState({enqueueSnackbarOpen: false});
+      setEnqueueSnackbarOpen(false);
     }, 2000);
-  }
-}
+  };
+
+  return (
+    <>
+      <FilteredTable<Album>
+        rows={rows}
+        columns={COLUMNS}
+        filterKeys={['genre', 'album_artist']}
+      >
+        {filteredRows =>
+          <VTable<Album>
+            {...props}
+            columns={COLUMNS}
+            rows={filteredRows}
+            onRowClick={onAlbumClick}
+            onRowCtrlClick={onAlbumCtrlClick}
+            placeholderText='No albums found for these filters.'
+          />
+        }
+      </FilteredTable>
+
+      <Snackbar
+        message="Album enqueued."
+        open={enqueueSnackbarOpen}
+      />
+    </>
+  );
+};
+
+export default observer(AlbumList);

@@ -1,5 +1,32 @@
 const webpack = require('webpack');
+const path = require('path');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
+const PostCompile = require('post-compile-webpack-plugin');
+const {execFile} = require('child_process');
+const chalk = require('chalk');
+
+const run = (command, args = []) => {
+  execFile(command, args, (err, stdout, stderr) => {
+    if(err) {
+      console.error(chalk.red.bold(`❌ ${command}`));
+
+      if(stdout) {
+        console.log(chalk.red(stdout));
+      }
+
+      if(stderr) {
+        console.error(chalk.red(stderr));
+      }
+    }
+    else if(stdout) {
+      console.log(chalk.yellow.bold(`⚠️ ${command}`));
+      console.log(chalk.yellow(stdout));
+    }
+    else {
+      console.log(chalk.green.bold(`✅ ${command}`));
+    }
+  });
+}
 
 module.exports = {
   devtool: 'source-map',
@@ -34,7 +61,8 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js']
+    extensions: ['.tsx', '.ts', '.js'],
+    modules: [path.resolve(__dirname, './src'), 'node_modules'],
   },
   plugins: [
     new HtmlWebPackPlugin({
@@ -42,6 +70,14 @@ module.exports = {
       chunks: ['jquery', 'gapless5', 'main'],
       chunksSortMode: 'manual',
       filename: './index.html'
+    }),
+
+    new PostCompile(() => {
+      run('eslint', ['src']);
+    }),
+
+    new PostCompile(() => {
+      run('tsc', ['--noEmit']);
     }),
   ],
 };

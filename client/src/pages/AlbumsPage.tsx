@@ -1,32 +1,24 @@
-import React, {Component} from 'react';
-import {inject, observer} from 'mobx-react';
-import AlbumList from '../lib/AlbumList';
-import {DbStore} from '../stores';
+import React from 'react';
+import {observer} from 'mobx-react-lite';
 
-interface InjectedProps {
-  dbStore: DbStore;
-}
+import AlbumList from 'lib/AlbumList';
+import {useStores} from 'stores';
 
-@inject('dbStore')
-@observer
-export default class AlbumsPage extends Component {
-  get injected() {
-    return this.props as InjectedProps
-  }
+const AlbumsPage = () => {
+  const {dbStore} = useStores();
 
-  render() {
-    const {dbStore} = this.injected;
-    const initialSortSpecs = [
-      {columnKey: 'album', order: 1 as 1},
-      {columnKey: 'album_artist', order: 1 as 1}
-    ];
+  const initialSortSpecs = [
+    {columnKey: 'album', order: 1 as const},
+    {columnKey: 'album_artist', order: 1 as const}
+  ];
 
-    return (
-      <AlbumList
-        rows={dbStore.albums}
-        loading={dbStore.albumsLoading}
-        initialSortSpecs={initialSortSpecs}
-      />
-    );
-  }
-}
+  return (
+    <AlbumList
+      rows={dbStore.albums}
+      loading={dbStore.albumsLoading}
+      initialSortSpecs={initialSortSpecs}
+    />
+  );
+};
+
+export default observer(AlbumsPage);
