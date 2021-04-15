@@ -63,13 +63,6 @@ export function secondsToTimeString(epochSeconds: number): string {
   return minutes + ':' + ss;
 }
 
-export function timeStringToSeconds(timeString: string): number {
-  const split = timeString.split(":");
-  const minutes = parseInt(split[0], 10);
-  const seconds = Number(split[1]);
-  return (minutes * 60) + seconds;
-}
-
 export function unixTimestampToDateString(timestamp: number): string {
   const dateObj = new Date(timestamp * 1000);
   return dateObj.toISOString().substring(0, 10);

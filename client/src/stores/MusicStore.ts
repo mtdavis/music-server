@@ -6,9 +6,10 @@ import {
 } from 'mobx';
 import NoSleep from 'nosleep.js';
 import weighted from 'weighted';
+import Gapless5 from 'gapless5';
 
 import PlayerState from 'lib/PlayerState';
-import {get, timeStringToSeconds} from 'lib/util';
+import {get} from 'lib/util';
 import DbStore from './DbStore';
 
 export default class MusicStore {
@@ -51,12 +52,9 @@ export default class MusicStore {
       jumpToNextTrack: action,
       seekToPosition: action,
       setVolume: action,
-      startTrackPositionUpdateTimer: action,
-      clearTrackPositionUpdateTimer: action,
     });
   }
 
-  trackPositionUpdateTimer: number | null = null;
   noSleep = new NoSleep();
 
   get currentTrack(): Track | null {
@@ -168,11 +166,11 @@ export default class MusicStore {
 
   initializePlayer(playerNode: HTMLDivElement): void {
     this.api = new Gapless5(playerNode.id);
+    this.api.tickMS = 100;
     this.setVolume(.5);
 
     this.api.onplay = action(() => {
       this.playerState = PlayerState.PLAYING;
-      this.startTrackPositionUpdateTimer();
 
       this.noSleep.enable(); // prevent PC from sleeping during playback
     });
@@ -186,7 +184,6 @@ export default class MusicStore {
     this.api.onstop = action(() => {
       this.playerState = PlayerState.STOPPED;
       this.willStopAfterCurrent = false;
-      this.clearTrackPositionUpdateTimer();
 
       this.noSleep.disable();
     });
@@ -201,7 +198,6 @@ export default class MusicStore {
     this.api.onfinishedall = action(() => {
       this.playerState = PlayerState.STOPPED;
       this.willStopAfterCurrent = false;
-      this.clearTrackPositionUpdateTimer();
 
       this.noSleep.disable();
     });
@@ -214,21 +210,9 @@ export default class MusicStore {
       this.currentTrackIndex += 1;
     });
 
-    const currentPositionNode = playerNode.querySelector(".g5position span:nth-child(1)");
-
-    if(currentPositionNode === null) {
-      throw Error('Could not find gapless5 track position node!');
-    }
-
-    this.api.getCurrentTrackPosition = function() {
-      const timeString = currentPositionNode.textContent;
-
-      if(timeString) {
-        return timeStringToSeconds(timeString);
-      }
-
-      return 0;
-    };
+    this.api.onpositionupdate = action((newTrackPosition: number) => {
+      this.currentTrackPosition = newTrackPosition;
+    });
   }
 
   playOrPausePlayback(): void {
@@ -249,7 +233,6 @@ export default class MusicStore {
       throw Error('Gapless5 instance is not initialized');
     }
     this.api.stop();
-    this.clearTrackPositionUpdateTimer();
   }
 
   toggleStopAfterCurrent(): void {
@@ -358,27 +341,6 @@ export default class MusicStore {
     catch(ex) {
       // Gapless 5 throws an exception if you set the gain while tracklist is empty;
       // but it will still work.
-    }
-  }
-
-  startTrackPositionUpdateTimer(): void {
-    this.trackPositionUpdateTimer = window.setInterval(action(() => {
-      if(!this.api) {
-        throw Error('Gapless5 instance is not initialized');
-      }
-
-      const newTrackPosition = this.api.getCurrentTrackPosition();
-      if(newTrackPosition !== this.currentTrackPosition) {
-        this.currentTrackPosition = newTrackPosition;
-      }
-    }), 100);
-  }
-
-  clearTrackPositionUpdateTimer(): void {
-    if(this.trackPositionUpdateTimer) {
-      window.clearInterval(this.trackPositionUpdateTimer);
-      this.trackPositionUpdateTimer = null;
-      this.currentTrackPosition = 0;
     }
   }
 }

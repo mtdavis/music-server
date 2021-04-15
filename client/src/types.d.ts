@@ -21,28 +21,33 @@ declare module 'splitargs' {
   export default function splitargs(input: string, sep?: string, keepQuotes?: boolean): string[];
 }
 
-declare class Gapless5 {
-  constructor(elemId: string);
-  pause(): void;
-  play(): void;
-  stop(): void;
-  addTrack(audioPath: string): void;
-  removeAllTracks(): void;
-  gotoTrack(newIndex: number, forcePlay: boolean): void;
-  prevtrack(): void;
-  next(): void;
-  scrub(position: number): void;
-  setGain(position: number): void;
-  getCurrentTrackPosition(): number;
+declare module 'gapless5' {
+  export default class Gapless5 {
+    constructor(elemId: string);
+    tickMS: number;
 
-  // callbacks
-  onplay(): void;
-  onpause(): void;
-  onstop(): void;
-  onfinishedtrack(): void;
-  onfinishedall(): void;
-  onprev(): void;
-  onnext(): void;
+    pause(): void;
+    play(): void;
+    stop(): void;
+    addTrack(audioPath: string): void;
+    removeAllTracks(): void;
+    gotoTrack(newIndex: number, forcePlay: boolean): void;
+    prevtrack(): void;
+    next(): void;
+    scrub(position: number): void;
+    setGain(position: number): void;
+    getCurrentTrackPosition(): number;
+
+    // callbacks
+    onplay(): void;
+    onpause(): void;
+    onstop(): void;
+    onfinishedtrack(): void;
+    onfinishedall(): void;
+    onprev(): void;
+    onnext(): void;
+    onpositionupdate(position: number): void;
+  }
 }
 
 // from: https://github.com/loktar00/react-lazy-load/issues/126#issuecomment-715669016

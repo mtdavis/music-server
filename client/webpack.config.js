@@ -32,8 +32,6 @@ module.exports = {
   devtool: 'source-map',
   entry: {
     main: './src/main.tsx',
-    jquery: './bower_components/jquery/dist/jquery.min.js',
-    gapless5: './bower_components/gapless5/gapless5.js'
   },
   module: {
     rules: [
@@ -53,10 +51,6 @@ module.exports = {
       {
         test: /(\.svg$)|(\.eot$)|(\.woff$)|(\.ttf$)/,
         use: 'file-loader'
-      },
-      {
-        test: /(gapless5\.js)|(jquery.min.js)/,
-        use: 'script-loader'
       }
     ]
   },
@@ -67,7 +61,7 @@ module.exports = {
   plugins: [
     new HtmlWebPackPlugin({
       template: 'src/index.html',
-      chunks: ['jquery', 'gapless5', 'main'],
+      chunks: ['main'],
       chunksSortMode: 'manual',
       filename: './index.html'
     }),
