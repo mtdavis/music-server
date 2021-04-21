@@ -75,6 +75,7 @@ const Playlist = () => {
 
   return (
     <VTable<PlaylistItem>
+      id='playlist'
       rows={playlistItems}
       showHeader={false}
       columns={COLUMNS}

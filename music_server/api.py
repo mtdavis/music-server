@@ -152,10 +152,15 @@ class Lyrics(Resource):
         track = get_db().get_tracks(track_id=track_id)[0]
 
         genius_result = get_genius().search_song(track['title'], track['artist'])
+        if genius_result:
+            return {
+                'lyrics': genius_result.lyrics.strip(),
+                'url': genius_result.url,
+            }
 
         return {
-            'lyrics': genius_result.lyrics.strip(),
-            'url': genius_result.url,
+            'lyrics': 'No lyrics found.',
+            'url': None,
         }
 
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
-import {toJS} from 'mobx';
+import {observer} from 'mobx-react-lite';
 import {Theme} from '@material-ui/core/styles';
 import {makeStyles} from '@material-ui/styles';
 import {
@@ -14,7 +14,8 @@ import VTablePaper from './VTablePaper';
 import VTableCell from './VTableCell';
 import VTableHeader from './VTableHeader';
 import Notice from 'lib/Notice';
-import {calculateColumnWidths, renderIcon, sortBySpecs} from './util';
+import {calculateColumnWidths, renderIcon} from './util';
+import {useStores} from 'stores';
 
 const useStyles = makeStyles((theme: Theme) => ({
   table: {
@@ -36,8 +37,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export interface Props<R extends RowData> {
+  id: string;
   columns: ColumnConfig<R>[];
   rows: R[];
+  hiddenRowIds?: Set<number>;
   headerHeight?: number;
   rowHeight?: number;
   loading?: boolean;
@@ -45,13 +48,15 @@ export interface Props<R extends RowData> {
   onRowClick?: (row: R) => void;
   onRowCtrlClick?: (row: R) => void;
   placeholderText: string;
-  initialSortSpecs?: SortSpec<R>[],
-  icons?: {[key: string]: React.ReactElement},
+  initialSortSpecs?: SortSpec<R>[];
+  icons?: {[key: string]: React.ReactElement};
 }
 
 function VTable<R extends RowData>({
+  id,
   columns,
   rows,
+  hiddenRowIds = new Set<number>(),
   headerHeight = 48,
   rowHeight = 48,
   loading = false,
@@ -63,11 +68,18 @@ function VTable<R extends RowData>({
   icons = {},
 }: Props<R>): React.ReactElement {
   const classes = useStyles();
-  const [sortSpecs, setSortSpecs] = React.useState<SortSpec<R>[]>(initialSortSpecs);
 
-  const sortedRows = sortBySpecs(toJS(rows), sortSpecs);
+  const {sortStoreMap} = useStores();
+  const sortStore = sortStoreMap.get(id, rows, columns, initialSortSpecs);
 
-  const columnWidths = calculateColumnWidths(toJS(rows), columns);
+  React.useEffect(() => {
+    sortStore.setBaseRows(rows);
+  }, [rows, rows.length]);
+
+  const sortedRows = sortStore.sortedRows;
+  const visibleRows = sortedRows.filter(row => !hiddenRowIds.has(row.id));
+
+  const columnWidths = calculateColumnWidths(sortedRows, columns);
 
   const getRowClassName = ({
     index
@@ -90,57 +102,12 @@ function VTable<R extends RowData>({
     }
   };
 
-  const setSortColumnKey = (newSortColumnKey: keyof R) => {
-    const newSortSpecs = sortSpecs.slice();
-
-    // check if newSortColumnKey is already in sortSpecs
-    const existingIndex = newSortSpecs.findIndex(
-      spec => spec.columnKey === newSortColumnKey);
-
-    if(existingIndex === -1) {
-      // does not exist, so add it to the top position.
-      newSortSpecs.push({
-        columnKey: newSortColumnKey,
-        order: 1,
-      });
-    }
-    else if(existingIndex === newSortSpecs.length - 1) {
-      // exists in top position, so flip its order.
-      const sortSpec = Object.assign({}, newSortSpecs[existingIndex]);
-      newSortSpecs.splice(existingIndex, 1);
-
-      sortSpec.order = -sortSpec.order as SortOrder;
-      newSortSpecs.push(sortSpec);
-    }
-    else {
-      // exists in some other position,
-      // so remove it and re-add to the top position.
-      newSortSpecs.splice(existingIndex, 1);
-
-      newSortSpecs.push({
-        columnKey: newSortColumnKey,
-        order: 1,
-      });
-    }
-
-    setSortSpecs(newSortSpecs);
-  };
-
-  const getTopSortSpec = () => {
-    if(sortSpecs.length === 0) {
-      return null;
-    }
-
-    return sortSpecs[sortSpecs.length - 1];
-  };
-
   const renderColumn = (column: ColumnConfig<R>) => {
     const headerRenderer = showHeader ? (() => (
       <VTableHeader<R>
         column={column}
         headerHeight={headerHeight}
-        topSortSpec={getTopSortSpec()}
-        setSortColumnKey={setSortColumnKey}
+        sortStore={sortStore}
       />
     )) : undefined;
 
@@ -174,7 +141,7 @@ function VTable<R extends RowData>({
     );
   };
 
-  if(loading) {
+  if(loading || rows.length !== sortedRows.length) {
     return (
       <Notice loading>Loading...</Notice>
     );
@@ -187,13 +154,18 @@ function VTable<R extends RowData>({
   }
 
   return (
-    <VTablePaper rowCount={sortedRows.length} showHeader={showHeader} rowHeight={rowHeight} headerHeight={headerHeight}>
+    <VTablePaper
+      rowCount={visibleRows.length}
+      showHeader={showHeader}
+      rowHeight={rowHeight}
+      headerHeight={headerHeight}
+    >
       {autoSizerProps =>
         <Table
           {...autoSizerProps}
           className={classes.table}
-          rowCount={sortedRows.length}
-          rowGetter={({index}) => sortedRows[index]}
+          rowCount={visibleRows.length}
+          rowGetter={({index}) => visibleRows[index]}
           rowHeight={rowHeight}
           headerHeight={showHeader ? headerHeight : 0}
           onRowClick={_onRowClick}
@@ -206,4 +178,4 @@ function VTable<R extends RowData>({
   );
 }
 
-export default VTable;
+export default observer(VTable);

@@ -1,7 +1,9 @@
 import {
   action,
   autorun,
+  computed,
   IObservableArray,
+  ObservableSet,
   ObservableMap,
   makeObservable,
   observable,
@@ -10,7 +12,7 @@ import {
 
 import {getUniqueValues, rowPassesFilter} from './util';
 
-export default class FilterStore<R extends RowData> {
+export class FilterStore<R extends RowData> {
 
   baseRows: IObservableArray<R> = observable.array([]);
   columns: IObservableArray<ColumnConfig<R>> = observable.array([]);
@@ -20,7 +22,7 @@ export default class FilterStore<R extends RowData> {
   selectedItems: ObservableMap<keyof R, RowDataValue[]> = observable.map({});
   filterText = '';
   filterTextValid = true;
-  filteredRows: IObservableArray<R> = observable.array([]);
+  hiddenRowIds: ObservableSet<number> = observable.set([]);
 
   constructor(baseRows: R[], columns: ColumnConfig<R>[], filterKeys: (keyof R)[]) {
     this.baseRows.replace(baseRows);
@@ -42,28 +44,55 @@ export default class FilterStore<R extends RowData> {
       selectedItems: observable,
       filterText: observable,
       filterTextValid: observable,
-      filteredRows: observable,
+      hiddenRowIds: observable,
       setBaseRows: action,
       setSelectedItems: action,
-      setFilterText: action,
+      clearFilters: action,
+      hasFilters: computed,
     });
 
-    autorun(this.runFilter);
+    autorun(this.runFilter, {
+      delay: 200
+    });
   }
 
   setBaseRows(baseRows: R[]): void {
     this.baseRows.replace(baseRows);
   }
 
+  getSelectedItems(filterKey: keyof R): RowDataValue[] {
+    return this.selectedItems.get(filterKey) as RowDataValue[];
+  }
+
   setSelectedItems(filterKey: keyof R, newSelectedItems: RowDataValue[]): void {
     this.selectedItems.set(filterKey, newSelectedItems);
   }
 
-  setFilterText(filterText: string): void {
-    this.filterText = filterText;
+  get hasFilters(): boolean {
+    if(this.filterText) {
+      return true;
+    }
+
+    for(const filterKey of this.filterKeys) {
+      const selectedItems = this.selectedItems.get(filterKey);
+      if(selectedItems && selectedItems.length > 0) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
-  runFilter: () => void = () => {
+  clearFilters = (): void => {
+    this.filterText = '';
+    this.filterTextValid = true;
+
+    for(const filterKey of this.filterKeys) {
+      this.selectedItems.set(filterKey, []);
+    }
+  }
+
+  runFilter = (): void => {
     const newAvailableOptions = new Map();
     let filteredRows = this.baseRows.slice();
 
@@ -91,13 +120,49 @@ export default class FilterStore<R extends RowData> {
       newFilterTextValid = false;
     }
 
+    const hiddenRowIds = new Set<number>();
+    this.baseRows.forEach(row => {
+      hiddenRowIds.add(row.id);
+    });
+
+    filteredRows.forEach(row => {
+      hiddenRowIds.delete(row.id);
+    });
+
     runInAction(() => {
       this.availableOptions.replace(newAvailableOptions);
       this.filterTextValid = newFilterTextValid;
 
       if(newFilterTextValid) {
-        this.filteredRows.replace(filteredRows);
+        this.hiddenRowIds.replace(hiddenRowIds);
       }
     });
+  }
+}
+
+export class FilterStoreMap {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  filterStores: ObservableMap<string, FilterStore<any>> = observable.map({});
+
+  constructor() {
+    makeObservable(this, {
+      filterStores: observable,
+      get: action,
+    });
+  }
+
+  get<R extends RowData>(
+    tag: string,
+    baseRows: R[],
+    columns: ColumnConfig<R>[],
+    filterKeys: (keyof R)[]
+  ): FilterStore<R> {
+    if(this.filterStores.has(tag)) {
+      return this.filterStores.get(tag) as FilterStore<R>;
+    }
+
+    const newFilterStore = new FilterStore<R>(baseRows, columns, filterKeys);
+    this.filterStores.set(tag, newFilterStore);
+    return newFilterStore;
   }
 }

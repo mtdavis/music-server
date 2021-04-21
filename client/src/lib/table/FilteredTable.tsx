@@ -1,17 +1,24 @@
 import React from 'react';
-import {useLocalObservable, observer} from 'mobx-react-lite';
+import {observer} from 'mobx-react-lite';
 import {
   Grid,
+  IconButton,
   Paper,
+  Tooltip,
   Typography,
 } from '@material-ui/core';
 import {makeStyles} from '@material-ui/styles';
+import CancelIcon from '@material-ui/icons/Cancel';
 
-import FilterStore from './FilterStore';
+import {useStores} from 'stores';
 import FilterSelect from './FilterSelect';
 import FilterText from './FilterText';
+import VTable, {Props as BaseVTableProps} from './VTable';
 
 const useStyles = makeStyles(() => ({
+  clearButton: {
+    marginLeft: 16,
+  },
   itemCount: {
     marginLeft: 16,
     textAlign: 'right' as const,
@@ -30,22 +37,26 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+type VTableProps<R extends RowData> = Omit<BaseVTableProps<R>, 'id' | 'rows' | 'columns' | 'hiddenRowIds'>;
+
 interface Props<R extends RowData> {
+  id: string,
   rows: R[];
   filterKeys: string[];
   columns: ColumnConfig<R>[];
-  children: (rows: R[]) => React.ReactNode;
+  VTableProps: VTableProps<R>;
 }
 
 function FilteredTable<R extends RowData>({
+  id,
   rows,
   filterKeys,
   columns,
-  children,
+  VTableProps,
 }: Props<R>): React.ReactElement {
   const classes = useStyles();
-
-  const filterStore = useLocalObservable(() => new FilterStore(rows, columns, filterKeys));
+  const {filterStoreMap} = useStores();
+  const filterStore = filterStoreMap.get(id, rows, columns, filterKeys);
 
   React.useEffect(() => {
     filterStore.setBaseRows(rows);
@@ -66,12 +77,31 @@ function FilteredTable<R extends RowData>({
     );
   });
 
-  const numRows = filterStore.filteredRows.length;
+  const numRows = rows.length - filterStore.hiddenRowIds.size;
 
   const filterBox = (
     <Paper className={classes.filterBox}>
       <Grid container spacing={2}>
-        {selectElems}
+        <Grid item xs={12}>
+          <div style={{display: 'flex', alignItems: 'start'}}>
+            <div style={{flex: 1}}>
+              <Grid container spacing={2}>
+                {selectElems}
+              </Grid>
+            </div>
+            {filterStore.hasFilters &&
+              <Tooltip title='Clear Filters'>
+                <IconButton
+                  color='secondary'
+                  className={classes.clearButton}
+                  onClick={filterStore.clearFilters}
+                >
+                  <CancelIcon />
+                </IconButton>
+              </Tooltip>
+            }
+          </div>
+        </Grid>
 
         <Grid item xs={12}>
           <div style={{display: 'flex', alignItems: 'end'}}>
@@ -94,7 +124,13 @@ function FilteredTable<R extends RowData>({
       {filterBox}
 
       <div className={classes.tableWrapper}>
-        {children(filterStore.filteredRows)}
+        <VTable
+          {...VTableProps}
+          id={id}
+          rows={rows}
+          columns={columns}
+          hiddenRowIds={filterStore.hiddenRowIds}
+        />
       </div>
     </div>
   );

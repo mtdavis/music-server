@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   Chip,
+  Collapse,
   Grid,
   TextField,
 } from '@material-ui/core';
@@ -10,16 +11,17 @@ type Item = string | number | null;
 
 interface Props {
   hintText: string;
-  options: (Item)[];
-  onSelectedItemsUpdate: (items: (Item)[]) => void;
+  options: Item[];
+  selectedItems: Item[];
+  onSelectedItemsUpdate: (items: Item[]) => void;
 }
 
 const MultiSelectAutoComplete = ({
   hintText,
   options,
+  selectedItems,
   onSelectedItemsUpdate,
 }: Props): React.ReactElement => {
-  const [selectedItems, setSelectedItems] = React.useState<Item[]>([]);
   const [autocompleteValue, setAutocompleteValue] = React.useState(null);
   const [autocompleteInputValue, setAutocompleteInputValue] = React.useState('');
 
@@ -32,11 +34,7 @@ const MultiSelectAutoComplete = ({
     if(index !== -1) {
       const newSelectedItems = selectedItems.slice();
       newSelectedItems.splice(index, 1);
-      setSelectedItems(newSelectedItems);
-
-      if(onSelectedItemsUpdate) {
-        onSelectedItemsUpdate(newSelectedItems);
-      }
+      onSelectedItemsUpdate(newSelectedItems);
     }
   };
 
@@ -58,13 +56,9 @@ const MultiSelectAutoComplete = ({
       const newSelectedItems = selectedItems.slice();
       newSelectedItems.push(item);
 
-      setSelectedItems(newSelectedItems);
+      onSelectedItemsUpdate(newSelectedItems);
       setAutocompleteValue(null);
       setAutocompleteInputValue('');
-
-      if(onSelectedItemsUpdate) {
-        onSelectedItemsUpdate(newSelectedItems);
-      }
     }
   };
 
@@ -74,17 +68,17 @@ const MultiSelectAutoComplete = ({
 
   const chips = selectedItems.map(renderChip);
 
-  if(options.indexOf(null) !== -1) {
-    options = options.slice();
-    options.splice(options.indexOf(null), 1); // remove null
-    options.splice(0, 0, '(None)');
+  const renderedOptions = options.slice();
+  if(renderedOptions.indexOf(null) !== -1) {
+    renderedOptions.splice(renderedOptions.indexOf(null), 1); // remove null
+    renderedOptions.splice(0, 0, '(None)');
   }
 
   return (
     <Grid container direction='column' spacing={1}>
       <Grid item>
         <Autocomplete
-          options={options}
+          options={renderedOptions}
           value={autocompleteValue}
           inputValue={autocompleteInputValue}
           onChange={onAutocompleteChange}
@@ -93,11 +87,13 @@ const MultiSelectAutoComplete = ({
         />
       </Grid>
 
-      <Grid item>
-        <Grid container direction='row' spacing={1}>
-          {chips}
+      <Collapse in={chips.length > 0}>
+        <Grid item>
+          <Grid container direction='row' spacing={1}>
+            {chips}
+          </Grid>
         </Grid>
-      </Grid>
+      </Collapse>
     </Grid>
   );
 };

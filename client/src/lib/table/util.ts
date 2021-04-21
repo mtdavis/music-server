@@ -6,8 +6,6 @@ import jsep, {
   LogicalExpression,
   UnaryExpression,
 } from 'jsep';
-import memoizeOne from 'memoize-one';
-import equal from 'fast-deep-equal';
 import splitargs from 'splitargs';
 
 import {renderValue} from './VTableCell';
@@ -130,34 +128,6 @@ export function getUniqueValues<R extends RowData>(
   return result;
 }
 
-function getRowComparator<R extends RowData>(
-  columnKey: keyof R,
-  order: 1 | -1
-): (rowA: R, rowB: R) => number {
-  return function(rowA: R, rowB: R) {
-    const valA = rowA[columnKey];
-    const valB = rowB[columnKey];
-    return compare(valA, valB) * order;
-  };
-}
-
-function _sortBySpecs<R extends RowData>(
-  rows: R[],
-  sortSpecs: SortSpec<R>[]
-): R[] {
-  let sortedRows = rows.slice();
-
-  for(const sortSpec of sortSpecs) {
-    const {columnKey, order} = sortSpec;
-    const comparator = getRowComparator(columnKey, order);
-    sortedRows = sortedRows.sort(comparator);
-  }
-
-  return sortedRows;
-}
-
-export const sortBySpecs = memoizeOne(_sortBySpecs, equal);
-
 export function renderIcon(
   value: string
 ): string {
@@ -170,7 +140,7 @@ export function getRowArrayIds(array: RowData[]): number[] {
 
 type ColumnWidthMap<R extends RowData> = {[Property in keyof R]: number}
 
-function _calculateColumnWidths<R extends RowData>(
+export function calculateColumnWidths<R extends RowData>(
   rows: R[],
   columns: ColumnConfig<R>[],
 ): ColumnWidthMap<R> {
@@ -191,5 +161,3 @@ function _calculateColumnWidths<R extends RowData>(
 
   return result;
 }
-
-export const calculateColumnWidths = memoizeOne(_calculateColumnWidths, equal);

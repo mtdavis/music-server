@@ -7,11 +7,11 @@ import {
   unixTimestampToDateString,
   unixTimestampToYear,
 } from './util';
-import VTable from './table/VTable';
 import FilteredTable from './table/FilteredTable';
 import {useStores} from 'stores';
 
 interface Props {
+  id: string,
   rows: Album[];
   loading?: boolean;
   initialSortSpecs?: SortSpec<Album>[],
@@ -59,6 +59,7 @@ const COLUMNS = [
 ];
 
 const AlbumList = ({
+  id,
   rows,
   ...props
 }: Props) => {
@@ -81,21 +82,17 @@ const AlbumList = ({
   return (
     <>
       <FilteredTable<Album>
+        id={id}
         rows={rows}
         columns={COLUMNS}
         filterKeys={['genre', 'album_artist']}
-      >
-        {filteredRows =>
-          <VTable<Album>
-            {...props}
-            columns={COLUMNS}
-            rows={filteredRows}
-            onRowClick={onAlbumClick}
-            onRowCtrlClick={onAlbumCtrlClick}
-            placeholderText='No albums found for these filters.'
-          />
-        }
-      </FilteredTable>
+        VTableProps={{
+          ...props,
+          onRowClick: onAlbumClick,
+          onRowCtrlClick: onAlbumCtrlClick,
+          placeholderText: 'No albums found for these filters.'
+        }}
+      />
 
       <Snackbar
         message="Album enqueued."

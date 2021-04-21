@@ -1,10 +1,12 @@
 import React from 'react';
+import {observer} from 'mobx-react-lite';
 import classNames from 'classnames';
 import {
   TableCell,
   TableSortLabel,
 } from '@material-ui/core';
 import {makeStyles} from '@material-ui/styles';
+import {SortStore} from './SortStore';
 
 const useStyles = makeStyles(() => ({
   flexContainer: {
@@ -22,23 +24,22 @@ const useStyles = makeStyles(() => ({
 interface Props<R extends RowData> {
   column: ColumnConfig<R>;
   headerHeight: number;
-  topSortSpec: SortSpec<R> | null;
-  setSortColumnKey: (key: keyof R) => void;
+  sortStore: SortStore<R>;
 }
 
 function VTableHeader<R extends RowData>({
   column,
   headerHeight,
-  topSortSpec,
-  setSortColumnKey,
+  sortStore,
 }: Props<R>): React.ReactElement {
   const classes = useStyles();
+  const topSortSpec = sortStore.topSortSpec;
 
   return (
     <TableCell
       component="div"
       className={classNames(classes.tableCell, classes.flexContainer)}
-      onClick={() => setSortColumnKey(column.key)}
+      onClick={() => sortStore.setSortColumnKey(column.key)}
       variant="head"
       style={{height: headerHeight, userSelect: 'none'}}
       align={column.align}
@@ -54,4 +55,4 @@ function VTableHeader<R extends RowData>({
   );
 }
 
-export default VTableHeader;
+export default observer(VTableHeader);

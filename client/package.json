@@ -48,12 +48,11 @@
     "@material-ui/lab": "4.0.0-alpha.57",
     "@mdi/js": "5.9.55",
     "classnames": "2.2.6",
-    "debounce": "1.2.1",
-    "fast-deep-equal": "^3.1.3",
-    "gapless5": "https://github.com/mtdavis/Gapless-5#0.1.1",
+    "fast-deep-equal": "3.1.3",
+    "gapless5": "https://github.com/mtdavis/Gapless-5#0.1.2",
     "jsep": "0.3.5",
     "mdi-material-ui": "6.22.0",
-    "memoize-one": "^5.1.1",
+    "memoize-one": "5.1.1",
     "mobx": "6.1.8",
     "mobx-react-lite": "3.2.0",
     "nosleep.js": "0.12.0",
@@ -65,7 +64,7 @@
     "react-router-dom": "5.2.0",
     "react-select": "4.2.1",
     "react-virtualized": "9.22.3",
-    "splitargs": "^0.0.7",
+    "splitargs": "0.0.7",
     "weighted": "0.3.0"
   }
 }

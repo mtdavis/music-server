@@ -21,6 +21,7 @@ export default class MusicStore {
   willStopAfterCurrent = false;
   demoMode: boolean = __DEMO_MODE__;
   dbStore: DbStore;
+  noSleep = new NoSleep();
 
   constructor(dbStore: DbStore) {
     this.dbStore = dbStore;
@@ -53,9 +54,9 @@ export default class MusicStore {
       seekToPosition: action,
       setVolume: action,
     });
-  }
 
-  noSleep = new NoSleep();
+    this.initializePlayer();
+  }
 
   get currentTrack(): Track | null {
     if(this.playlist.length === 0) {
@@ -164,8 +165,8 @@ export default class MusicStore {
     });
   }
 
-  initializePlayer(playerNode: HTMLDivElement): void {
-    this.api = new Gapless5(playerNode.id);
+  initializePlayer(): void {
+    this.api = new Gapless5();
     this.api.tickMS = 100;
     this.setVolume(.5);
 

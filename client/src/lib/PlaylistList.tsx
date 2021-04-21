@@ -4,11 +4,11 @@ import {
   secondsToTimeString,
   unixTimestampToDateString,
 } from './util';
-import VTable from './table/VTable';
 import FilteredTable from './table/FilteredTable';
 import {useStores} from 'stores';
 
 interface Props {
+  id: string,
   rows: Playlist[];
   loading?: boolean;
   initialSortSpecs?: SortSpec<Playlist>[],
@@ -46,6 +46,7 @@ const COLUMNS = [
 ];
 
 const PlaylistList = ({
+  id,
   rows,
   ...props
 }: Props) => {
@@ -57,20 +58,16 @@ const PlaylistList = ({
 
   return (
     <FilteredTable<Playlist>
+      id={id}
       rows={rows}
       columns={COLUMNS}
       filterKeys={[]}
-    >
-      {filteredRows =>
-        <VTable<Playlist>
-          {...props}
-          rows={filteredRows}
-          columns={COLUMNS}
-          onRowClick={onPlaylistClick}
-          placeholderText='No playlists found for these filters.'
-        />
-      }
-    </FilteredTable>
+      VTableProps={{
+        ...props,
+        onRowClick: onPlaylistClick,
+        placeholderText: 'No playlists found for these filters.',
+      }}
+    />
   );
 };
 

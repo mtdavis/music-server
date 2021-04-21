@@ -6,11 +6,11 @@ import {
   secondsToTimeString,
   unixTimestampToDateString,
 } from './util';
-import VTable from './table/VTable';
 import FilteredTable from './table/FilteredTable';
 import {useStores} from 'stores';
 
 interface Props {
+  id: string,
   rows: Track[];
   loading?: boolean;
   initialSortSpecs?: SortSpec<Track>[],
@@ -61,6 +61,7 @@ const COLUMNS = [
 ];
 
 const TrackList = ({
+  id,
   rows,
   ...props
 }: Props) => {
@@ -83,21 +84,17 @@ const TrackList = ({
   return (
     <>
       <FilteredTable<Track>
+        id={id}
         rows={rows}
         columns={COLUMNS}
         filterKeys={['genre', 'artist', 'album']}
-      >
-        {filteredRows =>
-          <VTable<Track>
-            {...props}
-            rows={filteredRows}
-            columns={COLUMNS}
-            onRowClick={onTrackClick}
-            onRowCtrlClick={onTrackCtrlClick}
-            placeholderText='No tracks found for these filters.'
-          />
-        }
-      </FilteredTable>
+        VTableProps={{
+          ...props,
+          onRowClick: onTrackClick,
+          onRowCtrlClick: onTrackCtrlClick,
+          placeholderText: 'No tracks found for these filters.',
+        }}
+      />
 
       <Snackbar
         message="Track enqueued."

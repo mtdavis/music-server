@@ -8,12 +8,13 @@ const AlbumsPage = () => {
   const {dbStore} = useStores();
 
   const initialSortSpecs = [
-    {columnKey: 'album', order: 1 as const},
-    {columnKey: 'album_artist', order: 1 as const}
+    {columnKey: 'album'},
+    {columnKey: 'album_artist'}
   ];
 
   return (
     <AlbumList
+      id='all-albums'
       rows={dbStore.albums}
       loading={dbStore.albumsLoading}
       initialSortSpecs={initialSortSpecs}

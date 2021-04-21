@@ -3,6 +3,8 @@ import LyricsStore from './LyricsStore';
 import MusicStore from './MusicStore';
 import ScrobbleStore from './ScrobbleStore';
 import UiStore from './UiStore';
+import {FilterStoreMap} from 'lib/table/FilterStore';
+import {SortStoreMap} from 'lib/table/SortStore';
 
 export default class RootStore {
   dbStore: DbStore;
@@ -10,6 +12,8 @@ export default class RootStore {
   lyricsStore: LyricsStore;
   scrobbleStore: ScrobbleStore;
   uiStore: UiStore;
+  filterStoreMap: FilterStoreMap;
+  sortStoreMap: SortStoreMap;
 
   constructor() {
     this.dbStore = new DbStore();
@@ -17,5 +21,7 @@ export default class RootStore {
     this.lyricsStore = new LyricsStore(this.musicStore);
     this.scrobbleStore = new ScrobbleStore(this.musicStore, this.dbStore);
     this.uiStore = new UiStore();
+    this.filterStoreMap = new FilterStoreMap();
+    this.sortStoreMap = new SortStoreMap();
   }
 }

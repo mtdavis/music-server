@@ -1,7 +1,7 @@
 import React from 'react';
 import {observer} from 'mobx-react-lite';
 
-import FilterStore from './FilterStore';
+import {FilterStore} from './FilterStore';
 import MultiSelectAutoComplete from 'lib/MultiSelectAutoComplete';
 
 interface Props<R extends RowData> {
@@ -21,6 +21,7 @@ function FilterSelect<R extends RowData>({
     <MultiSelectAutoComplete
       options={filterStore.availableOptions.get(filterKey) || []}
       hintText={hint}
+      selectedItems={filterStore.getSelectedItems(filterKey)}
       onSelectedItemsUpdate={selectedItems =>
         filterStore.setSelectedItems(filterKey, selectedItems)
       }

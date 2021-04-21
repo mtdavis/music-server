@@ -7,7 +7,6 @@ import {Snackbar} from '@material-ui/core';
 import {useStores} from 'stores';
 import ScrobbleState from 'lib/ScrobbleState';
 import Wrap from './Wrap';
-import GaplessPlayer from './GaplessPlayer';
 import Toolbar from './toolbar/Toolbar';
 
 const homePagePromise = import('pages/HomePage');
@@ -31,8 +30,6 @@ const Master = () => {
 
   return (
     <>
-      <GaplessPlayer />
-
       <Toolbar />
 
       <HashRouter>

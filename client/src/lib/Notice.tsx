@@ -30,7 +30,7 @@ const Notice = ({
       <Grid container direction='row' spacing={2} alignItems='center'>
         {loading &&
           <Grid item>
-            <CircularProgress />
+            <CircularProgress disableShrink />
           </Grid>
         }
 

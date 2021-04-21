@@ -17,13 +17,14 @@ const NeverPlayedPage = () => {
   }
 
   const initialSortSpecs = [
-    {columnKey: 'album', order: 1 as const},
-    {columnKey: 'year', order: 1 as const},
-    {columnKey: 'album_artist', order: 1 as const}
+    {columnKey: 'album'},
+    {columnKey: 'year'},
+    {columnKey: 'album_artist'}
   ];
 
   return (
     <AlbumList
+      id='never-played'
       rows={albumsNeverPlayed}
       loading={dbStore.albumsLoading}
       initialSortSpecs={initialSortSpecs}

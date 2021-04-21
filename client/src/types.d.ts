@@ -23,7 +23,7 @@ declare module 'splitargs' {
 
 declare module 'gapless5' {
   export default class Gapless5 {
-    constructor(elemId: string);
+    constructor();
     tickMS: number;
 
     pause(): void;
@@ -136,9 +136,7 @@ declare interface ColumnConfig<T extends RowData> {
   wrap?: boolean;
 }
 
-type SortOrder = 1 | -1;
-
 declare interface SortSpec<R extends RowData> {
   columnKey: keyof R;
-  order: SortOrder;
+  order?: import('lib/table/SortOrder').default;
 }

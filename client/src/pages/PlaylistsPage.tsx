@@ -7,11 +7,12 @@ import {useStores} from 'stores';
 const PlaylistsPage = () => {
   const {dbStore} = useStores();
   const initialSortSpecs = [
-    {columnKey: 'title', order: 1 as const}
+    {columnKey: 'title'}
   ];
 
   return (
     <PlaylistList
+      id='playlists'
       rows={dbStore.playlists}
       loading={dbStore.playlistsLoading}
       initialSortSpecs={initialSortSpecs}

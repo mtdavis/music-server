@@ -85,17 +85,18 @@ const LeftNav = () => {
         </LinkMenuItem>
         {
           musicStore.demoMode ? null :
-            <div>
+            <>
               <LinkMenuItem to='/playlists' Icon={QueueMusicIcon}>
                 Playlists
               </LinkMenuItem>
               <LinkMenuItem to='/shuffle' Icon={ShuffleVariantIcon}>
                 Shuffle
               </LinkMenuItem>
+              <Divider />
               <LinkMenuItem to='/scan' Icon={SearchIcon}>
                 Scan
               </LinkMenuItem>
-            </div>
+            </>
         }
       </List>
     </Drawer>

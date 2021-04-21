@@ -1,11 +1,10 @@
 import React from 'react';
 import {observer} from 'mobx-react-lite';
-import debounce from 'debounce';
 import {
   TextField,
 } from '@material-ui/core';
 
-import FilterStore from './FilterStore';
+import {FilterStore} from './FilterStore';
 
 type TextFieldChangeEvent =
   React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement> |
@@ -18,22 +17,18 @@ interface Props<R extends RowData> {
 function FilterText<R extends RowData>({
   filterStore,
 }: Props<R>): React.ReactElement {
-  const delayedOnTextFilterChange = debounce((event: TextFieldChangeEvent) => {
-    filterStore.setFilterText((event.target as HTMLInputElement).value);
-  }, 200);
-
-  const onTextFilterChange = (event: TextFieldChangeEvent) => {
-    event.persist();
-    delayedOnTextFilterChange(event);
+  const onChange = (event: TextFieldChangeEvent) => {
+    filterStore.filterText = (event.target as HTMLInputElement).value;
   };
 
   return (
     <TextField
       fullWidth
+      value={filterStore.filterText}
       placeholder="Text or query..."
       error={!filterStore.filterTextValid}
-      onChange={onTextFilterChange}
-      onKeyUp={onTextFilterChange}
+      onChange={onChange}
+      onKeyUp={onChange}
     />
   );
 }

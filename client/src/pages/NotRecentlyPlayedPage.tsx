@@ -3,6 +3,7 @@ import {observer} from 'mobx-react-lite';
 
 import AlbumList from 'lib/AlbumList';
 import {useStores} from 'stores';
+import SortOrder from 'lib/table/SortOrder';
 
 const NotRecentlyPlayedPage = () => {
   const {dbStore} = useStores();
@@ -20,11 +21,12 @@ const NotRecentlyPlayedPage = () => {
   });
 
   const initialSortSpecs = [
-    {columnKey: 'last_play', order: -1 as -1}
+    {columnKey: 'last_play', order: SortOrder.Descending}
   ];
 
   return (
     <AlbumList
+      id='not-recently-played'
       rows={albumsNotRecentlyPlayed}
       loading={dbStore.albumsLoading}
       initialSortSpecs={initialSortSpecs}
