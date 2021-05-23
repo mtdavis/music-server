@@ -2,12 +2,17 @@ import React from 'react';
 import {Route, Switch} from 'react-router';
 import {HashRouter} from 'react-router-dom';
 import {observer} from 'mobx-react-lite';
-import {Snackbar} from '@material-ui/core';
+import {
+  AppBar,
+  Snackbar,
+} from '@material-ui/core';
+import {makeStyles} from '@material-ui/styles';
+import {Theme} from '@material-ui/core/styles';
 
 import {useStores} from 'stores';
 import ScrobbleState from 'lib/ScrobbleState';
 import Wrap from './Wrap';
-import Toolbar from './toolbar/Toolbar';
+const toolbarPromise = import('./toolbar/Toolbar');
 
 const homePagePromise = import('pages/HomePage');
 const lyricsPagePromise = import('pages/LyricsPage');
@@ -19,8 +24,17 @@ const allTracksPagePromise = import('pages/AllTracksPage');
 const shufflePagePromise = import('pages/ShufflePage');
 const playlistsPagePromise = import('pages/PlaylistsPage');
 const scanPagePromise = import('pages/ScanPage');
+const statsPagePromise = import('pages/StatsPage');
+
+const useStyles = makeStyles((theme: Theme) => ({
+  appBar: {
+    zIndex: theme.zIndex.drawer + 1,
+  },
+}));
 
 const Master = () => {
+  const Toolbar = React.lazy(() => toolbarPromise);
+  const classes = useStyles();
   const {musicStore, scrobbleStore} = useStores();
   const [demoSnackbarClosed, setDemoSnackbarClosed] = React.useState(false);
 
@@ -30,7 +44,11 @@ const Master = () => {
 
   return (
     <>
-      <Toolbar />
+      <AppBar className={classes.appBar}>
+        <React.Suspense fallback={<div style={{height: 64}} />}>
+          <Toolbar />
+        </React.Suspense>
+      </AppBar>
 
       <HashRouter>
         <Switch>
@@ -44,6 +62,7 @@ const Master = () => {
           <Route path='/shuffle'><Wrap>{shufflePagePromise}</Wrap></Route>
           <Route path='/playlists'><Wrap>{playlistsPagePromise}</Wrap></Route>
           <Route path='/scan'><Wrap>{scanPagePromise}</Wrap></Route>
+          <Route path='/statistics'><Wrap>{statsPagePromise}</Wrap></Route>
           <Route path='*'><Wrap>{homePagePromise}</Wrap></Route>
         </Switch>
       </HashRouter>

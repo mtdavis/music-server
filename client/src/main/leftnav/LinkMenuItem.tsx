@@ -5,13 +5,13 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Tooltip,
 } from '@material-ui/core';
 import {
   makeStyles
 } from '@material-ui/styles';
 import {useHistory, useLocation} from "react-router-dom";
 
+import Tooltip from 'lib/Tooltip';
 import {useStores} from 'stores';
 
 const useStyles = makeStyles(() => ({

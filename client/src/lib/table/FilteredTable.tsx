@@ -4,12 +4,12 @@ import {
   Grid,
   IconButton,
   Paper,
-  Tooltip,
   Typography,
 } from '@material-ui/core';
 import {makeStyles} from '@material-ui/styles';
 import CancelIcon from '@material-ui/icons/Cancel';
 
+import Tooltip from 'lib/Tooltip';
 import {useStores} from 'stores';
 import FilterSelect from './FilterSelect';
 import FilterText from './FilterText';

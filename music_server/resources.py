@@ -28,18 +28,18 @@ def handle_root():
 
 
 @resources_blueprint.route('/<path:path>')
-def handle_static(path):
+def handle_static(path: str):
     return send_from_directory('../client/dist', path)
 
 
 @resources_blueprint.route('/stream/<path:path>')
-def handle_stream(path):
+def handle_stream(path: str):
     return send_from_directory(
         get_config('files')['base_stream_path'], path)
 
 
 @resources_blueprint.route('/track/<int:track_id>/art')
-def handle_art(track_id):
+def handle_art(track_id: int):
     base_stream_path = pathlib.Path(get_config('files')['base_stream_path'])
 
     db = get_db()

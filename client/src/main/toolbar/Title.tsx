@@ -24,6 +24,7 @@ const Title = (): React.ReactElement => (
       <Route path='/shuffle' component={renderTitle('Shuffle')} />
       <Route path='/scan' component={renderTitle('Scan')} />
       <Route path='/playlists' component={renderTitle('Playlists')} />
+      <Route path='/statistics' component={renderTitle('Statistics')} />
       <Route path='*' component={renderTitle('Now Playing')} />
     </Switch>
   </HashRouter>

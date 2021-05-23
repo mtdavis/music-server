@@ -10,10 +10,8 @@ import PlayerState from 'lib/PlayerState';
 import ScrobbleState from 'lib/ScrobbleState';
 
 import {
-  AppBar,
   IconButton,
   Toolbar as MUIToolbar,
-  Tooltip,
 } from '@material-ui/core';
 import {makeStyles} from '@material-ui/styles';
 import {Theme} from '@material-ui/core/styles';
@@ -26,6 +24,7 @@ import StopIcon from '@material-ui/icons/Stop';
 import SkipNextIcon from '@material-ui/icons/SkipNext';
 import LastFmIcon from './LastFmIcon';
 
+import Tooltip from 'lib/Tooltip';
 import Title from './Title';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -71,53 +70,51 @@ const Toolbar = () => {
   };
 
   return (
-    <AppBar className={classes.appBar}>
-      <MUIToolbar className={classes.toolbar}>
-        <IconButton color="inherit" onClick={uiStore.toggleDrawer}>
-          <MenuIcon />
-        </IconButton>
+    <MUIToolbar className={classes.toolbar}>
+      <IconButton color="inherit" onClick={uiStore.toggleDrawer}>
+        <MenuIcon />
+      </IconButton>
 
-        <Title />
+      <Title />
 
-        <CurrentTimeSlider />
+      <CurrentTimeSlider />
 
-        <AppBarIconButton
-          Icon={SkipPreviousIcon}
-          disabled={!prevButtonEnabled}
-          onClick={() => musicStore.jumpToPreviousTrack()}
-        />
-        <AppBarIconButton
-          Icon={playOrPauseIcon}
-          disabled={!playButtonEnabled}
-          onClick={() => musicStore.playOrPausePlayback()}
-        />
-        <AppBarIconButton
-          Icon={StopIcon}
-          className={musicStore.willStopAfterCurrent ? "pulsate" : ""}
-          disabled={!stopButtonEnabled}
-          onClick={onStopButtonClick}
-        />
-        <AppBarIconButton
-          Icon={SkipNextIcon}
-          disabled={!nextButtonEnabled}
-          onClick={() => musicStore.jumpToNextTrack()}
-        />
+      <AppBarIconButton
+        Icon={SkipPreviousIcon}
+        disabled={!prevButtonEnabled}
+        onClick={() => musicStore.jumpToPreviousTrack()}
+      />
+      <AppBarIconButton
+        Icon={playOrPauseIcon}
+        disabled={!playButtonEnabled}
+        onClick={() => musicStore.playOrPausePlayback()}
+      />
+      <AppBarIconButton
+        Icon={StopIcon}
+        className={musicStore.willStopAfterCurrent ? "pulsate" : ""}
+        disabled={!stopButtonEnabled}
+        onClick={onStopButtonClick}
+      />
+      <AppBarIconButton
+        Icon={SkipNextIcon}
+        disabled={!nextButtonEnabled}
+        onClick={() => musicStore.jumpToNextTrack()}
+      />
 
-        <VolumeButton />
+      <VolumeButton />
 
-        {musicStore.demoMode ?
-          null :
-          <Tooltip title={scrobbleTooltip[scrobbleStore.scrobbleState]}>
-            <div>
-              <AppBarIconButton
-                Icon={LastFmIcon}
-                onClick={openLastFm}
-              />
-            </div>
-          </Tooltip>
-        }
-      </MUIToolbar>
-    </AppBar>
+      {musicStore.demoMode ?
+        null :
+        <Tooltip title={scrobbleTooltip[scrobbleStore.scrobbleState]}>
+          <div>
+            <AppBarIconButton
+              Icon={LastFmIcon}
+              onClick={openLastFm}
+            />
+          </div>
+        </Tooltip>
+      }
+    </MUIToolbar>
   );
 };
 

@@ -1,11 +1,9 @@
 import React from 'react';
 import {observer} from 'mobx-react-lite';
-import {
-  Popover,
-  Slider,
-} from '@material-ui/core';
+import {Slider} from '@material-ui/core';
 import {makeStyles} from '@material-ui/styles';
 import {Theme} from '@material-ui/core/styles';
+const popoverPromise = import('@material-ui/core/Popover');
 import VolumeMuteIcon from '@material-ui/icons/VolumeMute';
 import VolumeDownIcon from '@material-ui/icons/VolumeDown';
 import VolumeUpIcon from '@material-ui/icons/VolumeUp';
@@ -23,6 +21,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 const VolumeButton = () => {
+  const Popover = React.lazy(() => popoverPromise);
   const classes = useStyles();
   const {musicStore} = useStores();
   const buttonRef = React.useRef(null);
@@ -62,23 +61,25 @@ const VolumeButton = () => {
           onClick={toggleVolumePopover} />
       </div>
 
-      <Popover
-        open={volumePopoverVisible}
-        onClose={handleRequestClose}
-        anchorEl={buttonRef.current}
-        transformOrigin={{horizontal: 'center', vertical: 'top'}}
-        anchorOrigin={{horizontal: 'center', vertical: 'bottom'}}
-      >
-        <div className={classes.root}>
-          <Slider
-            max={1}
-            step={.01}
-            orientation='vertical'
-            value={volume}
-            onChange={onVolumeChange}
-          />
-        </div>
-      </Popover>
+      <React.Suspense fallback={<div />}>
+        <Popover
+          open={volumePopoverVisible}
+          onClose={handleRequestClose}
+          anchorEl={buttonRef.current}
+          transformOrigin={{horizontal: 'center', vertical: 'top'}}
+          anchorOrigin={{horizontal: 'center', vertical: 'bottom'}}
+        >
+          <div className={classes.root}>
+            <Slider
+              max={1}
+              step={.01}
+              orientation='vertical'
+              value={volume}
+              onChange={onVolumeChange}
+            />
+          </div>
+        </Popover>
+      </React.Suspense>
     </>
   );
 };

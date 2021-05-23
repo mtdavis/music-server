@@ -5,7 +5,7 @@ import pylast
 from .util import get_config
 
 
-def get_genius():
+def get_genius() -> lyricsgenius.Genius:
     if 'genius' not in g:
         settings = get_config('genius')
 
@@ -14,14 +14,14 @@ def get_genius():
     return g.genius
 
 
-def get_lastfm():
+def get_lastfm() -> pylast.LastFMNetwork:
     if 'lastfm' not in g:
         settings = get_config('lastfm')
 
         g.lastfm = pylast.LastFMNetwork(
             api_key=settings['api_key'],
             api_secret=settings['api_secret'],
-            session_key = settings['session_key'],
+            session_key=settings['session_key'],
             username=settings['username'],
             password_hash=pylast.md5(settings['password']),
         )

@@ -18,5 +18,10 @@ setup(
         'lyricsgenius==3.0.0',
         'tabulate==0.8.9',
     ],
+    extras_require={
+        'dev': [
+            'mypy==0.812',
+        ],
+    },
     license='MIT',
 )

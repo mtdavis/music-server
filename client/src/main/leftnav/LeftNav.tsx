@@ -18,6 +18,7 @@ import ShuffleVariantIcon from 'mdi-material-ui/ShuffleVariant';
 import HeartCircleIcon from 'mdi-material-ui/HeartCircle';
 import WatchLaterIcon from '@material-ui/icons/WatchLater';
 import SearchIcon from '@material-ui/icons/Search';
+import TimelineIcon from '@material-ui/icons/Timeline';
 
 import {useStores} from 'stores';
 import LinkMenuItem from './LinkMenuItem';
@@ -95,6 +96,9 @@ const LeftNav = () => {
               <Divider />
               <LinkMenuItem to='/scan' Icon={SearchIcon}>
                 Scan
+              </LinkMenuItem>
+              <LinkMenuItem to='/statistics' Icon={TimelineIcon}>
+                Statistics
               </LinkMenuItem>
             </>
         }

@@ -6,6 +6,7 @@ import pathlib
 import sqlite3
 import multiprocessing
 import time
+from typing import List
 
 import eyed3
 from tabulate import tabulate
@@ -21,7 +22,7 @@ def get_year(metadata):
 
 
 class Database:
-    def __init__(self, db_path, dry_run):
+    def __init__(self, db_path: str, dry_run: bool):
         self.db_path = db_path
         self.dry_run = dry_run
 
@@ -50,7 +51,7 @@ class Database:
 
         self.conn.close()
 
-    def execute(self, query, **kwargs):
+    def execute(self, query: str, **kwargs) -> List[sqlite3.Row]:
         self.cursor.execute(query, kwargs)
         return self.cursor.fetchall()
 
@@ -96,10 +97,12 @@ class Database:
         return results.getvalue()
 
     @functools.cache
-    def get_artist_id(self, artist_name):
+    def get_artist_id(self, artist_name: str):
         artist_id_result = self.execute("""
             SELECT id FROM artist WHERE name = :name
-        """, name=artist_name)
+        """,
+            name=artist_name,
+        )
 
         if artist_id_result:
             return artist_id_result[0]['id']
@@ -107,17 +110,22 @@ class Database:
         self.new_artists.append([artist_name])
         self.execute("""
             INSERT INTO artist (name) VALUES (:name)
-        """, name=artist_name)
+        """,
+            name=artist_name,
+        )
 
         return self.cursor.lastrowid
 
     @functools.cache
-    def get_album_id(self, album_artist_name, album_title):
+    def get_album_id(self, album_artist_name: str, album_title: str):
         album_artist_id = self.get_artist_id(album_artist_name)
 
         album_id_result = self.execute("""
             SELECT id FROM album WHERE title = $title AND artist_id = $artist_id
-        """, title=album_title, artist_id=album_artist_id)
+        """,
+            title=album_title,
+            artist_id=album_artist_id,
+        )
 
         if album_id_result:
             return album_id_result[0]['id']
@@ -126,11 +134,14 @@ class Database:
 
         self.execute("""
             INSERT INTO album (title, artist_id) VALUES ($title, $artist_id)
-        """, title=album_title, artist_id=album_artist_id)
+        """,
+            title=album_title,
+            artist_id=album_artist_id,
+        )
 
         return self.cursor.lastrowid
 
-    def add_track(self, path_relative_to_root, metadata):
+    def add_track(self, path_relative_to_root: str, metadata):
         if metadata['album'] and metadata['album_artist'] is None:
             raise ValueError(f'No album artist for {path_relative_to_root}')
 
@@ -224,13 +235,15 @@ class Database:
             id=existing_info['id'],
         )
 
-    def delete_track(self, path_relative_to_root):
+    def delete_track(self, path_relative_to_root: str):
         self.deleted_tracks.append([path_relative_to_root])
 
         self.execute("""
             DELETE FROM track
             WHERE path = :path
-        """, path=path_relative_to_root)
+        """,
+            path=path_relative_to_root,
+        )
 
     def get_existing_tracks(self):
         track_result = self.execute("""
@@ -254,7 +267,7 @@ def clean_garbage(path, metadata, field, dry_run):
             metadata.tag.save()
 
 
-def get_metadata(path, root, dry_run):
+def get_metadata(path: pathlib.Path, root: str, dry_run: bool):
     path_relative_to_root = str(path.relative_to(root))
 
     metadata = eyed3.load(path)
@@ -278,7 +291,7 @@ def get_metadata(path, root, dry_run):
     )
 
 
-def get_all_metadata(root, dry_run):
+def get_all_metadata(root: str, dry_run: bool):
     param_tuples = []
 
     for dirpath, _, filenames in os.walk(root):
@@ -305,7 +318,7 @@ def init_logger():
     logging.getLogger('eyed3').setLevel(logging.ERROR)
 
 
-def scan(dry_run=False):
+def scan(dry_run: bool = False):
     init_logger()
 
     root = get_config('files')['base_stream_path']

@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from flask import Blueprint, g, current_app
 import sqlite3
 
@@ -5,23 +7,23 @@ from .util import get_config
 
 
 class Database:
-    def __init__(self, db_path):
+    def __init__(self, db_path: str):
         self.db_path = db_path
         self.conn = sqlite3.connect(self.db_path)
         self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
 
-    def execute(self, query, **kwargs):
+    def execute(self, query: str, **kwargs) -> List[sqlite3.Row]:
         self.cursor.execute(query, kwargs)
         return self.cursor.fetchall()
 
-    def get_last_modified(self):
+    def get_last_modified(self) -> int:
         return self.execute("""
             SELECT max(last_modified) as last_modified
             FROM track_view
         """)[0]['last_modified']
 
-    def get_albums(self):
+    def get_albums(self) -> List[sqlite3.Row]:
         return self.execute("""
             SELECT
                 id,
@@ -37,7 +39,11 @@ class Database:
             FROM album_view
         """)
 
-    def get_tracks(self, track_id=None, album_id=None):
+    def get_tracks(
+        self,
+        track_id: Optional[int] = None,
+        album_id: Optional[int] = None
+    ) -> List[sqlite3.Row]:
         return self.execute("""
             SELECT
                 id,
@@ -63,10 +69,10 @@ class Database:
             ORDER BY album, track_number
         """,
             track_id=track_id,
-            album_id=album_id
+            album_id=album_id,
         )
 
-    def get_playlists(self):
+    def get_playlists(self) -> List[sqlite3.Row]:
         return self.execute("""
             SELECT
                 id,
@@ -78,7 +84,7 @@ class Database:
             FROM playlist_view
         """)
 
-    def get_playlist_tracks(self, playlist_id):
+    def get_playlist_tracks(self, playlist_id: int) -> List[sqlite3.Row]:
         return self.execute("""
             SELECT
                 id,
@@ -104,9 +110,11 @@ class Database:
                     ELSE playlist_track.`order`
                 END
             );
-        """, playlist_id=playlist_id)
+        """,
+            playlist_id=playlist_id,
+        )
 
-    def get_shuffle(self):
+    def get_shuffle(self) -> List[sqlite3.Row]:
         return self.execute("""
             SELECT * FROM track_view
             WHERE (play_count >= 5) AND (duration >= 50) AND (duration < 1000)
@@ -118,7 +126,7 @@ class Database:
             ORDER BY last_play
         """)
 
-    def get_scrobble_backlog(self):
+    def get_scrobble_backlog(self) -> List[sqlite3.Row]:
         return self.execute("""
             SELECT
                 track_view.id,
@@ -134,7 +142,7 @@ class Database:
         """)
 
 
-def get_db():
+def get_db() -> Database:
     if 'db' not in g:
         g.db = Database(get_config('files')['db_path'])
 
