@@ -21,6 +21,7 @@ from .db import get_db
 from .external import get_genius, get_lastfm
 from .scan import scan
 from .util import get_config
+from . import stats
 
 
 def api_cache(func):
@@ -260,95 +261,10 @@ class Stats(Resource):
             return None, 401
 
         return {
-            'genres_over_time': self.genres_over_time,
-            'artists_over_time': self.artists_over_time,
+            'genres_over_time': stats.get_genres_over_time(),
+            'artists_over_time': stats.get_artists_over_time(),
+            'albums_over_time': stats.get_albums_over_time(),
         }
-
-    @property
-    def genres_over_time(self):
-        db = get_db()
-
-        plays = db.execute("""
-            SELECT play.timestamp, track.genre, track.duration
-            FROM play
-            LEFT JOIN track ON play.track_id = track.id
-            WHERE play.timestamp IS NOT NULL
-        """)
-
-        years = set()
-        by_genre_and_year = {}
-
-        for play in plays:
-            genre = play['genre']
-
-            year = datetime.datetime.fromtimestamp(play['timestamp']).year
-            years.add(year)
-
-            if genre not in by_genre_and_year:
-                by_genre_and_year[genre] = collections.Counter()
-
-            # use duration so that it properly reflects "time spent listening"
-            # for, e.g., long single-track albums.
-            by_genre_and_year[genre][year] += play['duration']
-
-        result = [
-            {
-                'id': genre,
-                'data': [
-                    {'x': year, 'y': counts_by_year[year]}
-                    for year in sorted(years)[1:]  # exclude sparse first year
-                ]
-            }
-            for genre, counts_by_year in by_genre_and_year.items()
-        ]
-
-        return result
-
-    @property
-    def artists_over_time(self):
-        db = get_db()
-
-        plays = db.execute("""
-            SELECT play.timestamp, track_view.artist, track_view.duration
-            FROM play
-            LEFT JOIN track_view ON play.track_id = track_view.id
-            WHERE play.timestamp IS NOT NULL
-        """)
-
-        years = set()
-        by_year_and_artist = {}
-
-        for play in plays:
-            artist = play['artist']
-
-            year = datetime.datetime.fromtimestamp(play['timestamp']).year
-            years.add(year)
-
-            if year not in by_year_and_artist:
-                by_year_and_artist[year] = collections.Counter()
-
-            # use duration so that it properly reflects "time spent listening"
-            # for, e.g., long single-track albums.
-            by_year_and_artist[year][artist] += play['duration']
-
-        artist_ranks = {}
-        for year, artists in by_year_and_artist.items():
-            for rank, (artist, _) in enumerate(artists.most_common(25)):
-                if artist not in artist_ranks:
-                    artist_ranks[artist] = {}
-
-                artist_ranks[artist][year] = rank + 1
-
-        return [
-            {
-                'id': artist,
-                'data': [
-                    {'x': year, 'y': ranks.get(year, None)}
-                    for year in sorted(years)[1:]  # exclude sparse first year
-                ]
-            }
-            for artist, ranks in artist_ranks.items()
-        ]
 
 
 api_blueprint = Blueprint('api', __name__)

@@ -20,6 +20,7 @@ interface Stats {
   /* eslint-disable camelcase */
   genres_over_time: [BumpStats];
   artists_over_time: [BumpStats];
+  albums_over_time: [BumpStats];
   /* eslint-enable camelcase */
 }
 
@@ -31,6 +32,7 @@ export enum StatsState {
 export default class StatsStore {
   genresOverTime: IObservableArray<BumpStats> = observable.array([]);
   artistsOverTime: IObservableArray<BumpStats> = observable.array([]);
+  albumsOverTime: IObservableArray<BumpStats> = observable.array([]);
   state = StatsState.NOT_LOADED;
 
   constructor() {
@@ -48,6 +50,7 @@ export default class StatsStore {
       onSuccess: action((stats: Stats) => {
         this.genresOverTime.replace(stats.genres_over_time);
         this.artistsOverTime.replace(stats.artists_over_time);
+        this.albumsOverTime.replace(stats.albums_over_time);
 
         this.state = StatsState.LOADED;
       }),

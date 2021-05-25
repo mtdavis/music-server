@@ -115,6 +115,33 @@ const ArtistsOverTime = observer(() => {
   );
 });
 
+const AlbumsOverTime = observer(() => {
+  const {statsStore} = useStores();
+  const theme = useTheme();
+
+  return (
+    <ResponsiveBump
+      data={toJS(statsStore.albumsOverTime)}
+      margin={{top: 32, right: 200, bottom: 40, left: 40}}
+
+      colors={COLORS}
+
+      axisTop={null}
+      axisBottom={{
+        tickSize: 0,
+      }}
+      axisLeft={{
+        tickSize: 0,
+      }}
+
+      theme={{
+        fontFamily: theme.typography.fontFamily,
+        fontSize: 12,
+      }}
+    />
+  );
+});
+
 const StatsPage = (): React.ReactElement => {
   const {statsStore} = useStores();
   const classes = useStyles();
@@ -137,6 +164,7 @@ const StatsPage = (): React.ReactElement => {
   const SelectedTabComponent = {
     0: GenresOverTime,
     1: ArtistsOverTime,
+    2: AlbumsOverTime,
   }[selectedTab] as React.ComponentType;
 
   return (
@@ -153,6 +181,7 @@ const StatsPage = (): React.ReactElement => {
             >
               <Tab label='Genres Over Time' />
               <Tab label='Artists Over Time' />
+              <Tab label='Albums Over Time' />
             </Tabs>
           </Grid>
           <Grid item>
