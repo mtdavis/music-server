@@ -7,6 +7,7 @@ import {
 } from '@material-ui/core';
 import {makeStyles} from '@material-ui/styles';
 import {SortStore} from './SortStore';
+import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 
 const useStyles = makeStyles(() => ({
   flexContainer: {
@@ -48,6 +49,7 @@ function VTableHeader<R extends RowData>({
       <TableSortLabel
         active={topSortSpec !== null && topSortSpec.columnKey === column.key}
         direction={topSortSpec !== null && topSortSpec.order === 1 ? 'desc' : 'asc'}
+        IconComponent={KeyboardArrowUpIcon}
       >
         {column.label}
       </TableSortLabel>

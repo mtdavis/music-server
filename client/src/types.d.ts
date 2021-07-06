@@ -140,3 +140,7 @@ declare interface SortSpec<R extends RowData> {
   columnKey: keyof R;
   order?: import('lib/table/SortOrder').default;
 }
+
+type TextFieldChangeEvent =
+  React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement> |
+  React.KeyboardEvent<HTMLDivElement>;

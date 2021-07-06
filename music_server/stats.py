@@ -139,3 +139,39 @@ def get_albums_over_time():
         }
         for album, ranks in album_ranks.items()
     ]
+
+
+def get_listens_by_year():
+    db = get_db()
+
+    result_set = db.execute("""
+        SELECT
+            track_view.year AS x,
+            CAST(SUM(track_view.duration) AS REAL) / 60 / 60 AS y
+        FROM track_view
+        LEFT JOIN play ON play.track_id = track_view.id
+        WHERE track_view.year IS NOT NULL
+        GROUP BY track_view.year;
+    """)
+
+    values = {
+        row['x']: row['y']
+        for row in result_set
+    }
+    min_year = min(values.keys())
+    max_year = max(values.keys())
+
+    result = []
+    for year in range(min_year, max_year + 1):
+        result.append({
+            'x': f"{year}-01-01",
+            'y': values.get(year, 0)
+        })
+
+
+    return [
+        {
+            'id': '_',
+            'data': result
+        }
+    ]

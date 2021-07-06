@@ -123,6 +123,7 @@ class Database:
                 album_id IS NULL OR
                 album_id NOT IN (SELECT id FROM album_view WHERE play_count >= 5)
             )
+            AND exclude_shuffle=0
             ORDER BY last_play
         """)
 

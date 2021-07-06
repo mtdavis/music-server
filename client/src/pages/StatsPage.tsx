@@ -2,13 +2,15 @@ import React from 'react';
 import {toJS} from 'mobx';
 import {observer} from 'mobx-react-lite';
 import {
-  AppBar,
   CircularProgress,
+  Divider,
   Grid,
   IconButton,
   Paper,
   Tabs,
   Tab,
+  TextField,
+  Typography,
 } from '@material-ui/core';
 import * as Colors from '@material-ui/core/colors';
 import {Theme, useTheme} from '@material-ui/core/styles';
@@ -16,14 +18,18 @@ import {makeStyles} from '@material-ui/styles';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import {
   ResponsiveAreaBump,
-  ResponsiveBump
+  ResponsiveBump,
 } from '@nivo/bump';
+import {
+  Point,
+  ResponsiveLine,
+} from '@nivo/line';
 
 import {useStores} from 'stores';
 import {StatsState} from 'stores/StatsStore';
 
 const useStyles = makeStyles((theme: Theme) => ({
-  page: {
+  paper: {
     width: '100%',
     minHeight: 'calc(100vh - 96px)',
     display: 'flex',
@@ -31,15 +37,12 @@ const useStyles = makeStyles((theme: Theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  paper: {
+  chartWrapper: {
     height: 'calc(100vh - 144px)',
     width: '100%',
     display: 'flex',
     padding: theme.spacing(2),
     boxSizing: 'border-box',
-  },
-  chartWrapper: {
-    flex: 1,
   },
   spinner: {
     display: 'flex',
@@ -121,7 +124,7 @@ const AlbumsOverTime = observer(() => {
 
   return (
     <ResponsiveBump
-      data={toJS(statsStore.albumsOverTime)}
+      data={toJS(statsStore.filteredAlbumsOverTime)}
       margin={{top: 32, right: 200, bottom: 40, left: 40}}
 
       colors={COLORS}
@@ -142,6 +145,90 @@ const AlbumsOverTime = observer(() => {
   );
 });
 
+interface TooltipProps {
+  point: Point;
+}
+
+const ListensByYearTooltip = ({
+  point
+}: TooltipProps) => {
+  const theme = useTheme();
+
+  return (
+    <Paper style={{padding: theme.spacing(1)}}>
+      <Typography>
+        <strong>{point.data.xFormatted}:</strong>{' '}
+        {point.data.y.toLocaleString()} hours
+      </Typography>
+    </Paper>
+  );
+};
+
+const ListensByYear = observer(() => {
+  const {statsStore} = useStores();
+  const theme = useTheme();
+
+  return (
+    <ResponsiveLine
+      data={toJS(statsStore.listensByYear)}
+      margin={{top: 32, right: 48, bottom: 48, left: 48}}
+
+      colors={[Colors.lightBlue['600']]}
+      enableArea
+
+      xScale={{
+        type: 'time',
+        format: '%Y-%m-%d',
+        useUTC: false,
+        precision: 'year',
+      }}
+      xFormat="time:%Y"
+
+      axisBottom={{
+        tickSize: 0,
+        tickValues: 'every 5 years',
+        format: '%Y',
+        legend: 'Year',
+        legendPosition: 'middle',
+        legendOffset: 40
+      }}
+      axisLeft={{
+        tickSize: 0,
+        legend: 'Hours Listened',
+        legendPosition: 'middle',
+        legendOffset: -40
+      }}
+
+      enableCrosshair={false}
+      tooltip={ListensByYearTooltip}
+      useMesh={true}
+
+      theme={{
+        fontFamily: theme.typography.fontFamily,
+        fontSize: 12,
+      }}
+    />
+  );
+});
+
+const AlbumFilter = observer(() => {
+  const {statsStore} = useStores();
+
+  const onChange = (event: TextFieldChangeEvent) => {
+    statsStore.albumFilterText = (event.target as HTMLInputElement).value;
+  };
+
+  return (
+    <TextField
+      fullWidth
+      value={statsStore.albumFilterText}
+      placeholder="Filter..."
+      onChange={onChange}
+      onKeyUp={onChange}
+    />
+  );
+});
+
 const StatsPage = (): React.ReactElement => {
   const {statsStore} = useStores();
   const classes = useStyles();
@@ -155,7 +242,7 @@ const StatsPage = (): React.ReactElement => {
 
   if(statsStore.state === StatsState.NOT_LOADED) {
     return (
-      <div className={classes.page}>
+      <div className={classes.paper}>
         <CircularProgress disableShrink />
       </div>
     );
@@ -165,40 +252,56 @@ const StatsPage = (): React.ReactElement => {
     0: GenresOverTime,
     1: ArtistsOverTime,
     2: AlbumsOverTime,
+    3: ListensByYear,
   }[selectedTab] as React.ComponentType;
 
+  const filter = {
+    0: null,
+    1: null,
+    2: <AlbumFilter />,
+    3: null,
+  }[selectedTab] as React.ReactNode;
+
   return (
-    <div className={classes.page}>
-      <AppBar position='static' color="default">
-        <Grid container direction='row'>
-          <Grid item style={{flex: 1}}>
-            <Tabs
-              value={selectedTab}
-              textColor='primary'
-              indicatorColor='primary'
-              centered
-              onChange={(event, newValue) => setSelectedTab(newValue)}
-            >
-              <Tab label='Genres Over Time' />
-              <Tab label='Artists Over Time' />
-              <Tab label='Albums Over Time' />
-            </Tabs>
-          </Grid>
-          <Grid item>
-            <IconButton onClick={statsStore.loadStats}>
-              <RefreshIcon />
-            </IconButton>
+    <Paper className={classes.paper}>
+      <Grid container direction='column'>
+        <Grid item>
+          <Grid container direction='row' spacing={1} alignItems='center'>
+            <Grid item style={{flex: 1}}>
+              <Tabs
+                value={selectedTab}
+                textColor='primary'
+                indicatorColor='primary'
+                onChange={(event, newValue) => setSelectedTab(newValue)}
+              >
+                <Tab label='Genres Over Time' />
+                <Tab label='Artists Over Time' />
+                <Tab label='Albums Over Time' />
+                <Tab label='Listens By Year' />
+              </Tabs>
+            </Grid>
+            <Grid item>
+              {filter}
+            </Grid>
+            <Grid item>
+              <IconButton onClick={statsStore.loadStats}>
+                <RefreshIcon />
+              </IconButton>
+            </Grid>
           </Grid>
         </Grid>
-      </AppBar>
 
-      <Paper square className={classes.paper}>
-        <div className={classes.chartWrapper}>
-          <SelectedTabComponent />
-        </div>
-      </Paper>
+        <Grid item>
+          <Divider />
+        </Grid>
 
-    </div>
+        <Grid item>
+          <div className={classes.chartWrapper}>
+            <SelectedTabComponent />
+          </div>
+        </Grid>
+      </Grid>
+    </Paper>
   );
 };
 

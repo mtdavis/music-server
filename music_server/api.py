@@ -156,7 +156,7 @@ class Lyrics(Resource):
         genius_result = get_genius().search_song(track['title'], track['artist'])
         if genius_result:
             return {
-                'lyrics': genius_result.lyrics.strip(),
+                'lyrics': genius_result.lyrics.strip().replace('EmbedShare Url:CopyEmbed:Copy', ''),
                 'url': genius_result.url,
             }
 
@@ -264,6 +264,7 @@ class Stats(Resource):
             'genres_over_time': stats.get_genres_over_time(),
             'artists_over_time': stats.get_artists_over_time(),
             'albums_over_time': stats.get_albums_over_time(),
+            'listens_by_year': stats.get_listens_by_year(),
         }
 
 

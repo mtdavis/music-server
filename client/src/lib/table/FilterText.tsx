@@ -6,10 +6,6 @@ import {
 
 import {FilterStore} from './FilterStore';
 
-type TextFieldChangeEvent =
-  React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement> |
-  React.KeyboardEvent<HTMLDivElement>;
-
 interface Props<R extends RowData> {
   filterStore: FilterStore<R>;
 }

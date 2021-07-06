@@ -1,5 +1,6 @@
 import {
   action,
+  computed,
   IObservableArray,
   makeObservable,
   observable,
@@ -14,6 +15,12 @@ interface Point {
 interface BumpStats {
   id: string;
   data: [Point];
+  hidden?: boolean;
+}
+
+interface LineStats {
+  id: string;
+  data: [Point];
 }
 
 interface Stats {
@@ -21,6 +28,7 @@ interface Stats {
   genres_over_time: [BumpStats];
   artists_over_time: [BumpStats];
   albums_over_time: [BumpStats];
+  listens_by_year: [LineStats];
   /* eslint-enable camelcase */
 }
 
@@ -33,14 +41,20 @@ export default class StatsStore {
   genresOverTime: IObservableArray<BumpStats> = observable.array([]);
   artistsOverTime: IObservableArray<BumpStats> = observable.array([]);
   albumsOverTime: IObservableArray<BumpStats> = observable.array([]);
+  listensByYear: IObservableArray<LineStats> = observable.array([]);
+  albumFilterText = '';
   state = StatsState.NOT_LOADED;
 
   constructor() {
     makeObservable(this, {
       genresOverTime: observable,
       artistsOverTime: observable,
+      albumsOverTime: observable,
+      listensByYear: observable,
+      albumFilterText: observable,
       state: observable,
       loadStats: action,
+      filteredAlbumsOverTime: computed,
     });
   }
 
@@ -51,9 +65,19 @@ export default class StatsStore {
         this.genresOverTime.replace(stats.genres_over_time);
         this.artistsOverTime.replace(stats.artists_over_time);
         this.albumsOverTime.replace(stats.albums_over_time);
+        this.listensByYear.replace(stats.listens_by_year);
 
         this.state = StatsState.LOADED;
       }),
     });
+  }
+
+  get filteredAlbumsOverTime(): BumpStats[] {
+    return this.albumsOverTime.map(album => ({
+      ...album,
+      hidden:
+        this.albumFilterText !== '' &&
+        !album.id.toLowerCase().includes(this.albumFilterText.toLowerCase())
+    }));
   }
 }
