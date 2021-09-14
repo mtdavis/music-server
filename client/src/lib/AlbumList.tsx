@@ -9,15 +9,22 @@ import {
 } from './util';
 import FilteredTable from './table/FilteredTable';
 import {useStores} from 'stores';
+import {renderAlbumStar} from './AlbumStar';
 
 interface Props {
-  id: string,
+  id: string;
   rows: Album[];
   loading?: boolean;
-  initialSortSpecs?: SortSpec<Album>[],
+  initialSortSpecs?: SortSpec<Album>[];
 }
 
 const COLUMNS = [
+  {
+    key: "starred",
+    label: "",
+    renderer: renderAlbumStar,
+    maxWidth: 68,
+  },
   {
     key: "album_artist",
     label: "Album Artist",

@@ -34,6 +34,7 @@ export default class DbStore {
       fetchPlaylists: observable,
       incrementPlayCount: action,
       scan: action,
+      editAlbum: action,
     });
 
     this.fetchAlbums();
@@ -145,6 +146,17 @@ export default class DbStore {
           this.fetchAlbums();
           this.fetchTracks();
         }
+      }),
+    });
+  }
+
+  editAlbum(albumId: number, starred: boolean): void {
+    put({
+      url: `/album/${albumId}`,
+      data: {starred},
+      onSuccess: action((result: Album) => {
+        const albumIndex = this.albums.findIndex((a) => a.id === albumId);
+        this.albums[albumIndex].starred = result.starred;
       }),
     });
   }

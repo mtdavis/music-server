@@ -21,6 +21,7 @@ const COLUMNS = [
   {
     key: 'icon',
     renderer: renderIcon,
+    maxWidth: 48,
   },
   {
     key: 'text',

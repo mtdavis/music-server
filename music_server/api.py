@@ -1,6 +1,7 @@
 import collections
 import datetime
 import functools
+import re
 import time
 
 from flask import (
@@ -60,7 +61,7 @@ def api_cache(func):
     return wrapper
 
 
-class Album(Resource):
+class Albums(Resource):
     method_decorators = {'get': [api_cache]}
 
     fields = {
@@ -74,6 +75,7 @@ class Album(Resource):
         'release_date': fields.Integer(default=None),
         'last_play': fields.Integer(default=None),
         'play_count': fields.Integer,
+        'starred': fields.Boolean,
     }
 
     @marshal_with(fields)
@@ -81,7 +83,30 @@ class Album(Resource):
         return get_db().get_albums()
 
 
-class Track(Resource):
+class Album(Resource):
+    method_decorators = {'get': [api_cache]}
+
+    fields = Albums.fields
+
+    @marshal_with(fields)
+    def get(self, album_id):
+        return get_db().get_albums(album_id)[0]
+
+    @marshal_with(fields)
+    def put(self, album_id):
+        if get_config('demo_mode'):
+            return None, 401
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('starred', type=bool)
+        args = parser.parse_args()
+
+        db = get_db()
+        db.edit_album(album_id, args['starred'])
+
+        return db.get_albums(album_id)[0]
+
+class Tracks(Resource):
     method_decorators = {'get': [api_cache]}
 
     fields = {
@@ -106,7 +131,7 @@ class Track(Resource):
         return get_db().get_tracks()
 
 
-class Playlist(Resource):
+class Playlists(Resource):
     method_decorators = {'get': [api_cache]}
 
     fields = {
@@ -124,7 +149,7 @@ class Playlist(Resource):
 
 
 class PlaylistTracks(Resource):
-    fields = Track.fields
+    fields = Tracks.fields
 
     @marshal_with(fields)
     def get(self, playlist_id):
@@ -132,7 +157,7 @@ class PlaylistTracks(Resource):
 
 
 class Shuffle(Resource):
-    fields = Track.fields
+    fields = Tracks.fields
 
     @marshal_with(fields)
     def get(self):
@@ -155,8 +180,10 @@ class Lyrics(Resource):
 
         genius_result = get_genius().search_song(track['title'], track['artist'])
         if genius_result:
+            lyrics = genius_result.lyrics.strip()
+            lyrics = re.sub('\\d*Embed:?Share URL:?Copy:?Embed:?Copy$', '', lyrics)
             return {
-                'lyrics': genius_result.lyrics.strip().replace('EmbedShare Url:CopyEmbed:Copy', ''),
+                'lyrics': lyrics,
                 'url': genius_result.url,
             }
 
@@ -271,9 +298,9 @@ class Stats(Resource):
 api_blueprint = Blueprint('api', __name__)
 api = Api(api_blueprint)
 
-api.add_resource(Album, '/albums')
-api.add_resource(Track, '/tracks')
-api.add_resource(Playlist, '/playlists')
+api.add_resource(Albums, '/albums')
+api.add_resource(Tracks, '/tracks')
+api.add_resource(Playlists, '/playlists')
 api.add_resource(PlaylistTracks, '/playlist/<int:playlist_id>/tracks')
 api.add_resource(Shuffle, '/shuffle')
 api.add_resource(Lyrics, '/track/<int:track_id>/lyrics')
@@ -281,3 +308,4 @@ api.add_resource(SubmitNowPlaying, '/track/<int:track_id>/submit-now-playing')
 api.add_resource(SubmitPlay, '/track/<int:track_id>/submit-play')
 api.add_resource(Scan, '/scan')
 api.add_resource(Stats, '/stats')
+api.add_resource(Album, '/album/<int:album_id>')

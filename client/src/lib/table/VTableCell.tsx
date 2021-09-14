@@ -27,10 +27,11 @@ const useStyles = makeStyles(() => ({
 
 export function renderValue<R extends RowData>(
   value: RowDataValue,
+  rowData: R,
   column: ColumnConfig<R>,
-  icons?: {[key: string]: React.ReactElement},
-): number | string | React.ReactElement {
-  let renderedValue: number | string | React.ReactElement;
+  icons?: {[key: string]: React.ReactNode},
+): number | string | React.ReactNode {
+  let renderedValue: number | string | React.ReactNode;
 
   if(value === null) {
     renderedValue = '';
@@ -39,7 +40,7 @@ export function renderValue<R extends RowData>(
     renderedValue = icons[value];
   }
   else if(column.renderer) {
-    renderedValue = column.renderer(value);
+    renderedValue = column.renderer(value, rowData);
   }
   else {
     renderedValue = value;
@@ -50,6 +51,7 @@ export function renderValue<R extends RowData>(
 
 interface Props<R extends RowData> {
   value: RowDataValue;
+  rowData: R;
   column: ColumnConfig<R>;
   rowHeight: number;
   icons?: {[key: string]: React.ReactElement};
@@ -57,13 +59,14 @@ interface Props<R extends RowData> {
 
 function VTableCell<R extends RowData>({
   value,
+  rowData,
   column,
   rowHeight,
   icons = {},
 }: Props<R>): React.ReactElement {
   const classes = useStyles();
 
-  const renderedValue = renderValue(value, column, icons);
+  const renderedValue = renderValue(value, rowData, column, icons);
 
   return (
     <TableCell

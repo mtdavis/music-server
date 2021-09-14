@@ -24,7 +24,7 @@ function rowContainsText<R extends RowData>(
 
   columns.forEach(column => {
     const cellValue = rowData[column.key];
-    const rendered = column.renderer ? column.renderer(cellValue) : cellValue;
+    const rendered = column.renderer ? column.renderer(cellValue, rowData) : cellValue;
     const renderedString = String(rendered === null ? '' : rendered).toLowerCase();
 
     textChunks.forEach(chunk => {
@@ -150,7 +150,7 @@ export function calculateColumnWidths<R extends RowData>(
     result[column.key] = 4; // arbitrary good starting point
 
     rows.forEach(row => {
-      const renderedValue = renderValue(row[column.key], column);
+      const renderedValue = renderValue(row[column.key], row, column);
       const length = String(renderedValue).length;
 
       if(result[column.key] < length) {

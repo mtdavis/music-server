@@ -14,7 +14,7 @@ import VTablePaper from './VTablePaper';
 import VTableCell from './VTableCell';
 import VTableHeader from './VTableHeader';
 import Notice from 'lib/Notice';
-import {calculateColumnWidths, renderIcon} from './util';
+import {calculateColumnWidths} from './util';
 import {useStores} from 'stores';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -111,9 +111,13 @@ function VTable<R extends RowData>({
       />
     )) : undefined;
 
-    const cellRenderer = ({cellData}: TableCellProps) => (
+    const cellRenderer = ({
+      cellData,
+      rowData,
+    }: TableCellProps) => (
       <VTableCell<R>
         value={cellData}
+        rowData={rowData}
         column={column}
         rowHeight={rowHeight}
         icons={icons}
@@ -136,7 +140,7 @@ function VTable<R extends RowData>({
         flexGrow={width}
         flexShrink={width}
         width={width}
-        maxWidth={column.renderer === renderIcon ? 48 : undefined}
+        maxWidth={column.maxWidth}
       />
     );
   };

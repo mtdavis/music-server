@@ -23,7 +23,10 @@ class Database:
             FROM track_view
         """)[0]['last_modified']
 
-    def get_albums(self) -> List[sqlite3.Row]:
+    def get_albums(
+        self,
+        album_id: Optional[int] = None,
+    ) -> List[sqlite3.Row]:
         return self.execute("""
             SELECT
                 id,
@@ -35,14 +38,34 @@ class Database:
                 year,
                 release_date,
                 last_play,
-                play_count
+                play_count,
+                starred
             FROM album_view
-        """)
+            WHERE (
+                (id = $album_id OR $album_id IS NULL)
+            )
+        """,
+            album_id=album_id
+        )
+
+    def edit_album(
+        self,
+        album_id: int,
+        starred: bool,
+    ):
+        self.execute("""
+            UPDATE album
+            SET starred=$starred
+            WHERE id=$album_id
+        """,
+            album_id=album_id,
+            starred=starred,
+        )
 
     def get_tracks(
         self,
         track_id: Optional[int] = None,
-        album_id: Optional[int] = None
+        album_id: Optional[int] = None,
     ) -> List[sqlite3.Row]:
         return self.execute("""
             SELECT
