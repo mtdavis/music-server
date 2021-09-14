@@ -1,8 +1,10 @@
 import {
   action,
+  autorun,
   computed,
   makeObservable,
   observable,
+  runInAction,
 } from 'mobx';
 import NoSleep from 'nosleep.js';
 import weighted from 'weighted';
@@ -19,6 +21,7 @@ export default class MusicStore {
   currentTrackIndex = 0;
   currentTrackPosition = 0;
   willStopAfterCurrent = false;
+  albumArtUrl: string | null = null;
   demoMode: boolean = __DEMO_MODE__;
   dbStore: DbStore;
   noSleep = new NoSleep();
@@ -33,6 +36,7 @@ export default class MusicStore {
       currentTrackIndex: observable,
       currentTrackPosition: observable,
       willStopAfterCurrent: observable,
+      albumArtUrl: observable,
       demoMode: observable,
       currentTrack: computed,
       currentTrackId: computed,
@@ -53,6 +57,27 @@ export default class MusicStore {
       jumpToNextTrack: action,
       seekToPosition: action,
       setVolume: action,
+    });
+
+    autorun(() => {
+      if(this.currentTrack === null || this.currentTrack.album === null) {
+        runInAction(() => {
+          this.albumArtUrl = null;
+        });
+
+        return;
+      }
+
+      const newImgUrl = `/track/${this.currentTrackId}/art`;
+      console.log('loading', newImgUrl);
+
+      const img = new Image();
+      img.src = newImgUrl;
+
+      img.onload = action(() => {
+        console.log('onload', newImgUrl);
+        this.albumArtUrl = newImgUrl;
+      });
     });
 
     this.initializePlayer();
