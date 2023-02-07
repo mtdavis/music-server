@@ -57,6 +57,8 @@ export default class MusicStore {
       jumpToNextTrack: action,
       seekToPosition: action,
       setVolume: action,
+      initializeLocalStore: action,
+      saveLocalStore: action,
     });
 
     autorun(() => {
@@ -83,6 +85,8 @@ export default class MusicStore {
     autorun(this.updateMediaSessionPlaybackState);
 
     this.initializePlayer();
+
+    this.initializeLocalStore();
   }
 
   get currentTrack(): Track | null {
@@ -302,7 +306,7 @@ export default class MusicStore {
     }
   }
 
-  jumpToPlaylistItem(index: number): void {
+  jumpToPlaylistItem(index: number, play = true): void {
     if(!this.api) {
       throw Error('Gapless5 instance is not initialized');
     }
@@ -310,10 +314,12 @@ export default class MusicStore {
     this.willStopAfterCurrent = false;
     this.currentTrackIndex = index;
     this.api.gotoTrack(index, true);
-    this.api.onplay();
+    if (play) {
+      this.api.onplay();
+    }
   }
 
-  jumpToPreviousTrack(): void {
+  jumpToPreviousTrack = (): void => {
     if(!this.api) {
       throw Error('Gapless5 instance is not initialized');
     }
@@ -322,7 +328,7 @@ export default class MusicStore {
     this.api.prevtrack();
   }
 
-  jumpToNextTrack(): void {
+  jumpToNextTrack = (): void => {
     if(!this.api) {
       throw Error('Gapless5 instance is not initialized');
     }
@@ -412,5 +418,44 @@ export default class MusicStore {
         navigator.mediaSession.playbackState = 'none';
       }
     }
+  }
+
+  initializeLocalStore = (): void => {
+    const musicStoreJson = window.localStorage.getItem('musicStore');
+
+    if (musicStoreJson) {
+      const musicStore = JSON.parse(musicStoreJson);
+      this.setPlaylist(musicStore.playlist);
+
+      if (musicStore.currentTrackIndex) {
+        console.log('cti:', musicStore.currentTrackIndex);
+        this.jumpToPlaylistItem(musicStore.currentTrackIndex, false);
+      }
+
+      if (this.api) {
+        this.api.stop();
+      }
+
+      // if (musicStore.currentTrackPosition && this.api) {
+      //   console.log('ctp:', musicStore.currentTrackPosition);
+      //   this.api.play();
+      //   this.seekToPosition(musicStore.currentTrackPosition);
+      //   this.currentTrackPosition = musicStore.currentTrackPosition;
+      //   this.api.pause();
+      //   this.playerState = PlayerState.PAUSED;
+      // }
+    }
+
+    window.addEventListener('beforeunload', () => {
+      this.saveLocalStore();
+    }, false);
+  }
+
+  saveLocalStore = (): void => {
+    window.localStorage.setItem('musicStore', JSON.stringify({
+      playlist: this.playlist,
+      currentTrackIndex: this.currentTrackIndex,
+      currentTrackPosition: this.currentTrackPosition,
+    }));
   }
 }
