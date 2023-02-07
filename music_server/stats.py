@@ -10,7 +10,7 @@ def get_genres_over_time():
     plays = db.execute("""
         SELECT play.timestamp, track.genre, track.duration
         FROM play
-        LEFT JOIN track ON play.track_id = track.id
+        INNER JOIN track ON play.track_id = track.id
         WHERE play.timestamp IS NOT NULL
     """)
 
@@ -50,7 +50,7 @@ def get_artists_over_time():
     plays = db.execute("""
         SELECT play.timestamp, track_view.artist, track_view.duration
         FROM play
-        LEFT JOIN track_view ON play.track_id = track_view.id
+        INNER JOIN track_view ON play.track_id = track_view.id
         WHERE play.timestamp IS NOT NULL
     """)
 
@@ -99,8 +99,8 @@ def get_albums_over_time():
             track_view.album || '\n(' || album_view.artist || ')' AS album,
             CAST(track_view.duration AS REAL) / album_view.duration AS fraction
         FROM play
-        LEFT JOIN track_view ON play.track_id = track_view.id
-        LEFT JOIN album_view ON track_view.album_id = album_view.id
+        INNER JOIN track_view ON play.track_id = track_view.id
+        INNER JOIN album_view ON track_view.album_id = album_view.id
         WHERE play.timestamp IS NOT NULL AND track_view.album IS NOT NULL
     """)
 
@@ -149,7 +149,7 @@ def get_listens_by_year():
             track_view.year AS x,
             CAST(SUM(track_view.duration) AS REAL) / 60 / 60 AS y
         FROM track_view
-        LEFT JOIN play ON play.track_id = track_view.id
+        INNER JOIN play ON play.track_id = track_view.id
         WHERE track_view.year IS NOT NULL
         GROUP BY track_view.year;
     """)
