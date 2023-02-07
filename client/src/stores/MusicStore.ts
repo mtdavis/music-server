@@ -69,13 +69,11 @@ export default class MusicStore {
       }
 
       const newImgUrl = `/track/${this.currentTrackId}/art`;
-      console.log('loading', newImgUrl);
 
       const img = new Image();
       img.src = newImgUrl;
 
       img.onload = action(() => {
-        console.log('onload', newImgUrl);
         this.albumArtUrl = newImgUrl;
       });
     });
