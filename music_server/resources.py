@@ -52,6 +52,8 @@ def handle_art(track_id: int):
         track_directory / f'{album}.png',
         track_directory / 'folder.jpg',
         track_directory / 'folder.png',
+        track_directory / 'cover.jpg',
+        track_directory / 'cover.png',
     ]
 
     for possible_path in possible_paths:
