@@ -154,12 +154,12 @@ class Database:
             album_id = None
 
         self.new_tracks.append([
-            metadata['artist'],
-            metadata['album'],
-            metadata['track_number'],
-            metadata['title'],
-            metadata['year'],
-            metadata['genre'],
+            metadata['artist'] or '',
+            metadata['album'] or '',
+            metadata['track_number'] or '',
+            metadata['title'] or '',
+            metadata['year'] or '',
+            metadata['genre'] or '',
             path_relative_to_root,
         ])
 
@@ -282,8 +282,8 @@ def get_metadata(path: pathlib.Path, root: str, dry_run: bool):
             'artist': metadata.tag.artist,
             'title': metadata.tag.title,
             'album': metadata.tag.album,
-            'album_artist': metadata.tag.album_artist,
-            'genre': metadata.tag.genre.name,
+            'album_artist': metadata.tag.album_artist or '<MISSING ALBUM ARTIST>',
+            'genre': metadata.tag.genre.name if metadata.tag.genre else '<MISSING GENRE>',
             'track_number': metadata.tag.track_num[0],
             'year': get_year(metadata),
             'duration': int(metadata.info.time_secs),
