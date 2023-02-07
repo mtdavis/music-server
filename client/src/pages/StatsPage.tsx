@@ -63,6 +63,29 @@ const COLORS = [
   Colors.purple[300],
 ];
 
+interface BumpTooltipProps {
+  serie: {
+    id: string,
+    color: string,
+  };
+}
+
+const BumpTooltip = ({
+  serie
+}: BumpTooltipProps) => {
+  const theme = useTheme();
+
+  return (
+    <Paper style={{padding: theme.spacing(1)}}>
+      <Typography>
+        <span style={{display: 'inline-block', width: '.75em', height: '.75em', backgroundColor: serie.color}} />
+        {' '}
+        {serie.id}
+      </Typography>
+    </Paper>
+  );
+};
+
 const GenresOverTime = observer(() => {
   const {statsStore} = useStores();
   const theme = useTheme();
@@ -82,6 +105,8 @@ const GenresOverTime = observer(() => {
       axisBottom={{
         tickSize: 0,
       }}
+
+      tooltip={BumpTooltip}
 
       theme={{
         fontFamily: theme.typography.fontFamily,
@@ -110,6 +135,8 @@ const ArtistsOverTime = observer(() => {
         tickSize: 0,
       }}
 
+      tooltip={BumpTooltip}
+
       theme={{
         fontFamily: theme.typography.fontFamily,
         fontSize: 12,
@@ -137,6 +164,8 @@ const AlbumsOverTime = observer(() => {
         tickSize: 0,
       }}
 
+      tooltip={BumpTooltip}
+
       theme={{
         fontFamily: theme.typography.fontFamily,
         fontSize: 12,
@@ -145,13 +174,13 @@ const AlbumsOverTime = observer(() => {
   );
 });
 
-interface TooltipProps {
+interface LineTooltipProps {
   point: Point;
 }
 
 const ListensByYearTooltip = ({
   point
-}: TooltipProps) => {
+}: LineTooltipProps) => {
   const theme = useTheme();
 
   return (
