@@ -181,7 +181,12 @@ class Lyrics(Resource):
         genius_result = get_genius().search_song(track['title'], track['artist'])
         if genius_result:
             lyrics = genius_result.lyrics.strip()
-            lyrics = re.sub('\\d*Embed:?Share URL:?Copy:?Embed:?Copy$', '', lyrics)
+            lyrics = re.sub(r'^.+Lyrics', '', lyrics)
+            lyrics = re.sub(r'\d*Embed:?Share URL:?Copy:?Embed:?Copy$', '', lyrics)
+            lyrics = re.sub(r'\d*Embed$', '', lyrics)
+            lyrics = re.sub(r'You might also like', '', lyrics)
+            lyrics = re.sub(f'See {track["artist"]} Live', '', lyrics)
+            lyrics = re.sub(r'Get tickets as low as \$\d+', '', lyrics)
             return {
                 'lyrics': lyrics,
                 'url': genius_result.url,
