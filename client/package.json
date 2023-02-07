@@ -22,6 +22,7 @@
     "@types/react-router-dom": "5.1.7",
     "@types/react-virtualized": "9.21.11",
     "@types/weighted": "0.0.5",
+    "@types/wicg-mediasession": "1.1.0",
     "@typescript-eslint/eslint-plugin": "4.19.0",
     "@typescript-eslint/parser": "4.19.0",
     "babel-loader": "8.2.2",

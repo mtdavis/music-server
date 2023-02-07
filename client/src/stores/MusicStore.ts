@@ -80,6 +80,10 @@ export default class MusicStore {
       });
     });
 
+    autorun(this.updateMediaSessionMetadata);
+
+    autorun(this.updateMediaSessionPlaybackState);
+
     this.initializePlayer();
   }
 
@@ -239,6 +243,14 @@ export default class MusicStore {
     this.api.onpositionupdate = action((newTrackPosition: number) => {
       this.currentTrackPosition = newTrackPosition;
     });
+
+    if (navigator.mediaSession) {
+      navigator.mediaSession.setActionHandler('play', this.api.play);
+      navigator.mediaSession.setActionHandler('pause', this.api.pause);
+      navigator.mediaSession.setActionHandler('stop', this.api.stop);
+      navigator.mediaSession.setActionHandler('previoustrack', this.jumpToPreviousTrack);
+      navigator.mediaSession.setActionHandler('nexttrack', this.jumpToNextTrack);
+    }
   }
 
   playOrPausePlayback(): void {
@@ -367,6 +379,40 @@ export default class MusicStore {
     catch(ex) {
       // Gapless 5 throws an exception if you set the gain while tracklist is empty;
       // but it will still work.
+    }
+  }
+
+  updateMediaSessionMetadata = (): void => {
+    if (navigator.mediaSession && this.currentTrack) {
+      const metadata: {
+        title: string,
+        artist: string,
+        album?: string,
+      } = {
+        title: this.currentTrack.title,
+        artist: this.currentTrack.artist,
+        album: undefined,
+      };
+
+      if (this.currentTrack.album) {
+        metadata.album = this.currentTrack.album;
+      }
+
+      navigator.mediaSession.metadata = new window.MediaMetadata(metadata);
+    }
+  }
+
+  updateMediaSessionPlaybackState = (): void => {
+    if (navigator.mediaSession) {
+      if (this.playerState === PlayerState.PLAYING) {
+        navigator.mediaSession.playbackState = 'playing';
+      }
+      else if (this.playerState === PlayerState.PAUSED) {
+        navigator.mediaSession.playbackState = 'paused';
+      }
+      else {
+        navigator.mediaSession.playbackState = 'none';
+      }
     }
   }
 }

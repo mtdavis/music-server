@@ -1439,6 +1439,11 @@
   resolved "https://registry.yarnpkg.com/@types/weighted/-/weighted-0.0.5.tgz#39056fe27635afd62de6577a1834225a16037f2e"
   integrity sha1-OQVv4nY1r9Yt5ld6GDQiWhYDfy4=
 
+"@types/wicg-mediasession@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@types/wicg-mediasession/-/wicg-mediasession-1.1.0.tgz#368bb113ffc1a5410895cbb1e5ba50ee291f162f"
+  integrity sha512-aA6+ZUHgNpXqWEL8UdS1fx/oCFSrh/Hu9BbM8rXYZLiCQSuZ8+Lzu1//LKwHMNBAXgen7/8LoThDEKS9VEaGxw==
+
 "@typescript-eslint/eslint-plugin@4.19.0":
   version "4.19.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-4.19.0.tgz#56f8da9ee118fe9763af34d6a526967234f6a7f0"
