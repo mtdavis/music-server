@@ -9,7 +9,7 @@ from flask import (
     current_app,
     request,
 )
-from flask_restful import (
+from flask_restx import (
     Api,
     fields,
     marshal_with,
@@ -23,6 +23,10 @@ from .external import get_genius, get_lastfm
 from .scan import scan
 from .util import get_config
 from . import stats
+
+api_blueprint = Blueprint('api', __name__)
+api = Api(api_blueprint)
+ns = api.namespace('api', path='/')
 
 
 def api_cache(func):
@@ -61,8 +65,9 @@ def api_cache(func):
     return wrapper
 
 
+@ns.route('/albums')
 class Albums(Resource):
-    method_decorators = {'get': [api_cache]}
+    # method_decorators = {'get': [api_cache]}
 
     fields = {
         'id': fields.Integer,
@@ -78,21 +83,22 @@ class Albums(Resource):
         'starred': fields.Boolean,
     }
 
-    @marshal_with(fields)
+    @ns.marshal_with(fields)
     def get(self):
         return get_db().get_albums()
 
 
+@ns.route('/album/<int:album_id>')
 class Album(Resource):
-    method_decorators = {'get': [api_cache]}
+    # method_decorators = {'get': [api_cache]}
 
     fields = Albums.fields
 
-    @marshal_with(fields)
+    @ns.marshal_with(fields)
     def get(self, album_id):
         return get_db().get_albums(album_id)[0]
 
-    @marshal_with(fields)
+    @ns.marshal_with(fields)
     def put(self, album_id):
         if get_config('demo_mode'):
             return None, 401
@@ -106,8 +112,10 @@ class Album(Resource):
 
         return db.get_albums(album_id)[0]
 
+
+@ns.route('/tracks')
 class Tracks(Resource):
-    method_decorators = {'get': [api_cache]}
+    # method_decorators = {'get': [api_cache]}
 
     fields = {
         'id': fields.Integer,
@@ -126,13 +134,14 @@ class Tracks(Resource):
         'year': fields.Integer(default=None),
     }
 
-    @marshal_with(fields)
+    @ns.marshal_with(fields)
     def get(self):
         return get_db().get_tracks()
 
 
+@ns.route('/playlists')
 class Playlists(Resource):
-    method_decorators = {'get': [api_cache]}
+    # method_decorators = {'get': [api_cache]}
 
     fields = {
         'id': fields.Integer,
@@ -143,34 +152,37 @@ class Playlists(Resource):
         'play_count': fields.Integer,
     }
 
-    @marshal_with(fields)
+    @ns.marshal_with(fields)
     def get(self):
         return get_db().get_playlists()
 
 
+@ns.route('/playlist/<int:playlist_id>/tracks')
 class PlaylistTracks(Resource):
     fields = Tracks.fields
 
-    @marshal_with(fields)
+    @ns.marshal_with(fields)
     def get(self, playlist_id):
         return get_db().get_playlist_tracks(playlist_id)
 
 
+@ns.route('/shuffle')
 class Shuffle(Resource):
     fields = Tracks.fields
 
-    @marshal_with(fields)
+    @ns.marshal_with(fields)
     def get(self):
         return get_db().get_shuffle()
 
 
+@ns.route('/track/<int:track_id>/lyrics')
 class Lyrics(Resource):
     fields = {
         'lyrics': fields.String,
         'url': fields.String,
     }
 
-    @marshal_with(fields)
+    @ns.marshal_with(fields)
     def get(self, track_id):
         if get_config('demo_mode'):
             return None, 401
@@ -198,6 +210,7 @@ class Lyrics(Resource):
         }
 
 
+@ns.route('/track/<int:track_id>/submit-now-playing')
 class SubmitNowPlaying(Resource):
     def put(self, track_id):
         if get_config('demo_mode'):
@@ -214,6 +227,7 @@ class SubmitNowPlaying(Resource):
         )
 
 
+@ns.route('/track/<int:track_id>/submit-play')
 class SubmitPlay(Resource):
     def put(self, track_id):
         if get_config('demo_mode'):
@@ -271,6 +285,7 @@ class SubmitPlay(Resource):
             return None, 503
 
 
+@ns.route('/scan')
 class Scan(Resource):
     def put(self):
         if get_config('demo_mode'):
@@ -285,8 +300,9 @@ class Scan(Resource):
         return scan_results
 
 
+@ns.route('/stats')
 class Stats(Resource):
-    method_decorators = {'get': [api_cache]}
+    # method_decorators = {'get': [api_cache]}
 
     def get(self):
         if get_config('demo_mode'):
@@ -298,19 +314,3 @@ class Stats(Resource):
             'albums_over_time': stats.get_albums_over_time(),
             'listens_by_year': stats.get_listens_by_year(),
         }
-
-
-api_blueprint = Blueprint('api', __name__)
-api = Api(api_blueprint)
-
-api.add_resource(Albums, '/albums')
-api.add_resource(Tracks, '/tracks')
-api.add_resource(Playlists, '/playlists')
-api.add_resource(PlaylistTracks, '/playlist/<int:playlist_id>/tracks')
-api.add_resource(Shuffle, '/shuffle')
-api.add_resource(Lyrics, '/track/<int:track_id>/lyrics')
-api.add_resource(SubmitNowPlaying, '/track/<int:track_id>/submit-now-playing')
-api.add_resource(SubmitPlay, '/track/<int:track_id>/submit-play')
-api.add_resource(Scan, '/scan')
-api.add_resource(Stats, '/stats')
-api.add_resource(Album, '/album/<int:album_id>')
