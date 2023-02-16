@@ -12,6 +12,7 @@ from .shared import api_cache, track_fields
 
 api = Namespace('playlists')
 
+
 @api.route('/')
 class Playlists(Resource):
     method_decorators = [api_cache]
@@ -38,5 +39,3 @@ class PlaylistTracks(Resource):
     @api.marshal_with(fields)
     def get(self, playlist_id):
         return get_db().get_playlist_tracks(playlist_id)
-
-

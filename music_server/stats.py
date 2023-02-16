@@ -94,7 +94,7 @@ def get_albums_over_time():
     db = get_db()
 
     plays = db.execute("""
-        SELECT 
+        SELECT
             play.timestamp,
             track_view.album || '\n(' || album_view.artist || ')' AS album,
             CAST(track_view.duration AS REAL) / album_view.duration AS fraction
@@ -167,7 +167,6 @@ def get_listens_by_year():
             'x': f"{year}-01-01",
             'y': values.get(year, 0)
         })
-
 
     return [
         {

@@ -23,6 +23,7 @@ track_fields = {
     'year': fields.Integer(default=None),
 }
 
+
 def api_cache(func):
     dt_format = '%a, %d %b %Y %H:%M:%S %Z'
 
@@ -45,7 +46,7 @@ def api_cache(func):
         response = func(*args, **kwargs)
 
         # coerce response structure to (json, status_code, headers)
-        if type(response) != tuple or len(response) == 1:
+        if not isinstance(response, tuple) or len(response) == 1:
             response = response, 200, {}
         elif len(response) == 2:
             response = *response, {}

@@ -12,6 +12,7 @@ from .shared import api_cache
 
 api = Namespace('albums')
 
+
 @api.route('/')
 class Albums(Resource):
     method_decorators = [api_cache]

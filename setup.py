@@ -20,7 +20,8 @@ setup(
     ],
     extras_require={
         'dev': [
-            'mypy==0.812',
+            'autopep8==2.0.1',
+            'mypy==1.0.0',
         ],
     },
     license='MIT',

@@ -16,6 +16,7 @@ from .shared import api_cache, track_fields
 
 api = Namespace('tracks')
 
+
 @api.route('/')
 class Tracks(Resource):
     method_decorators = [api_cache]
@@ -60,6 +61,7 @@ class Lyrics(Resource):
             'lyrics': 'No lyrics found.',
             'url': None,
         }
+
 
 @api.route('/<int:track_id>/submit-now-playing')
 class SubmitNowPlaying(Resource):
@@ -134,4 +136,3 @@ class SubmitPlay(Resource):
         except pylast.NetworkError:
             # oh well, we'll get 'em next time
             return None, 503
-
