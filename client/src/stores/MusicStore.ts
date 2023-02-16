@@ -68,7 +68,7 @@ export default class MusicStore {
         return;
       }
 
-      const newImgUrl = `/track/${this.currentTrackId}/art`;
+      const newImgUrl = `/art/${this.currentTrackId}`;
 
       const img = new Image();
       img.src = newImgUrl;

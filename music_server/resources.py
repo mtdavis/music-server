@@ -38,7 +38,7 @@ def handle_stream(path: str):
         get_config('files')['base_stream_path'], path)
 
 
-@resources_blueprint.route('/track/<int:track_id>/art')
+@resources_blueprint.route('/art/<int:track_id>')
 def handle_art(track_id: int):
     base_stream_path = pathlib.Path(get_config('files')['base_stream_path'])
 
