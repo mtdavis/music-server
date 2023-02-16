@@ -8,11 +8,13 @@ from flask_restx import (
 from music_server.db import get_db
 from music_server.util import get_config
 
+from .shared import api_cache
+
 api = Namespace('albums')
 
 @api.route('/')
 class Albums(Resource):
-    # method_decorators = {'get': [api_cache]}
+    method_decorators = [api_cache]
 
     fields = {
         'id': fields.Integer,

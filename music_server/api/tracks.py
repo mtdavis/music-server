@@ -12,13 +12,13 @@ from music_server.db import get_db
 from music_server.external import get_genius, get_lastfm
 from music_server.util import get_config
 
-from .shared import track_fields
+from .shared import api_cache, track_fields
 
 api = Namespace('tracks')
 
 @api.route('/')
 class Tracks(Resource):
-    # method_decorators = {'get': [api_cache]}
+    method_decorators = [api_cache]
 
     fields = track_fields
 
