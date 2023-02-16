@@ -46,7 +46,7 @@ export default class DbStore {
     this.albumsLoading = true;
 
     get({
-      url: '/albums',
+      url: '/api/albums/',
       onSuccess: action((albums: Album[]) => {
         this.albums.replace(albums);
         this.albumsLoading = false;
@@ -58,7 +58,7 @@ export default class DbStore {
     this.tracksLoading = true;
 
     get({
-      url: '/tracks',
+      url: '/api/tracks/',
       onSuccess: action((tracks: Track[]) => {
         this.tracks.replace(tracks);
         this.tracksLoading = false;
@@ -70,7 +70,7 @@ export default class DbStore {
     this.playlistsLoading = true;
 
     get({
-      url: '/playlists',
+      url: '/api/playlists/',
       onSuccess: action((playlists: Playlist[]) => {
         this.playlists.replace(playlists);
         this.playlistsLoading = false;
@@ -136,7 +136,7 @@ export default class DbStore {
     this.scanResult = '';
 
     put({
-      url: '/scan',
+      url: '/api/scan/',
       data: {dry_run: dryRun},
       onSuccess: action((result: string) => {
         this.scanning = false;
@@ -152,7 +152,7 @@ export default class DbStore {
 
   editAlbum(albumId: number, starred: boolean): void {
     put({
-      url: `/album/${albumId}`,
+      url: `/api/albums/${albumId}`,
       data: {starred},
       onSuccess: action((result: Album) => {
         const albumIndex = this.albums.findIndex((a) => a.id === albumId);

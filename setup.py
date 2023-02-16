@@ -10,9 +10,9 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'flask==1.1.2',
-        'flask-restful==0.3.8',
-        'flask-compress==1.9.0',
+        'flask==2.2.2',
+        'flask-restx==1.0.6',
+        'flask-compress==1.13',
         'eyed3==0.9.6',
         'pylast==4.2.0',
         'lyricsgenius==3.0.0',
