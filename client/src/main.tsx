@@ -34,4 +34,4 @@ const router = (
   </React.StrictMode>
 );
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(router)
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(router);
