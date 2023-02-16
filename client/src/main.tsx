@@ -1,5 +1,5 @@
 import React from 'react';
-import {render} from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import {colors} from '@material-ui/core';
 import {
   createMuiTheme,
@@ -25,11 +25,13 @@ const muiTheme = createMuiTheme({
 });
 
 const router = (
-  <MuiThemeProvider theme={muiTheme}>
-    <StoreProvider>
-      <Master />
-    </StoreProvider>
-  </MuiThemeProvider>
+  <React.StrictMode>
+    <MuiThemeProvider theme={muiTheme}>
+      <StoreProvider>
+        <Master />
+      </StoreProvider>
+    </MuiThemeProvider>
+  </React.StrictMode>
 );
 
-render(router, document.getElementById('app'));
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(router)

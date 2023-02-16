@@ -67,7 +67,7 @@ const AlbumImage = ({
         elevation={hover ? 4 : 2}
       >
         <LazyLoad height={placeholderHeight} offset={1000} debounce={false}>
-          <img src={`/track/${trackId}/art`}
+          <img src={`/art/${trackId}`}
             className={classes.albumImage}
             onClick={onClick} onLoad={onLoad}/>
         </LazyLoad>
