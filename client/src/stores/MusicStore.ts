@@ -125,7 +125,7 @@ export default class MusicStore {
 
   playPlaylist(playlist: Playlist): void {
     get({
-      url: `/playlist/${playlist.id}/tracks`,
+      url: `/api/playlists/${playlist.id}/tracks`,
       onSuccess: (tracks: Track[]) => {
         this.stopPlayback();
         this.setPlaylist(tracks);
@@ -153,7 +153,7 @@ export default class MusicStore {
 
   playShuffle(minutes: number, genres: string[]): void {
     get({
-      url: '/shuffle',
+      url: '/api/shuffle/',
       onSuccess: (tracks: Track[]) => {
         if(!this.api) {
           throw Error('Gapless5 instance is not initialized');

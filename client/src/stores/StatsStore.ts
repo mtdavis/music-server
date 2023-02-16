@@ -60,7 +60,7 @@ export default class StatsStore {
 
   loadStats: () => void = () => {
     get({
-      url: '/stats',
+      url: '/api/stats/',
       onSuccess: action((stats: Stats) => {
         this.genresOverTime.replace(stats.genres_over_time);
         this.artistsOverTime.replace(stats.artists_over_time);

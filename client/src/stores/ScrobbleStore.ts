@@ -89,7 +89,7 @@ export default class ScrobbleStore {
           this.musicStore.playerState !== PlayerState.STOPPED
         ) {
           put({
-            url: `/track/${trackToScrobble.id}/submit-now-playing`,
+            url: `/api/tracks/${trackToScrobble.id}/submit-now-playing`,
           });
         }
 
@@ -107,7 +107,7 @@ export default class ScrobbleStore {
         this.dbStore.incrementPlayCount(trackToScrobble.id, trackStartedPlaying);
 
         put({
-          url: `/track/${trackToScrobble.id}/submit-play`,
+          url: `/api/tracks/${trackToScrobble.id}/submit-play`,
           data: {
             timestamp: trackStartedPlaying
           },

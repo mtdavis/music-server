@@ -51,7 +51,7 @@ export default class LyricsStore {
           });
 
           get({
-            url: `/track/${nowPlayingId}/lyrics`,
+            url: `/api/tracks/${nowPlayingId}/lyrics`,
             onSuccess: action((result: GetResult) => {
               this.lyrics = result.lyrics;
               this.url = result.url;

@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     Compress(app)
     app.register_blueprint(resources_blueprint)
-    app.register_blueprint(api_blueprint)
+    app.register_blueprint(api_blueprint, url_prefix='/api')
     setup_db(app)
 
     app.run(debug=True)
