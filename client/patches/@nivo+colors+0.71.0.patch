@@ -1,9 +1,0 @@
-diff --git a/node_modules/@nivo/colors/dist/types/inheritedColor.d.ts b/node_modules/@nivo/colors/dist/types/inheritedColor.d.ts
-index 3147c6a..be84d64 100644
---- a/node_modules/@nivo/colors/dist/types/inheritedColor.d.ts
-+++ b/node_modules/@nivo/colors/dist/types/inheritedColor.d.ts
-@@ -1,3 +1,4 @@
-+// @ts-nocheck
- /// <reference types="react" />
- import { RGBColor } from 'd3-color';
- export declare type ColorModifierBrightness = ['brighter', number];

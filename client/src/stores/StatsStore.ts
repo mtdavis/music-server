@@ -6,17 +6,14 @@ import {
   observable,
 } from 'mobx';
 import {get} from 'lib/util';
+import {BumpSerie} from '@nivo/bump';
 
 interface Point {
   x: number;
   y: number;
 }
 
-interface BumpStats {
-  id: string;
-  data: [Point];
-  hidden?: boolean;
-}
+type BumpStats = BumpSerie<Point, { hidden: boolean }>
 
 interface LineStats {
   id: string;
