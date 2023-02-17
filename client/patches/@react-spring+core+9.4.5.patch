@@ -1,0 +1,45 @@
+diff --git a/node_modules/@react-spring/core/dist/declarations/src/hooks/useSpring.d.ts b/node_modules/@react-spring/core/dist/declarations/src/hooks/useSpring.d.ts
+index e987098..c0a7851 100644
+--- a/node_modules/@react-spring/core/dist/declarations/src/hooks/useSpring.d.ts
++++ b/node_modules/@react-spring/core/dist/declarations/src/hooks/useSpring.d.ts
+@@ -1,3 +1,4 @@
++// @ts-nocheck
+ import { Remap } from '@react-spring/types';
+ import { ControllerUpdate, PickAnimated, SpringValues } from '../types';
+ import { Valid } from '../types/common';
+diff --git a/node_modules/@react-spring/core/dist/declarations/src/hooks/useSprings.d.ts b/node_modules/@react-spring/core/dist/declarations/src/hooks/useSprings.d.ts
+index a3ea7d3..88b5ddd 100644
+--- a/node_modules/@react-spring/core/dist/declarations/src/hooks/useSprings.d.ts
++++ b/node_modules/@react-spring/core/dist/declarations/src/hooks/useSprings.d.ts
+@@ -1,3 +1,4 @@
++// @ts-nocheck
+ import { Lookup } from '@react-spring/types';
+ import { ControllerUpdate, PickAnimated, SpringValues } from '../types';
+ import { UseSpringProps } from './useSpring';
+diff --git a/node_modules/@react-spring/core/dist/declarations/src/hooks/useTrail.d.ts b/node_modules/@react-spring/core/dist/declarations/src/hooks/useTrail.d.ts
+index a97551f..35968b7 100644
+--- a/node_modules/@react-spring/core/dist/declarations/src/hooks/useTrail.d.ts
++++ b/node_modules/@react-spring/core/dist/declarations/src/hooks/useTrail.d.ts
+@@ -1,3 +1,4 @@
++// @ts-nocheck
+ import { Valid } from '../types/common';
+ import { PickAnimated, SpringValues } from '../types';
+ import { SpringRef } from '../SpringRef';
+diff --git a/node_modules/@react-spring/core/dist/declarations/src/hooks/useTransition.d.ts b/node_modules/@react-spring/core/dist/declarations/src/hooks/useTransition.d.ts
+index db53bae..3cc6665 100644
+--- a/node_modules/@react-spring/core/dist/declarations/src/hooks/useTransition.d.ts
++++ b/node_modules/@react-spring/core/dist/declarations/src/hooks/useTransition.d.ts
+@@ -1,3 +1,4 @@
++// @ts-nocheck
+ import { OneOrMore } from '@react-spring/types';
+ import { PickAnimated, TransitionFn, UseTransitionProps } from '../types';
+ import { Valid } from '../types/common';
+diff --git a/node_modules/@react-spring/core/dist/declarations/src/types/props.d.ts b/node_modules/@react-spring/core/dist/declarations/src/types/props.d.ts
+index 4be1011..11a994c 100644
+--- a/node_modules/@react-spring/core/dist/declarations/src/types/props.d.ts
++++ b/node_modules/@react-spring/core/dist/declarations/src/types/props.d.ts
+@@ -1,3 +1,4 @@
++// @ts-nocheck
+ import { FluidProps, FluidValue } from '@react-spring/shared';
+ import { Any, Constrain, Lookup, Falsy, Merge, ObjectFromUnion, ObjectType, OneOrMore, Remap, UnknownProps } from '@react-spring/types';
+ import { Controller } from '../Controller';

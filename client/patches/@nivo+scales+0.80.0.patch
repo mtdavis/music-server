@@ -1,0 +1,18 @@
+diff --git a/node_modules/@nivo/scales/dist/types/bandScale.d.ts b/node_modules/@nivo/scales/dist/types/bandScale.d.ts
+index 91ad5dc..88f519b 100644
+--- a/node_modules/@nivo/scales/dist/types/bandScale.d.ts
++++ b/node_modules/@nivo/scales/dist/types/bandScale.d.ts
+@@ -1,3 +1,4 @@
++// @ts-nocheck
+ import { ScaleBand as D3ScaleBand } from 'd3-scale';
+ import { ComputedSerieAxis, ScaleBand, ScaleBandSpec, StringValue, ScaleAxis } from './types';
+ export declare const createBandScale: <Input extends StringValue>({ round }: ScaleBandSpec, data: ComputedSerieAxis<Input>, size: number, axis: ScaleAxis) => ScaleBand<Input>;
+diff --git a/node_modules/@nivo/scales/dist/types/types.d.ts b/node_modules/@nivo/scales/dist/types/types.d.ts
+index b385995..861dacb 100644
+--- a/node_modules/@nivo/scales/dist/types/types.d.ts
++++ b/node_modules/@nivo/scales/dist/types/types.d.ts
+@@ -1,3 +1,4 @@
++// @ts-nocheck
+ import { ScaleLinear as D3ScaleLinear, ScalePoint as D3ScalePoint, ScaleBand as D3ScaleBand, ScaleLogarithmic as D3ScaleLogarithmic, ScaleSymLog as D3ScaleSymLog, ScaleTime as D3ScaleTime } from 'd3-scale';
+ import { TIME_PRECISION } from './timeHelpers';
+ export declare type ScaleAxis = 'x' | 'y';
