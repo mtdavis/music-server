@@ -5,9 +5,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "watch": "vite build --watch --minify false --sourcemap --mode development",
+    "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@material-ui/core": "4.11.3",

@@ -12,4 +12,11 @@ export default defineConfig({
     eslint(),
     tsc(),
   ],
+  server: {
+    proxy: {
+      '/api': 'http://localhost:5000',
+      '/stream': 'http://localhost:5000',
+      '/art': 'http://localhost:5000',
+    },
+  },
 });

@@ -22,7 +22,7 @@ export default class MusicStore {
   currentTrackPosition = 0;
   willStopAfterCurrent = false;
   albumArtUrl: string | null = null;
-  demoMode: boolean = __DEMO_MODE__;
+  demoMode: boolean = import.meta.env.VITE_DEMO_MODE === 'true';
   dbStore: DbStore;
   noSleep = new NoSleep();
 
