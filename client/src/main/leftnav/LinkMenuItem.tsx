@@ -9,7 +9,7 @@ import {
 import {
   makeStyles
 } from '@material-ui/styles';
-import {useHistory, useLocation} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 
 import Tooltip from 'lib/Tooltip';
 import {useStores} from 'stores';
@@ -34,12 +34,12 @@ const LinkMenuItem = ({
 }: Props) => {
   const classes = useStyles();
   const {uiStore} = useStores();
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const onClick = () => {
     if(location.pathname !== to) {
-      history.push(to);
+      navigate(to);
     }
   };
 
