@@ -1,0 +1,9 @@
+diff --git a/node_modules/@nivo/legends/dist/types/props.d.ts b/node_modules/@nivo/legends/dist/types/props.d.ts
+index 373478b..6618adf 100644
+--- a/node_modules/@nivo/legends/dist/types/props.d.ts
++++ b/node_modules/@nivo/legends/dist/types/props.d.ts
+@@ -1,3 +1,4 @@
++// @ts-nocheck
+ import PropTypes from 'prop-types';
+ /**
+  * The prop type is exported as a simple object instead of `PropTypes.shape`

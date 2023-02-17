@@ -7,7 +7,8 @@
   "scripts": {
     "watch": "vite build --watch",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@material-ui/core": "4.11.3",
@@ -51,14 +52,19 @@
     "@types/react-router-dom": "5.1.7",
     "@types/react-virtualized": "9.21.11",
     "@types/weighted": "0.0.5",
-    "@types/wicg-mediasession": "1.1.0",
+    "@types/wicg-mediasession": "1.1.4",
+    "@typescript-eslint/eslint-plugin": "^5.52.0",
+    "@typescript-eslint/parser": "^5.52.0",
     "@vitejs/plugin-react": "^3.1.0",
     "eslint": "7.22.0",
     "eslint-config-google": "0.14.0",
     "eslint-plugin-import": "2.22.1",
     "eslint-plugin-react": "7.22.0",
+    "patch-package": "^6.4.7",
     "typescript": "^4.9.3",
     "vite": "^4.1.0",
+    "vite-plugin-eslint": "^1.8.1",
+    "vite-plugin-tsc": "^0.1.1",
     "vite-tsconfig-paths": "^4.0.5"
   }
 }
