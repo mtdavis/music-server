@@ -3,7 +3,6 @@ import jsep, {
   Expression,
   Identifier,
   Literal,
-  LogicalExpression,
   UnaryExpression,
 } from 'jsep';
 import splitargs from 'splitargs';
@@ -66,12 +65,11 @@ function evaluateFilterExpression<R extends RowData>(
   astNode: Expression,
   columns: ColumnConfig<R>[]
 ): any {
-  if(astNode.type === "BinaryExpression" ||
-    astNode.type === "LogicalExpression"
+  if(astNode.type === "BinaryExpression"
   ) {
-    return binops[(astNode as BinaryExpression | LogicalExpression).operator](
-      evaluateFilterExpression(rowData, (astNode as BinaryExpression | LogicalExpression).left, columns),
-      evaluateFilterExpression(rowData, (astNode as BinaryExpression | LogicalExpression).right, columns));
+    return binops[(astNode as BinaryExpression).operator](
+      evaluateFilterExpression(rowData, (astNode as BinaryExpression).left, columns),
+      evaluateFilterExpression(rowData, (astNode as BinaryExpression).right, columns));
   }
   else if(astNode.type === "UnaryExpression") {
     return unops[(astNode as UnaryExpression).operator](

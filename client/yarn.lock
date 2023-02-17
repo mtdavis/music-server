@@ -763,11 +763,6 @@
     estree-walker "^2.0.1"
     picomatch "^2.2.2"
 
-"@types/classnames@2.2.11":
-  version "2.2.11"
-  resolved "https://registry.yarnpkg.com/@types/classnames/-/classnames-2.2.11.tgz#2521cc86f69d15c5b90664e4829d84566052c1cf"
-  integrity sha512-2koNhpWm3DgWRp5tpkiJ8JGc1xTn2q0l+jUNUE7oMKXUf5NpI9AIdC4kbjGNFBdHtcxBD18LAksoudAVhFKCjw==
-
 "@types/d3-color@2.0.1":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@types/d3-color/-/d3-color-2.0.1.tgz#570ea7f8b853461301804efa52bd790a640a26db"
@@ -801,11 +796,6 @@
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/@types/d3-time/-/d3-time-2.1.1.tgz#743fdc821c81f86537cbfece07093ac39b4bc342"
   integrity sha512-9MVYlmIgmRR31C5b4FVSWtuMmBHh2mOWQYfl7XAYOa8dsnb7iEmUmRSWSFgXFtkjxO65d7hTUHQC+RhR/9IWFg==
-
-"@types/debounce@1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@types/debounce/-/debounce-1.2.0.tgz#9ee99259f41018c640b3929e1bb32c3dcecdb192"
-  integrity sha512-bWG5wapaWgbss9E238T0R6bfo5Fh3OkeoSt245CM7JJwVwpw6MEBCbIxLq5z8KzsE3uJhzcIuQkyiZmzV3M/Dw==
 
 "@types/eslint@^8.4.5":
   version "8.21.1"
@@ -917,10 +907,10 @@
   resolved "https://registry.yarnpkg.com/@types/semver/-/semver-7.3.13.tgz#da4bfd73f49bd541d28920ab0e2bf0ee80f71c91"
   integrity sha512-21cFJr9z3g5dW8B0CVI9g2O9beqaThGQ6ZFBqHfwhzLDKUxaqTIy3vnfah/UPkfOiF2pLq+tGz+W8RyCskuslw==
 
-"@types/weighted@0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@types/weighted/-/weighted-0.0.5.tgz#39056fe27635afd62de6577a1834225a16037f2e"
-  integrity sha512-mbVbAGXnPIV8fmzoPFiFROosUb47PMOVwAlibRw7u/+70RZYPJx4w86UzTSfTDjSOcvAjPc59vhjdLgbAAht9g==
+"@types/weighted@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@types/weighted/-/weighted-0.3.0.tgz#9e099f574ab92e629ce3ec3d24d0e8ed12863707"
+  integrity sha512-vTgsH+jNgdU+mvlaBxLbtM00sWqe5RCkrjQLR8KBB9eFbeoXW5w9xDaZXwEX2JmWS9hBiXMqgqb6u0im0ls26g==
 
 "@types/wicg-mediasession@1.1.4":
   version "1.1.4"
@@ -1218,10 +1208,10 @@ ci-info@^2.0.0:
   resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-2.0.0.tgz#67a9e964be31a51e15e5010d58e6f12834002f46"
   integrity sha512-5tK7EtrZ0N+OLFMthtqOj4fI2Jeb88C4CAZPu25LDVUgXJ0A3Js4PMGqrn0JU1W0Mh1/Z8wZzYPxqUrXeBboCQ==
 
-classnames@2.2.6:
-  version "2.2.6"
-  resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.2.6.tgz#43935bffdd291f326dad0a205309b38d00f650ce"
-  integrity sha512-JR/iSQOSt+LQIWwrwEzJ9uk0xfN3mTVYMwt1Ir5mUcSN6pU+V4zQFFaJsclJbPuAUQH+yfWef6tm7l1quW3C8Q==
+classnames@2.3.2:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.3.2.tgz#351d813bf0137fcc6a76a16b88208d2560a0d924"
+  integrity sha512-CSbhY4cFEJRe6/GQzIk5qXZ4Jeg5pcsP7b5peFSDpffpe1cqjASH/n9UTjBwOp6XpMSTwQ8Za2K5V02ueA7Tmw==
 
 clsx@^1.0.4:
   version "1.2.1"
@@ -2346,10 +2336,10 @@ js-yaml@^3.13.1:
     argparse "^1.0.7"
     esprima "^4.0.0"
 
-jsep@0.3.5:
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/jsep/-/jsep-0.3.5.tgz#3fd79ebd92f6f434e4857d5272aaeef7d948264d"
-  integrity sha512-AoRLBDc6JNnKjNcmonituEABS5bcfqDhQAWWXNTFrqu6nVXBpBAGfcoTGZMFlIrh9FjmE1CQyX9CTNwZrXMMDA==
+jsep@1.3.8:
+  version "1.3.8"
+  resolved "https://registry.yarnpkg.com/jsep/-/jsep-1.3.8.tgz#facb6eb908d085d71d950bd2b24b757c7b8a46d7"
+  integrity sha512-qofGylTGgYj9gZFsHuyWAN4jr35eJ66qJCK4eKDnldohuUoQFbU3iZn2zjvEbd9wOAhP9Wx5DsAAduTyE1PSWQ==
 
 jsesc@^2.5.1:
   version "2.5.2"
@@ -2566,10 +2556,10 @@ mdi-material-ui@6.22.0:
   resolved "https://registry.yarnpkg.com/mdi-material-ui/-/mdi-material-ui-6.22.0.tgz#0b323909fc9ed38b707463bec716e57000af97c7"
   integrity sha512-cztRUMEiR8JGmEw9GUZWFnJ1WsNTE5tn6vqDMTOequCE6UxMIhBEhbQHW4Z0JyWSs3mTkvjzOLTYoBy3efIV3g==
 
-memoize-one@5.1.1:
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/memoize-one/-/memoize-one-5.1.1.tgz#047b6e3199b508eaec03504de71229b8eb1d75c0"
-  integrity sha512-HKeeBpWvqiVJD57ZUAsJNm71eHTykffzcLZVYWiVfQeI1rJtuEaS7hQiEpWfVVk18donPwJEcFKIkCmPJNOhHA==
+memoize-one@6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/memoize-one/-/memoize-one-6.0.0.tgz#b2591b871ed82948aee4727dc6abceeeac8c1045"
+  integrity sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw==
 
 memoize-one@^5.0.0:
   version "5.2.1"
@@ -3569,10 +3559,10 @@ vite@^4.1.0:
   optionalDependencies:
     fsevents "~2.3.2"
 
-weighted@0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/weighted/-/weighted-0.3.0.tgz#81087f1ffe1b3f06db43dbe451451e9068166647"
-  integrity sha512-7ncObO1ErcLtBlysbh+kpcViGz4HJO1iV5Oj24xRA/0Rnl6C3sG4/7w1m8+DvwMarC3ZJGCk8Q2Ai/b8gQjndQ==
+weighted@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/weighted/-/weighted-1.0.0.tgz#37c72fc2fa4dd39d85abfbbcc30ed6a61781b74d"
+  integrity sha512-d0actwV3zgtH73koFWida36KVz+hM1XaumMBTQI6ozr9zUgHiB4dWM+2wWcXe6cniyLW0iMBthuPN6XtSpPMVw==
 
 which-boxed-primitive@^1.0.2:
   version "1.0.2"
