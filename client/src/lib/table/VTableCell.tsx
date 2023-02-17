@@ -2,8 +2,8 @@ import React from 'react';
 import classNames from 'classnames';
 import {
   TableCell,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
+} from '@mui/material';
+import {makeStyles} from '@mui/styles';
 import {renderIcon} from './util';
 
 const useStyles = makeStyles(() => ({

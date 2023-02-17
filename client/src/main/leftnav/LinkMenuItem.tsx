@@ -5,10 +5,10 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-} from '@material-ui/core';
+} from '@mui/material';
 import {
   makeStyles
-} from '@material-ui/styles';
+} from '@mui/styles';
 import {useLocation, useNavigate} from "react-router-dom";
 
 import Tooltip from 'lib/Tooltip';

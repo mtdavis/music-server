@@ -3,8 +3,8 @@ import {observer} from 'mobx-react-lite';
 import {
   Grid,
   Paper,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
+} from '@mui/material';
+import {makeStyles} from '@mui/styles';
 import LazyLoad from 'react-lazy-load';
 
 import {useStores} from 'stores';

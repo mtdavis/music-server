@@ -8,10 +8,10 @@ import {
   CircularProgress,
   Divider,
   Typography,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
-import CreateIcon from '@material-ui/icons/Create';
-import SearchIcon from '@material-ui/icons/Search';
+} from '@mui/material';
+import {makeStyles} from '@mui/styles';
+import CreateIcon from '@mui/icons-material/Create';
+import SearchIcon from '@mui/icons-material/Search';
 
 import {useStores} from 'stores';
 

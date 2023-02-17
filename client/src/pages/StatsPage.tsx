@@ -11,11 +11,11 @@ import {
   Tab,
   TextField,
   Typography,
-} from '@material-ui/core';
-import * as Colors from '@material-ui/core/colors';
-import {Theme, useTheme} from '@material-ui/core/styles';
-import {makeStyles} from '@material-ui/styles';
-import RefreshIcon from '@material-ui/icons/Refresh';
+} from '@mui/material';
+import * as Colors from '@mui/material/colors';
+import {Theme, useTheme} from '@mui/material/styles';
+import {makeStyles} from '@mui/styles';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import {
   ResponsiveAreaBump,
   ResponsiveBump,

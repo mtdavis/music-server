@@ -5,9 +5,9 @@ import {observer} from 'mobx-react-lite';
 import {
   AppBar,
   Snackbar,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
-import {Theme} from '@material-ui/core/styles';
+} from '@mui/material';
+import {makeStyles} from '@mui/styles';
+import {Theme} from '@mui/material/styles';
 
 import {useStores} from 'stores';
 import ScrobbleState from 'lib/ScrobbleState';

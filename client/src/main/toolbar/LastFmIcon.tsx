@@ -1,5 +1,5 @@
 import React from 'react';
-import {SvgIcon} from '@material-ui/core';
+import {SvgIcon} from '@mui/material';
 
 const LastFmIcon = (): React.ReactElement => (
   <SvgIcon viewBox="0 0 1024 1024">

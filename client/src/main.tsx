@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import {colors} from '@material-ui/core';
+import {colors} from '@mui/material';
 import {
-  createMuiTheme,
-  MuiThemeProvider,
-} from '@material-ui/core/styles';
+  createTheme,
+  ThemeProvider,
+} from '@mui/material/styles';
 
 import {StoreProvider} from './stores';
 import Master from './main/Master';
@@ -12,7 +12,7 @@ import Master from './main/Master';
 import 'react-virtualized/styles.css';
 import './style/main.css';
 
-const muiTheme = createMuiTheme({
+const muiTheme = createTheme({
   palette: {
     primary: {
       main: colors.lightBlue['600'],
@@ -26,11 +26,11 @@ const muiTheme = createMuiTheme({
 
 const router = (
   <React.StrictMode>
-    <MuiThemeProvider theme={muiTheme}>
+    <ThemeProvider theme={muiTheme}>
       <StoreProvider>
         <Master />
       </StoreProvider>
-    </MuiThemeProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );
 

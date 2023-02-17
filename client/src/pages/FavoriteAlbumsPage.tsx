@@ -3,7 +3,7 @@ import {observer} from 'mobx-react-lite';
 import {
   CircularProgress,
   Grid,
-} from '@material-ui/core';
+} from '@mui/material';
 
 import {compare} from 'lib/util';
 import AlbumImage from 'lib/AlbumImage';

@@ -2,7 +2,7 @@ import React from 'react';
 import {observer} from 'mobx-react-lite';
 import {
   TextField,
-} from '@material-ui/core';
+} from '@mui/material';
 
 import {FilterStore} from './FilterStore';
 

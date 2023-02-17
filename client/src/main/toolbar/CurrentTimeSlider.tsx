@@ -3,8 +3,8 @@ import {observer} from 'mobx-react-lite';
 import {
   colors,
   Slider,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
+} from '@mui/material';
+import {makeStyles} from '@mui/styles';
 
 import {useStores} from 'stores';
 import PlayerState from 'lib/PlayerState';

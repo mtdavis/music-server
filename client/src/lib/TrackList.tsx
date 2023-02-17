@@ -1,6 +1,6 @@
 import React from 'react';
 import {observer} from 'mobx-react-lite';
-import {Snackbar} from '@material-ui/core';
+import {Snackbar} from '@mui/material';
 
 import {
   secondsToTimeString,

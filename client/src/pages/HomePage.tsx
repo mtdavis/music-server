@@ -3,7 +3,7 @@ import {observer} from 'mobx-react-lite';
 import {
   Grid,
   Paper,
-} from '@material-ui/core';
+} from '@mui/material';
 
 import Playlist from 'lib/Playlist';
 import {useStores} from 'stores';

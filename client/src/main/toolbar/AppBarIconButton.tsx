@@ -1,6 +1,6 @@
 import React from 'react';
-import {IconButton} from '@material-ui/core';
-import {IconButtonProps} from '@material-ui/core/IconButton';
+import {IconButton} from '@mui/material';
+import {IconButtonProps} from '@mui/material/IconButton';
 
 interface Props extends IconButtonProps {
   Icon: React.ComponentType;

@@ -12,16 +12,16 @@ import ScrobbleState from 'lib/ScrobbleState';
 import {
   IconButton,
   Toolbar as MUIToolbar,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
-import {Theme} from '@material-ui/core/styles';
+} from '@mui/material';
+import {makeStyles} from '@mui/styles';
+import {Theme} from '@mui/material/styles';
 
-import MenuIcon from '@material-ui/icons/Menu';
-import PauseIcon from '@material-ui/icons/Pause';
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
-import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
-import StopIcon from '@material-ui/icons/Stop';
-import SkipNextIcon from '@material-ui/icons/SkipNext';
+import MenuIcon from '@mui/icons-material/Menu';
+import PauseIcon from '@mui/icons-material/Pause';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
+import StopIcon from '@mui/icons-material/Stop';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
 import LastFmIcon from './LastFmIcon';
 
 import Tooltip from 'lib/Tooltip';

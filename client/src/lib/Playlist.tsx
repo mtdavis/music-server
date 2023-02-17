@@ -1,8 +1,8 @@
 import React from 'react';
 import {observer} from 'mobx-react-lite';
 import MusicCircleIcon from 'mdi-material-ui/MusicCircleOutline';
-import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
-import PauseCircleFilledIcon from '@material-ui/icons/PauseCircleFilled';
+import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
+import PauseCircleFilledIcon from '@mui/icons-material/PauseCircleFilled';
 import StopCircle from 'mdi-material-ui/StopCircle';
 
 import VTable from './table/VTable';

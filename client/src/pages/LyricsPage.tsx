@@ -4,9 +4,9 @@ import {
   CircularProgress,
   Paper,
   Typography,
-} from '@material-ui/core';
-import {Theme} from '@material-ui/core/styles';
-import {makeStyles} from '@material-ui/styles';
+} from '@mui/material';
+import {Theme} from '@mui/material/styles';
+import {makeStyles} from '@mui/styles';
 import LyricsState from 'lib/LyricsState';
 import Notice from 'lib/Notice';
 import {useStores} from 'stores';

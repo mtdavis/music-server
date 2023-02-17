@@ -1,6 +1,6 @@
 import React from 'react';
-const muiTooltipPromise = import('@material-ui/core/Tooltip');
-import {TooltipProps} from '@material-ui/core';
+const muiTooltipPromise = import('@mui/material/Tooltip');
+import {TooltipProps} from '@mui/material';
 
 const Tooltip = ({
   children,

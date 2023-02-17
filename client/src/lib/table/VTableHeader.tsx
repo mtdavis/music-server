@@ -4,10 +4,10 @@ import classNames from 'classnames';
 import {
   TableCell,
   TableSortLabel,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
+} from '@mui/material';
+import {makeStyles} from '@mui/styles';
 import {SortStore} from './SortStore';
-import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 const useStyles = makeStyles(() => ({
   flexContainer: {

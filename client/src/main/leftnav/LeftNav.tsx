@@ -4,21 +4,21 @@ import {
   Divider,
   Drawer,
   List,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
-import {Theme} from '@material-ui/core/styles';
+} from '@mui/material';
+import {makeStyles} from '@mui/styles';
+import {Theme} from '@mui/material/styles';
 
-import AlbumIcon from '@material-ui/icons/Album';
-import CancelIcon from '@material-ui/icons/Cancel';
-import MessageOutlinedIcon from '@material-ui/icons/MessageOutlined';
-import MusicNoteIcon from '@material-ui/icons/MusicNote';
-import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
-import QueueMusicIcon from '@material-ui/icons/QueueMusic';
+import AlbumIcon from '@mui/icons-material/Album';
+import CancelIcon from '@mui/icons-material/Cancel';
+import MessageOutlinedIcon from '@mui/icons-material/MessageOutlined';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
+import QueueMusicIcon from '@mui/icons-material/QueueMusic';
 import ShuffleVariantIcon from 'mdi-material-ui/ShuffleVariant';
 import HeartCircleIcon from 'mdi-material-ui/HeartCircle';
-import WatchLaterIcon from '@material-ui/icons/WatchLater';
-import SearchIcon from '@material-ui/icons/Search';
-import TimelineIcon from '@material-ui/icons/Timeline';
+import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import SearchIcon from '@mui/icons-material/Search';
+import TimelineIcon from '@mui/icons-material/Timeline';
 
 import {useStores} from 'stores';
 import LinkMenuItem from './LinkMenuItem';

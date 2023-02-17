@@ -3,9 +3,9 @@ import {observer} from 'mobx-react-lite';
 import {
   colors,
   IconButton,
-} from '@material-ui/core';
-import StarIcon from '@material-ui/icons/Star';
-import StarOutlineIcon from '@material-ui/icons/StarOutline';
+} from '@mui/material';
+import StarIcon from '@mui/icons-material/Star';
+import StarOutlineIcon from '@mui/icons-material/StarOutline';
 
 import {useStores} from 'stores';
 

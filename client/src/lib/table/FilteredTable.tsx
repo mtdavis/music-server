@@ -5,9 +5,9 @@ import {
   IconButton,
   Paper,
   Typography,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
-import CancelIcon from '@material-ui/icons/Cancel';
+} from '@mui/material';
+import {makeStyles} from '@mui/styles';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 import Tooltip from 'lib/Tooltip';
 import {useStores} from 'stores';
