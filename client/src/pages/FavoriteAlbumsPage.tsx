@@ -31,7 +31,7 @@ const FavoriteAlbumsPage = () => {
   }
 
   return (
-    <Grid container spacing={3} alignItems='center' justify='center'>
+    <Grid container spacing={3} alignItems='center' justifyContent='center'>
       {content}
     </Grid>
   );

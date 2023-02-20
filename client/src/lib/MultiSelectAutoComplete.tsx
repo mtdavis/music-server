@@ -1,13 +1,17 @@
 import React from 'react';
 import {
+  Autocomplete,
   Chip,
-  Collapse,
   Grid,
   TextField,
 } from '@mui/material';
-import {Autocomplete} from '@mui/lab';
 
 type Item = string | number | null;
+
+type WrappedItem = {
+  label: string,
+  value: Item,
+}
 
 interface Props {
   hintText: string;
@@ -22,78 +26,48 @@ const MultiSelectAutoComplete = ({
   selectedItems,
   onSelectedItemsUpdate,
 }: Props): React.ReactElement => {
-  const [autocompleteValue, setAutocompleteValue] = React.useState(null);
-  const [autocompleteInputValue, setAutocompleteInputValue] = React.useState('');
-
-  const deselectItem = (item: Item): void => {
-    if(item === '(None)') {
-      item = null;
-    }
-
-    const index = selectedItems.indexOf(item);
-    if(index !== -1) {
-      const newSelectedItems = selectedItems.slice();
-      newSelectedItems.splice(index, 1);
-      onSelectedItemsUpdate(newSelectedItems);
-    }
+  const onAutocompleteChange = (event: React.ChangeEvent<unknown>, items: Array<WrappedItem>): void => {
+    onSelectedItemsUpdate(items.map((item: WrappedItem) => item.value));
   };
 
-  const renderChip = (item: Item): React.ReactElement => (
-    <Grid item key={item || '(None)'}>
-      <Chip
-        label={item || '(None)'}
-        onDelete={() => deselectItem(item)}
-      />
-    </Grid>
-  );
+  const wrapItem = (item: Item) => ({
+    label: item?.toString() ?? '(None)',
+    value: item,
+  });
 
-  const onAutocompleteChange = (event: React.ChangeEvent<unknown>, item: Item): void => {
-    if(item === '(None)') {
-      item = null;
+  const wrapOptions = React.useMemo(() => {
+    const reordered = options.slice();
+
+    if(reordered.includes(null)) {
+      reordered.splice(reordered.indexOf(null), 1); // remove null
+      reordered.splice(0, 0, null);
     }
 
-    if(options.includes(item) && !selectedItems.includes(item)) {
-      const newSelectedItems = selectedItems.slice();
-      newSelectedItems.push(item);
+    return reordered.map(wrapItem);
+  }, [options]);
 
-      onSelectedItemsUpdate(newSelectedItems);
-      setAutocompleteValue(null);
-      setAutocompleteInputValue('');
-    }
-  };
-
-  const onAutocompleteInputChange = (event: React.ChangeEvent<unknown>, value: string): void => {
-    setAutocompleteInputValue(value);
-  };
-
-  const chips = selectedItems.map(renderChip);
-
-  const renderedOptions = options.slice();
-  if(renderedOptions.indexOf(null) !== -1) {
-    renderedOptions.splice(renderedOptions.indexOf(null), 1); // remove null
-    renderedOptions.splice(0, 0, '(None)');
-  }
+  const wrapSelectedItems = selectedItems.map(wrapItem);
 
   return (
     <Grid container direction='column' spacing={1}>
       <Grid item>
         <Autocomplete
-          options={renderedOptions}
-          value={autocompleteValue}
-          inputValue={autocompleteInputValue}
+          multiple
+          options={wrapOptions}
+          value={wrapSelectedItems}
           onChange={onAutocompleteChange}
-          onInputChange={onAutocompleteInputChange}
+          isOptionEqualToValue={(a, b) => a.value === b.value}
           renderInput={(params) => <TextField {...params} placeholder={hintText} />}
+          renderTags={(tagValue, getTagProps) => (
+            tagValue.map((option, index) => (
+              <Chip
+                label={option.label || '(None)'}
+                {...getTagProps({index})}
+              />
+            ))
+          )}
         />
       </Grid>
-
-      <Collapse in={chips.length > 0}>
-        <Grid item>
-          <Grid container direction='row' spacing={1}>
-            {chips}
-          </Grid>
-        </Grid>
-      </Collapse>
     </Grid>
   );
 };

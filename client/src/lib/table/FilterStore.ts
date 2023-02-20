@@ -99,8 +99,7 @@ export class FilterStore<R extends RowData> {
     this.filterKeys.forEach(filterKey => {
       const selectedItemsForKey = this.selectedItems.get(filterKey) || [];
 
-      const options = getUniqueValues(filteredRows, filterKey).filter(
-        val => !selectedItemsForKey.includes(val));
+      const options = getUniqueValues(filteredRows, filterKey);
       newAvailableOptions.set(filterKey, options);
 
       if(selectedItemsForKey.length > 0) {
