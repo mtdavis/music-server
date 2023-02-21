@@ -1,9 +1,8 @@
 import React from 'react';
 import {observer} from 'mobx-react-lite';
-import {Slider} from '@mui/material';
+import {Popover, Slider} from '@mui/material';
 import {makeStyles} from '@mui/styles';
 import {Theme} from '@mui/material/styles';
-const popoverPromise = import('@mui/material/Popover');
 import VolumeMuteIcon from '@mui/icons-material/VolumeMute';
 import VolumeDownIcon from '@mui/icons-material/VolumeDown';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
@@ -15,13 +14,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   root: {
     display: 'flex',
     height: 150,
-    padding: `${theme.spacing(3)}px ${theme.spacing(1)}px`,
+    padding: `${theme.spacing(3)} ${theme.spacing(1)}`,
     overflow: 'hidden',
   },
 }));
 
 const VolumeButton = () => {
-  const Popover = React.lazy(() => popoverPromise);
   const classes = useStyles();
   const {musicStore} = useStores();
   const buttonRef = React.useRef(null);
@@ -48,7 +46,7 @@ const VolumeButton = () => {
     setVolumePopoverVisible(false);
   };
 
-  const onVolumeChange = (event: React.ChangeEvent<unknown>, newVolume: number | number[]) => {
+  const onVolumeChange = (event: Event, newVolume: number | number[]) => {
     musicStore.setVolume(newVolume as number);
     setVolume(newVolume as number);
   };
@@ -61,25 +59,24 @@ const VolumeButton = () => {
           onClick={toggleVolumePopover} />
       </div>
 
-      <React.Suspense fallback={<div />}>
-        <Popover
-          open={volumePopoverVisible}
-          onClose={handleRequestClose}
-          anchorEl={buttonRef.current}
-          transformOrigin={{horizontal: 'center', vertical: 'top'}}
-          anchorOrigin={{horizontal: 'center', vertical: 'bottom'}}
-        >
-          <div className={classes.root}>
-            <Slider
-              max={1}
-              step={.01}
-              orientation='vertical'
-              value={volume}
-              onChange={onVolumeChange}
-            />
-          </div>
-        </Popover>
-      </React.Suspense>
+      <Popover
+        open={volumePopoverVisible}
+        onClose={handleRequestClose}
+        anchorEl={buttonRef.current}
+        transformOrigin={{horizontal: 'center', vertical: 'top'}}
+        anchorOrigin={{horizontal: 'center', vertical: 'bottom'}}
+      >
+        <div className={classes.root}>
+          <Slider
+            max={1}
+            step={.01}
+            orientation='vertical'
+            value={volume}
+            onChange={onVolumeChange}
+            size='small'
+          />
+        </div>
+      </Popover>
     </>
   );
 };

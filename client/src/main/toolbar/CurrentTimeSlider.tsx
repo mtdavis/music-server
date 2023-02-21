@@ -61,7 +61,7 @@ const CurrentTimeSlider = () => {
     sliderDisabled = false;
   }
 
-  const onSliderChange = (event: React.ChangeEvent<unknown>, value: number | number[]) => {
+  const onSliderChange = (event: Event, value: number | number[]) => {
     if(dragging === DragState.NO) {
       // dragging just started.
       setDragging(DragState.YES);
@@ -95,6 +95,7 @@ const CurrentTimeSlider = () => {
         disabled={sliderDisabled}
         onChange={onSliderChange}
         onChangeCommitted={onSliderChangeCommitted}
+        size='small'
       />
 
       <CurrentTimeLabel enabled={playing} seconds={seconds} />

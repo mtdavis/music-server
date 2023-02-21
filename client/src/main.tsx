@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import {colors} from '@mui/material';
 import {
   createTheme,
+  StyledEngineProvider,
   ThemeProvider,
 } from '@mui/material/styles';
 
@@ -26,11 +27,13 @@ const muiTheme = createTheme({
 
 const router = (
   <React.StrictMode>
-    <ThemeProvider theme={muiTheme}>
-      <StoreProvider>
-        <Master />
-      </StoreProvider>
-    </ThemeProvider>
+    <StyledEngineProvider injectFirst>
+      <ThemeProvider theme={muiTheme}>
+        <StoreProvider>
+          <Master />
+        </StoreProvider>
+      </ThemeProvider>
+    </StyledEngineProvider>
   </React.StrictMode>
 );
 
