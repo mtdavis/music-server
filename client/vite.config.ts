@@ -14,9 +14,9 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      '/api': 'http://localhost:5000',
-      '/stream': 'http://localhost:5000',
-      '/art': 'http://localhost:5000',
+      '/api': 'http://127.0.0.1:5000',
+      '/stream': 'http://127.0.0.1:5000',
+      '/art': 'http://127.0.0.1:5000',
     },
   },
 });
