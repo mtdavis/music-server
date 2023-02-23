@@ -1,6 +1,5 @@
 import React from 'react';
 import {Route, Routes} from 'react-router';
-import {HashRouter} from 'react-router-dom';
 import {observer} from 'mobx-react-lite';
 import {
   AppBar,
@@ -50,22 +49,19 @@ const Master = () => {
         </React.Suspense>
       </AppBar>
 
-      <HashRouter>
-        <Routes>
-          <Route path='/' element={<Wrap>{homePagePromise}</Wrap>} />
-          <Route path='/lyrics' element={<Wrap>{lyricsPagePromise}</Wrap>} />
-          <Route path='/albums' element={<Wrap>{albumsPagePromise}</Wrap>} />
-          <Route path='/not-recently-played' element={<Wrap>{notRecentlyPlayedPagePromise}</Wrap>} />
-          <Route path='/never-played' element={<Wrap>{neverPlayedPagePromise}</Wrap>} />
-          <Route path='/favorite-albums' element={<Wrap>{favoriteAlbumsPagePromise}</Wrap>} />
-          <Route path='/tracks' element={<Wrap>{allTracksPagePromise}</Wrap>} />
-          <Route path='/shuffle' element={<Wrap>{shufflePagePromise}</Wrap>} />
-          <Route path='/playlists' element={<Wrap>{playlistsPagePromise}</Wrap>} />
-          <Route path='/scan' element={<Wrap>{scanPagePromise}</Wrap>} />
-          <Route path='/statistics' element={<Wrap>{statsPagePromise}</Wrap>} />
-          <Route path='*' element={<Wrap>{homePagePromise}</Wrap>} />
-        </Routes>
-      </HashRouter>
+      <Routes>
+        <Route path='/' element={<Wrap>{homePagePromise}</Wrap>} />
+        <Route path='/lyrics' element={<Wrap>{lyricsPagePromise}</Wrap>} />
+        <Route path='/albums' element={<Wrap>{albumsPagePromise}</Wrap>} />
+        <Route path='/not-recently-played' element={<Wrap>{notRecentlyPlayedPagePromise}</Wrap>} />
+        <Route path='/never-played' element={<Wrap>{neverPlayedPagePromise}</Wrap>} />
+        <Route path='/favorite-albums' element={<Wrap>{favoriteAlbumsPagePromise}</Wrap>} />
+        <Route path='/tracks' element={<Wrap>{allTracksPagePromise}</Wrap>} />
+        <Route path='/shuffle' element={<Wrap>{shufflePagePromise}</Wrap>} />
+        <Route path='/playlists' element={<Wrap>{playlistsPagePromise}</Wrap>} />
+        <Route path='/scan' element={<Wrap>{scanPagePromise}</Wrap>} />
+        <Route path='/statistics' element={<Wrap>{statsPagePromise}</Wrap>} />
+      </Routes>
 
       <Snackbar open={scrobbleStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED}
         message='Scrobble failed.' />

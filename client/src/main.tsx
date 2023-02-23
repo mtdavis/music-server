@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import {BrowserRouter} from 'react-router-dom';
 import {colors} from '@mui/material';
 import {
   createTheme,
@@ -30,7 +31,9 @@ const router = (
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={muiTheme}>
         <StoreProvider>
-          <Master />
+          <BrowserRouter basename='/app'>
+            <Master />
+          </BrowserRouter>
         </StoreProvider>
       </ThemeProvider>
     </StyledEngineProvider>
