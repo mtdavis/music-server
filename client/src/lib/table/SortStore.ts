@@ -99,7 +99,7 @@ export class SortStore<R extends RowData> {
     runInAction(() => {
       this.sortedRows.replace(sortedRows);
     });
-  }
+  };
 
   get topSortSpec(): SortSpec<R> | null {
     if(this.sortSpecs.length === 0) {

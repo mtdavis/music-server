@@ -67,7 +67,7 @@ export default class StatsStore {
         this.state = StatsState.LOADED;
       }),
     });
-  }
+  };
 
   get filteredAlbumsOverTime(): BumpStats[] {
     return this.albumsOverTime.map(album => ({

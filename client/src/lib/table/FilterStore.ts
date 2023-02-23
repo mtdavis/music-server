@@ -90,7 +90,7 @@ export class FilterStore<R extends RowData> {
     for(const filterKey of this.filterKeys) {
       this.selectedItems.set(filterKey, []);
     }
-  }
+  };
 
   runFilter = (): void => {
     const newAvailableOptions = new Map();
@@ -136,7 +136,7 @@ export class FilterStore<R extends RowData> {
         this.hiddenRowIds.replace(hiddenRowIds);
       }
     });
-  }
+  };
 }
 
 export class FilterStoreMap {

@@ -398,7 +398,7 @@ export default class MusicStore {
 
       navigator.mediaSession.metadata = new window.MediaMetadata(metadata);
     }
-  }
+  };
 
   updateMediaSessionPlaybackState = (): void => {
     if (navigator.mediaSession) {
@@ -412,5 +412,5 @@ export default class MusicStore {
         navigator.mediaSession.playbackState = 'none';
       }
     }
-  }
+  };
 }
