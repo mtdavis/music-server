@@ -37,9 +37,6 @@ class Lyrics(Resource):
 
     @api.marshal_with(fields)
     def get(self, track_id):
-        if get_config('demo_mode'):
-            return None, 401
-
         db = get_db()
         track = get_db().get_tracks(track_id=track_id)[0]
 

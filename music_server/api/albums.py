@@ -48,9 +48,6 @@ class Album(Resource):
 
     @api.marshal_with(fields)
     def put(self, album_id):
-        if get_config('demo_mode'):
-            return None, 401
-
         parser = reqparse.RequestParser()
         parser.add_argument('starred', type=bool)
         args = parser.parse_args()
