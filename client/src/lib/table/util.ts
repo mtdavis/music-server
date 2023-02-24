@@ -136,7 +136,7 @@ export function getRowArrayIds(array: RowData[]): number[] {
   return array.map(item => item.id);
 }
 
-type ColumnWidthMap<R extends RowData> = {[Property in keyof R]: number}
+type ColumnWidthMap<R extends RowData> = {[Property in keyof R]: string}
 
 export function calculateColumnWidths<R extends RowData>(
   rows: R[],
@@ -149,12 +149,18 @@ export function calculateColumnWidths<R extends RowData>(
 
     rows.forEach(row => {
       const renderedValue = renderValue(row[column.key], row, column);
-      const length = String(renderedValue).length;
+      const length = Math.sqrt(String(renderedValue).length);
 
       if(result[column.key] < length) {
         result[column.key] = length;
       }
     });
+  });
+
+  const sum = Object.values(result).reduce((acc, val) => acc + val);
+
+  columns.forEach(column => {
+    result[column.key] = `${result[column.key] / sum * 100}%`;
   });
 
   return result;
