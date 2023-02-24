@@ -17,6 +17,7 @@ setup(
         'pylast==4.2.0',
         'lyricsgenius==3.0.0',
         'tabulate==0.8.9',
+        'uwsgi==2.0.21',
     ],
     extras_require={
         'dev': [
