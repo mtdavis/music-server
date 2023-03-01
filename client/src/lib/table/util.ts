@@ -142,25 +142,27 @@ export function calculateColumnWidths<R extends RowData>(
   rows: R[],
   columns: ColumnConfig<R>[],
 ): ColumnWidthMap<R> {
-  const result: ColumnWidthMap<R> = {} as ColumnWidthMap<R>;
+  const lengths: {[Property in keyof R]: number} = {} as {[Property in keyof R]: number};
 
   columns.forEach(column => {
-    result[column.key] = 4; // arbitrary good starting point
+    lengths[column.key] = 2; // arbitrary good starting point
 
     rows.forEach(row => {
       const renderedValue = renderValue(row[column.key], row, column);
       const length = Math.sqrt(String(renderedValue).length);
 
-      if(result[column.key] < length) {
-        result[column.key] = length;
+      if(lengths[column.key] < length) {
+        lengths[column.key] = length;
       }
     });
   });
 
-  const sum = Object.values(result).reduce((acc, val) => acc + val);
+  const sum: number = Object.values(lengths).reduce((acc, val) => acc + val);
+
+  const result: ColumnWidthMap<R> = {} as ColumnWidthMap<R>;
 
   columns.forEach(column => {
-    result[column.key] = `${result[column.key] / sum * 100}%`;
+    result[column.key] = `${lengths[column.key] / sum * 100}%`;
   });
 
   return result;

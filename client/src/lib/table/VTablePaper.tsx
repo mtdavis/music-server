@@ -1,35 +1,26 @@
 import React from 'react';
 import Paper from '@mui/material/Paper';
-import {
-  AutoSizer,
-  AutoSizerProps,
-} from 'react-virtualized';
+import useBoundingClientRect from 'hooks/useBoundingClientRect';
 
 interface Props {
-  rowCount: number;
-  showHeader: boolean;
-  rowHeight: number;
-  headerHeight: number;
-  children: AutoSizerProps['children'];
+  children: React.ReactNode;
 }
 
 const VTablePaper = ({
-  rowCount,
-  showHeader,
-  rowHeight,
-  headerHeight,
   children,
 }: Props): React.ReactElement => {
-  const heightBasedOnRows = (rowCount * rowHeight) + (showHeader ? headerHeight : 0);
+  const ref = React.useRef(null);
+  const {y} = useBoundingClientRect(ref) ?? {y: 0};
 
   return (
-    <Paper style={{
-      height: `min(${heightBasedOnRows}px, 100%)`,
-      width: '100%',
-    }}>
-      <AutoSizer>
-        {children}
-      </AutoSizer>
+    <Paper
+      ref={ref}
+      style={{
+        height: `max(calc(100vh - ${y + 16}px), 200px)`,
+        width: '100%',
+      }}
+    >
+      {children}
     </Paper>
   );
 };

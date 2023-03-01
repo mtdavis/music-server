@@ -13,7 +13,6 @@ const useStyles = makeStyles(() => ({
     boxSizing: 'border-box' as const,
   },
   tableCell: {
-    flex: 1,
     fontSize: '0.8rem',
   },
   icon: {
@@ -50,39 +49,38 @@ export function renderValue<R extends RowData>(
 }
 
 interface Props<R extends RowData> {
-  value: RowDataValue;
-  rowData: R;
+  children: React.ReactNode;
   column: ColumnConfig<R>;
-  rowHeight: number;
-  icons?: {[key: string]: React.ReactElement};
+  flexBasis?: string | number,
+  variant?: 'head' | 'body'
 }
 
 function VTableCell<R extends RowData>({
-  value,
-  rowData,
+  children,
   column,
-  rowHeight,
-  icons = {},
+  flexBasis,
+  variant = 'body',
 }: Props<R>): React.ReactElement {
   const classes = useStyles();
 
-  const renderedValue = renderValue(value, rowData, column, icons);
-
   return (
     <TableCell
-      component="div"
+      component='div'
       className={classNames(classes.tableCell, classes.flexContainer, {
         [classes.icon]: column.renderer === renderIcon,
       })}
-      variant="body"
-      style={{
-        height: rowHeight,
-        whiteSpace: column.wrap === false ? 'nowrap': 'normal',
+      variant={variant}
+      sx={{
+        whiteSpace: 'normal',
+        flexGrow: column.fixedWidth ? 0 : 1,
+        flexBasis,
+        width: column.fixedWidth,
+        backgroundColor: variant === 'head' ? 'background.paper' : undefined,
       }}
       align={column.align}
-      size="small"
+      size={variant === 'body' ? 'small' : undefined}
     >
-      {renderedValue}
+      {children}
     </TableCell>
   );
 }
