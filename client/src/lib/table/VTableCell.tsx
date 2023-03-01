@@ -52,14 +52,12 @@ interface Props<R extends RowData> {
   children: React.ReactNode;
   column: ColumnConfig<R>;
   flexBasis?: string | number,
-  variant?: 'head' | 'body'
 }
 
 function VTableCell<R extends RowData>({
   children,
   column,
   flexBasis,
-  variant = 'body',
 }: Props<R>): React.ReactElement {
   const classes = useStyles();
 
@@ -69,16 +67,15 @@ function VTableCell<R extends RowData>({
       className={classNames(classes.tableCell, classes.flexContainer, {
         [classes.icon]: column.renderer === renderIcon,
       })}
-      variant={variant}
       sx={{
-        whiteSpace: 'normal',
-        flexGrow: column.fixedWidth ? 0 : 1,
         flexBasis,
+        flexGrow: column.fixedWidth ? 0 : 1,
+        flexShrink: column.fixedWidth ? 0 : 1,
+        whiteSpace: 'normal',
         width: column.fixedWidth,
-        backgroundColor: variant === 'head' ? 'background.paper' : undefined,
       }}
       align={column.align}
-      size={variant === 'body' ? 'small' : undefined}
+      size='small'
     >
       {children}
     </TableCell>

@@ -12,8 +12,8 @@ import {TableComponents, TableVirtuoso} from 'react-virtuoso';
 
 import VTablePaper from './VTablePaper';
 import VTableCell, {renderValue} from './VTableCell';
+import VTableHeader from './VTableHeader';
 import VTableRow from './VTableRow';
-// import VTableHeader from './VTableHeader';
 import Notice from 'lib/Notice';
 import {calculateColumnWidths} from './util';
 import {useStores} from 'stores';
@@ -105,14 +105,12 @@ function VTable<R extends RowData>({
     () => (
       <TableRow component='div' sx={{display: 'flex', width: '100%'}}>
         {columns.map((column) => (
-          <VTableCell
+          <VTableHeader
             key={String(column.key)}
             column={column}
             flexBasis={column.fixedWidth ? undefined : columnWidths[column.key]}
-            variant='head'
-          >
-            {column.label}
-          </VTableCell>
+            sortStore={sortStore}
+          />
         ))}
       </TableRow>
     ) : null;
