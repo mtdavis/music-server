@@ -2,14 +2,11 @@ import React from 'react';
 import {observer} from 'mobx-react-lite';
 import {
   Grid,
-  IconButton,
   Paper,
   Typography,
 } from '@mui/material';
 import {makeStyles} from '@mui/styles';
-import CancelIcon from '@mui/icons-material/Cancel';
 
-import Tooltip from 'lib/Tooltip';
 import {useStores} from 'stores';
 import FilterSelect from './FilterSelect';
 import FilterText from './FilterText';
@@ -89,17 +86,6 @@ function FilteredTable<R extends RowData>({
                 {selectElems}
               </Grid>
             </div>
-            {filterStore.hasFilters &&
-              <Tooltip title='Clear Filters'>
-                <IconButton
-                  color='secondary'
-                  className={classes.clearButton}
-                  onClick={filterStore.clearFilters}
-                >
-                  <CancelIcon />
-                </IconButton>
-              </Tooltip>
-            }
           </div>
         </Grid>
 

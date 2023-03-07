@@ -48,7 +48,6 @@ export class FilterStore<R extends RowData> {
       setBaseRows: action,
       setFilterText: action,
       setSelectedItems: action,
-      clearFilters: action,
       hasFilters: computed,
     });
 
@@ -87,15 +86,6 @@ export class FilterStore<R extends RowData> {
 
     return false;
   }
-
-  clearFilters = (): void => {
-    this.filterText = '';
-    this.filterTextValid = true;
-
-    for(const filterKey of this.filterKeys) {
-      this.selectedItems.set(filterKey, []);
-    }
-  };
 
   runFilter = (): void => {
     const newAvailableOptions = new Map();
