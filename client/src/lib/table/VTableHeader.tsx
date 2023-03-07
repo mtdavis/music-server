@@ -49,6 +49,7 @@ function VTableHeader<R extends RowData>({
         width: column.fixedWidth,
       }}
       align={column.align}
+      size='small'
     >
       <TableSortLabel
         active={topSortSpec !== null && topSortSpec.columnKey === column.key}
