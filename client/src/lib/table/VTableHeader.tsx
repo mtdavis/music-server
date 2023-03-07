@@ -16,7 +16,6 @@ const useStyles = makeStyles(() => ({
     boxSizing: 'border-box' as const,
   },
   tableCell: {
-    flex: 1,
     fontSize: '0.8rem',
     lineHeight: 1.43,
   },
@@ -24,13 +23,13 @@ const useStyles = makeStyles(() => ({
 
 interface Props<R extends RowData> {
   column: ColumnConfig<R>;
-  headerHeight: number;
+  flexBasis?: string | number,
   sortStore: SortStore<R>;
 }
 
 function VTableHeader<R extends RowData>({
   column,
-  headerHeight,
+  flexBasis,
   sortStore,
 }: Props<R>): React.ReactElement {
   const classes = useStyles();
@@ -40,16 +39,23 @@ function VTableHeader<R extends RowData>({
     <TableCell
       component="div"
       className={classNames(classes.tableCell, classes.flexContainer)}
-      onClick={() => sortStore.setSortColumnKey(column.key)}
       variant="head"
-      style={{height: headerHeight, userSelect: 'none'}}
+      sx={{
+        backgroundColor: 'background.paper',
+        flexBasis,
+        flexGrow: column.fixedWidth ? 0 : 1,
+        flexShrink: column.fixedWidth ? 0 : 1,
+        userSelect: 'none',
+        width: column.fixedWidth,
+      }}
       align={column.align}
-      size="small"
+      size='small'
     >
       <TableSortLabel
         active={topSortSpec !== null && topSortSpec.columnKey === column.key}
         direction={topSortSpec !== null && topSortSpec.order === 1 ? 'desc' : 'asc'}
         IconComponent={KeyboardArrowUpIcon}
+        onClick={() => sortStore.setSortColumnKey(column.key)}
       >
         {column.label}
       </TableSortLabel>

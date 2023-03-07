@@ -23,7 +23,7 @@ const COLUMNS = [
     key: "starred",
     label: "",
     renderer: renderAlbumStar,
-    maxWidth: 68,
+    fixedWidth: 68,
   },
   {
     key: "album_artist",

@@ -134,7 +134,7 @@ declare interface ColumnConfig<T extends RowData> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   renderer?: (value: any, rowData: T) => (string | number | React.ReactNode);
   wrap?: boolean;
-  maxWidth?: number;
+  fixedWidth?: number;
 }
 
 declare interface SortSpec<R extends RowData> {

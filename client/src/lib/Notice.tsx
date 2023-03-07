@@ -16,17 +16,19 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 interface Props {
   children: React.ReactNode;
+  elevation?: number,
   loading?: boolean;
 }
 
 const Notice = ({
   children,
+  elevation,
   loading=false
 }: Props): React.ReactElement => {
   const classes = useStyles();
 
   return (
-    <Paper className={classes.notice}>
+    <Paper className={classes.notice} elevation={elevation}>
       <Grid container direction='row' spacing={2} alignItems='center'>
         {loading &&
           <Grid item>
