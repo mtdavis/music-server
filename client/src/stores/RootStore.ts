@@ -1,3 +1,4 @@
+import type {Router} from '@remix-run/router';
 import DbStore from './DbStore';
 import LyricsStore from './LyricsStore';
 import MusicStore from './MusicStore';
@@ -17,9 +18,9 @@ export default class RootStore {
   filterStoreMap: FilterStoreMap;
   sortStoreMap: SortStoreMap;
 
-  constructor() {
+  constructor(router: Router) {
     this.dbStore = new DbStore();
-    this.musicStore = new MusicStore(this.dbStore);
+    this.musicStore = new MusicStore(this.dbStore, router);
     this.lyricsStore = new LyricsStore(this.musicStore);
     this.scrobbleStore = new ScrobbleStore(this.musicStore, this.dbStore);
     this.statsStore = new StatsStore();

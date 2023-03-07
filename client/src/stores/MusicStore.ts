@@ -9,6 +9,7 @@ import {
 import NoSleep from 'nosleep.js';
 import weighted from 'weighted';
 import Gapless5 from 'gapless5';
+import type {Router} from '@remix-run/router';
 
 import PlayerState from 'lib/PlayerState';
 import {get} from 'lib/util';
@@ -24,10 +25,12 @@ export default class MusicStore {
   albumArtUrl: string | null = null;
   demoMode: boolean = import.meta.env.VITE_DEMO_MODE === 'true';
   dbStore: DbStore;
+  router: Router;
   noSleep = new NoSleep();
 
-  constructor(dbStore: DbStore) {
+  constructor(dbStore: DbStore, router: Router) {
     this.dbStore = dbStore;
+    this.router = router;
 
     makeObservable(this, {
       api: observable,
@@ -102,7 +105,7 @@ export default class MusicStore {
   }
 
   playAlbum(album: Album): void {
-    location.hash = "/";
+    this.router.navigate('/app');
     const tracks = this.dbStore.getAlbumTracks(album.id);
     this.stopPlayback();
     this.setPlaylist(tracks);
@@ -130,7 +133,7 @@ export default class MusicStore {
         this.stopPlayback();
         this.setPlaylist(tracks);
         this.playOrPausePlayback();
-        location.hash = "/";
+        this.router.navigate('/app');
       },
     });
   }
@@ -187,7 +190,7 @@ export default class MusicStore {
         this.stopPlayback();
         this.setPlaylist(tracksToEnqueue);
         this.playOrPausePlayback();
-        location.hash = "/";
+        this.router.navigate('/app');
       },
     });
   }

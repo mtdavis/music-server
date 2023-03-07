@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import {BrowserRouter} from 'react-router-dom';
+import {createBrowserRouter, RouterProvider} from 'react-router-dom';
 import {colors} from '@mui/material';
 import {
   createTheme,
@@ -26,14 +26,21 @@ const muiTheme = createTheme({
   },
 });
 
+const browserRouter = createBrowserRouter([
+  {
+    path: '*',
+    element: <Master />,
+  },
+], {
+  basename: '/app',
+});
+
 const router = (
   <React.StrictMode>
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={muiTheme}>
-        <StoreProvider>
-          <BrowserRouter basename='/app'>
-            <Master />
-          </BrowserRouter>
+        <StoreProvider router={browserRouter}>
+          <RouterProvider router={browserRouter} />
         </StoreProvider>
       </ThemeProvider>
     </StyledEngineProvider>
