@@ -4,6 +4,7 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
+import {computedFn} from 'mobx-utils';
 import {get, put} from 'lib/util';
 
 export default class DbStore {
@@ -160,4 +161,10 @@ export default class DbStore {
       }),
     });
   }
+
+  getTrackOneForAlbum = computedFn((albumId: number): Track => (
+    this.tracks.filter((track) =>
+      track.album_id === albumId && track.track_number === 1
+    )[0]
+  ));
 }

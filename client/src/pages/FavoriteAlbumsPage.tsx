@@ -24,8 +24,7 @@ const FavoriteAlbumsPage = () => {
       compare(a.album, b.album));
 
     content = favoriteAlbums.map(album => {
-      const trackOne = dbStore.tracks.filter(track =>
-        track.album_id === album.id && track.track_number === 1)[0];
+      const trackOne = dbStore.getTrackOneForAlbum(album.id);
       return <AlbumImage key={album.id} album={album} trackId={trackOne.id} />;
     });
   }
