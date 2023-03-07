@@ -46,6 +46,7 @@ export class FilterStore<R extends RowData> {
       filterTextValid: observable,
       hiddenRowIds: observable,
       setBaseRows: action,
+      setFilterText: action,
       setSelectedItems: action,
       clearFilters: action,
       hasFilters: computed,
@@ -58,6 +59,10 @@ export class FilterStore<R extends RowData> {
 
   setBaseRows(baseRows: R[]): void {
     this.baseRows.replace(baseRows);
+  }
+
+  setFilterText(filterText: string): void {
+    this.filterText = filterText;
   }
 
   getSelectedItems(filterKey: keyof R): RowDataValue[] {

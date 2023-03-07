@@ -14,7 +14,7 @@ function FilterText<R extends RowData>({
   filterStore,
 }: Props<R>): React.ReactElement {
   const onChange = (event: TextFieldChangeEvent) => {
-    filterStore.filterText = (event.target as HTMLInputElement).value;
+    filterStore.setFilterText((event.target as HTMLInputElement).value);
   };
 
   return (
