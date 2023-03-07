@@ -11,19 +11,19 @@ import {Theme} from '@mui/material/styles';
 import {useStores} from 'stores';
 import ScrobbleState from 'lib/ScrobbleState';
 import Wrap from './Wrap';
-const toolbarPromise = import('./toolbar/Toolbar');
+const Toolbar = React.lazy(() => import('./toolbar/Toolbar'));
 
-const homePagePromise = import('pages/HomePage');
-const lyricsPagePromise = import('pages/LyricsPage');
-const albumsPagePromise = import('pages/AlbumsPage');
-const notRecentlyPlayedPagePromise = import('pages/NotRecentlyPlayedPage');
-const neverPlayedPagePromise = import('pages/NeverPlayedPage');
-const favoriteAlbumsPagePromise = import('pages/FavoriteAlbumsPage');
-const allTracksPagePromise = import('pages/AllTracksPage');
-const shufflePagePromise = import('pages/ShufflePage');
-const playlistsPagePromise = import('pages/PlaylistsPage');
-const scanPagePromise = import('pages/ScanPage');
-const statsPagePromise = import('pages/StatsPage');
+const HomePage = React.lazy(() => import('pages/HomePage'));
+const LyricsPage = React.lazy(() => import('pages/LyricsPage'));
+const AlbumsPage = React.lazy(() => import('pages/AlbumsPage'));
+const NotRecentlyPlayedPage = React.lazy(() => import('pages/NotRecentlyPlayedPage'));
+const NeverPlayedPage = React.lazy(() => import('pages/NeverPlayedPage'));
+const FavoriteAlbumsPage = React.lazy(() => import('pages/FavoriteAlbumsPage'));
+const AllTracksPage = React.lazy(() => import('pages/AllTracksPage'));
+const ShufflePage = React.lazy(() => import('pages/ShufflePage'));
+const PlaylistsPage = React.lazy(() => import('pages/PlaylistsPage'));
+const ScanPage = React.lazy(() => import('pages/ScanPage'));
+const StatsPage = React.lazy(() => import('pages/StatsPage'));
 
 const useStyles = makeStyles((theme: Theme) => ({
   appBar: {
@@ -32,7 +32,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 const Master = () => {
-  const Toolbar = React.lazy(() => toolbarPromise);
   const classes = useStyles();
   const {musicStore, scrobbleStore} = useStores();
   const [demoSnackbarClosed, setDemoSnackbarClosed] = React.useState(false);
@@ -50,17 +49,17 @@ const Master = () => {
       </AppBar>
 
       <Routes>
-        <Route path='/' element={<Wrap>{homePagePromise}</Wrap>} />
-        <Route path='/lyrics' element={<Wrap>{lyricsPagePromise}</Wrap>} />
-        <Route path='/albums' element={<Wrap>{albumsPagePromise}</Wrap>} />
-        <Route path='/not-recently-played' element={<Wrap>{notRecentlyPlayedPagePromise}</Wrap>} />
-        <Route path='/never-played' element={<Wrap>{neverPlayedPagePromise}</Wrap>} />
-        <Route path='/favorite-albums' element={<Wrap>{favoriteAlbumsPagePromise}</Wrap>} />
-        <Route path='/tracks' element={<Wrap>{allTracksPagePromise}</Wrap>} />
-        <Route path='/shuffle' element={<Wrap>{shufflePagePromise}</Wrap>} />
-        <Route path='/playlists' element={<Wrap>{playlistsPagePromise}</Wrap>} />
-        <Route path='/scan' element={<Wrap>{scanPagePromise}</Wrap>} />
-        <Route path='/statistics' element={<Wrap>{statsPagePromise}</Wrap>} />
+        <Route path='/' element={<Wrap><HomePage /></Wrap>} />
+        <Route path='/lyrics' element={<Wrap><LyricsPage /></Wrap>} />
+        <Route path='/albums' element={<Wrap><AlbumsPage /></Wrap>} />
+        <Route path='/not-recently-played' element={<Wrap><NotRecentlyPlayedPage /></Wrap>} />
+        <Route path='/never-played' element={<Wrap><NeverPlayedPage /></Wrap>} />
+        <Route path='/favorite-albums' element={<Wrap><FavoriteAlbumsPage /></Wrap>} />
+        <Route path='/tracks' element={<Wrap><AllTracksPage /></Wrap>} />
+        <Route path='/shuffle' element={<Wrap><ShufflePage /></Wrap>} />
+        <Route path='/playlists' element={<Wrap><PlaylistsPage /></Wrap>} />
+        <Route path='/scan' element={<Wrap><ScanPage /></Wrap>} />
+        <Route path='/statistics' element={<Wrap><StatsPage /></Wrap>} />
       </Routes>
 
       <Snackbar open={scrobbleStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED}

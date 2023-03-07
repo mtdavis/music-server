@@ -26,7 +26,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface Props {
-  children: Promise<{default: React.ComponentType}>;
+  children: React.ReactNode;
 }
 
 const Loader = () => {
@@ -42,7 +42,6 @@ const Loader = () => {
 const Wrap = ({
   children
 }: Props): React.ReactElement => {
-  const ChildComponent = React.lazy(() => children);
   const classes = useStyles();
 
   return (
@@ -51,7 +50,7 @@ const Wrap = ({
 
       <main className={classes.main}>
         <React.Suspense fallback={<Loader />}>
-          <ChildComponent />
+          {children}
         </React.Suspense>
       </main>
     </div>
