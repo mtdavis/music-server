@@ -254,6 +254,7 @@ const AlbumFilter = observer(() => {
       placeholder="Filter..."
       onChange={onChange}
       onKeyUp={onChange}
+      size='small'
     />
   );
 });

@@ -14,6 +14,7 @@ const useStyles = makeStyles(() => ({
   },
   tableCell: {
     fontSize: '0.8rem',
+    maxHeight: 50,
   },
   icon: {
     paddingLeft: 12,
@@ -75,7 +76,6 @@ function VTableCell<R extends RowData>({
         width: column.fixedWidth,
       }}
       align={column.align}
-      size='small'
     >
       {children}
     </TableCell>

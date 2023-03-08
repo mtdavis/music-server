@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import {TableComponents, TableVirtuoso} from 'react-virtuoso';
 
-import VTablePaper from './VTablePaper';
+import VTableSizer from './VTableSizer';
 import VTableCell, {renderValue} from './VTableCell';
 import VTableHeader from './VTableHeader';
 import VTableRow from './VTableRow';
@@ -86,6 +86,8 @@ function VTable<R extends RowData>({
   const {sortStoreMap} = useStores();
   const sortStore = sortStoreMap.get(id, rows, columns, initialSortSpecs);
 
+  const [listHeight, setListHeight] = React.useState<number>(100);
+
   React.useEffect(() => {
     sortStore.setBaseRows(rows);
   }, [rows, rows.length]);
@@ -127,8 +129,12 @@ function VTable<R extends RowData>({
     ))
   );
 
+  const handleListHeightChanged = (newHeight: number) => {
+    setListHeight(newHeight);
+  };
+
   return (
-    <VTablePaper>
+    <VTableSizer listHeight={listHeight} showHeader={showHeader} rowCount={visibleRows.length}>
       <TableVirtuoso
         data={visibleRows}
         components={{
@@ -147,8 +153,10 @@ function VTable<R extends RowData>({
         }}
         fixedHeaderContent={fixedHeaderContent}
         itemContent={rowContent}
+        totalListHeightChanged={handleListHeightChanged}
+        fixedItemHeight={50}
       />
-    </VTablePaper>
+    </VTableSizer>
   );
 }
 

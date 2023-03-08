@@ -79,26 +79,26 @@ function FilteredTable<R extends RowData>({
   const filterBox = (
     <Paper className={classes.filterBox}>
       <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <div style={{display: 'flex', alignItems: 'start'}}>
-            <div style={{flex: 1}}>
-              <Grid container spacing={2}>
-                {selectElems}
-              </Grid>
+        {selectElems.length > 0 && (
+          <Grid item xs={12}>
+            <div style={{display: 'flex', alignItems: 'start'}}>
+              <div style={{flex: 1}}>
+                <Grid container spacing={2}>
+                  {selectElems}
+                </Grid>
+              </div>
             </div>
-          </div>
-        </Grid>
+          </Grid>
+        )}
 
         <Grid item xs={12}>
-          <div style={{display: 'flex', alignItems: 'end'}}>
+          <div style={{display: 'flex', alignItems: 'center'}}>
             <div style={{flex: 1}}>
               <FilterText filterStore={filterStore} />
             </div>
-            {numRows > 0 &&
-              <Typography variant='body2' className={classes.itemCount}>
-                {numRows} item{numRows === 1 ? '' : 's'}
-              </Typography>
-            }
+            <Typography variant='body2' className={classes.itemCount}>
+              {numRows} item{numRows === 1 ? '' : 's'}
+            </Typography>
           </div>
         </Grid>
       </Grid>

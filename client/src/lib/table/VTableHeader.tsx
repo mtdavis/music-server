@@ -18,6 +18,7 @@ const useStyles = makeStyles(() => ({
   tableCell: {
     fontSize: '0.8rem',
     lineHeight: 1.43,
+    maxHeight: 50,
   },
 }));
 
@@ -49,7 +50,6 @@ function VTableHeader<R extends RowData>({
         width: column.fixedWidth,
       }}
       align={column.align}
-      size='small'
     >
       <TableSortLabel
         active={topSortSpec !== null && topSortSpec.columnKey === column.key}
