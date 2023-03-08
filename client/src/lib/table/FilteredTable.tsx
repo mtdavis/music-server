@@ -5,34 +5,11 @@ import {
   Paper,
   Typography,
 } from '@mui/material';
-import {makeStyles} from '@mui/styles';
 
 import {useStores} from 'stores';
 import FilterSelect from './FilterSelect';
 import FilterText from './FilterText';
 import VTable, {Props as BaseVTableProps} from './VTable';
-
-const useStyles = makeStyles(() => ({
-  clearButton: {
-    marginLeft: 16,
-  },
-  itemCount: {
-    marginLeft: 16,
-    textAlign: 'right' as const,
-  },
-  filterBox: {
-    padding: 16,
-  },
-  wrapper: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    height: '100%',
-  },
-  tableWrapper: {
-    flex: 1,
-    marginTop: 16,
-  },
-}));
 
 type VTableProps<R extends RowData> = Omit<BaseVTableProps<R>, 'id' | 'rows' | 'columns' | 'hiddenRowIds'>;
 
@@ -51,7 +28,6 @@ function FilteredTable<R extends RowData>({
   columns,
   VTableProps,
 }: Props<R>): React.ReactElement {
-  const classes = useStyles();
   const {filterStoreMap} = useStores();
   const filterStore = filterStoreMap.get(id, rows, columns, filterKeys);
 
@@ -77,39 +53,39 @@ function FilteredTable<R extends RowData>({
   const numRows = rows.length - filterStore.hiddenRowIds.size;
 
   const filterBox = (
-    <Paper className={classes.filterBox}>
+    <Paper sx={{padding: 2}}>
       <Grid container spacing={2}>
         {selectElems.length > 0 && (
           <Grid item xs={12}>
-            <div style={{display: 'flex', alignItems: 'start'}}>
-              <div style={{flex: 1}}>
-                <Grid container spacing={2}>
-                  {selectElems}
-                </Grid>
-              </div>
-            </div>
+            <Grid container spacing={2}>
+              {selectElems}
+            </Grid>
           </Grid>
         )}
 
         <Grid item xs={12}>
-          <div style={{display: 'flex', alignItems: 'center'}}>
-            <div style={{flex: 1}}>
+          <Grid container spacing={2} alignItems='center'>
+            <Grid item sx={{flex: 1}}>
               <FilterText filterStore={filterStore} />
-            </div>
-            <Typography variant='body2' className={classes.itemCount}>
-              {numRows} item{numRows === 1 ? '' : 's'}
-            </Typography>
-          </div>
+            </Grid>
+            <Grid item>
+              <Typography variant='body2'>
+                {numRows} item{numRows === 1 ? '' : 's'}
+              </Typography>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
     </Paper>
   );
 
   return (
-    <div className={classes.wrapper}>
-      {filterBox}
+    <Grid container direction='column' spacing={2}>
+      <Grid item>
+        {filterBox}
+      </Grid>
 
-      <div className={classes.tableWrapper}>
+      <Grid item>
         <VTable
           {...VTableProps}
           id={id}
@@ -117,8 +93,8 @@ function FilteredTable<R extends RowData>({
           columns={columns}
           hiddenRowIds={filterStore.hiddenRowIds}
         />
-      </div>
-    </div>
+      </Grid>
+    </Grid>
   );
 }
 

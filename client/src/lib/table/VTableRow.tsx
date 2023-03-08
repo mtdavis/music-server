@@ -1,22 +1,5 @@
 import React from 'react';
-import {TableRow} from '@mui/material';
-import {Theme} from '@mui/material/styles';
-import {makeStyles} from '@mui/styles';
-import classnames from 'classnames';
-
-
-const useStyles = makeStyles((theme: Theme) => ({
-  tableRow: {
-    display: 'flex',
-    boxSizing: 'border-box' as const,
-  },
-  clickable: {
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: theme.palette.grey[200],
-    },
-  },
-}));
+import {colors, TableRow} from '@mui/material';
 
 interface TableRowProps<R extends RowData> {
   item: R,
@@ -30,8 +13,6 @@ const VTableRow = <R extends RowData>({
   onRowCtrlClick,
   ...props
 }: TableRowProps<R>) => {
-  const classes = useStyles();
-
   const handleClick = (event: React.MouseEvent) => {
     if((event.ctrlKey || event.metaKey) && onRowCtrlClick) {
       event.preventDefault();
@@ -45,14 +26,15 @@ const VTableRow = <R extends RowData>({
   return (
     <TableRow
       {...props}
-      className={classnames(
-        classes.tableRow,
-        {[classes.clickable]: onRowClick}
-      )}
       component='div'
       sx={{
         display: 'flex',
         width: '100%',
+        boxSizing: 'border-box' as const,
+        cursor: onRowClick ? 'pointer' : undefined,
+        '&:hover': {
+          backgroundColor: onRowClick ? colors.grey[200] : undefined,
+        },
       }}
       onClick={handleClick}
     />

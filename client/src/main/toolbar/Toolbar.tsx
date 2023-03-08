@@ -13,8 +13,6 @@ import {
   IconButton,
   Toolbar as MUIToolbar,
 } from '@mui/material';
-import {makeStyles} from '@mui/styles';
-import {Theme} from '@mui/material/styles';
 
 import MenuIcon from '@mui/icons-material/Menu';
 import PauseIcon from '@mui/icons-material/Pause';
@@ -27,17 +25,7 @@ import LastFmIcon from './LastFmIcon';
 import Tooltip from 'lib/Tooltip';
 import Title from './Title';
 
-const useStyles = makeStyles((theme: Theme) => ({
-  toolbar: {
-    paddingLeft: 4,
-  },
-  appBar: {
-    zIndex: theme.zIndex.drawer + 1,
-  },
-}));
-
 const Toolbar = () => {
-  const classes = useStyles();
   const {musicStore, scrobbleStore, uiStore} = useStores();
 
   const openLastFm = () => {
@@ -70,7 +58,15 @@ const Toolbar = () => {
   };
 
   return (
-    <MUIToolbar className={classes.toolbar}>
+    <MUIToolbar
+      disableGutters
+      sx={{
+        display: 'flex',
+        gap: 1,
+        paddingLeft: 1,
+        paddingRight: 1,
+      }}
+    >
       <IconButton color="inherit" onClick={uiStore.toggleDrawer}>
         <MenuIcon />
       </IconButton>

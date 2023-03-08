@@ -1,29 +1,8 @@
 import React from 'react';
-import classNames from 'classnames';
 import {
   TableCell,
 } from '@mui/material';
-import {makeStyles} from '@mui/styles';
 import {renderIcon} from './util';
-
-const useStyles = makeStyles(() => ({
-  flexContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    boxSizing: 'border-box' as const,
-  },
-  tableCell: {
-    fontSize: '0.8rem',
-    maxHeight: 50,
-  },
-  icon: {
-    paddingLeft: 12,
-    paddingRight: 12,
-    '&:last-child': {
-      paddingRight: 12,
-    },
-  },
-}));
 
 export function renderValue<R extends RowData>(
   value: RowDataValue,
@@ -60,18 +39,18 @@ function VTableCell<R extends RowData>({
   column,
   flexBasis,
 }: Props<R>): React.ReactElement {
-  const classes = useStyles();
-
   return (
     <TableCell
       component='div'
-      className={classNames(classes.tableCell, classes.flexContainer, {
-        [classes.icon]: column.renderer === renderIcon,
-      })}
       sx={{
+        alignItems: 'center',
+        boxSizing: 'border-box' as const,
+        display: 'flex',
         flexBasis,
         flexGrow: column.fixedWidth ? 0 : 1,
         flexShrink: column.fixedWidth ? 0 : 1,
+        fontSize: '0.8rem',
+        maxHeight: 50,
         whiteSpace: 'normal',
         width: column.fixedWidth,
       }}

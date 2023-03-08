@@ -5,8 +5,6 @@ import {
   AppBar,
   Snackbar,
 } from '@mui/material';
-import {makeStyles} from '@mui/styles';
-import {Theme} from '@mui/material/styles';
 
 import {useStores} from 'stores';
 import ScrobbleState from 'lib/ScrobbleState';
@@ -25,14 +23,7 @@ const PlaylistsPage = React.lazy(() => import('pages/PlaylistsPage'));
 const ScanPage = React.lazy(() => import('pages/ScanPage'));
 const StatsPage = React.lazy(() => import('pages/StatsPage'));
 
-const useStyles = makeStyles((theme: Theme) => ({
-  appBar: {
-    zIndex: theme.zIndex.drawer + 1,
-  },
-}));
-
 const Master = () => {
-  const classes = useStyles();
   const {musicStore, scrobbleStore} = useStores();
   const [demoSnackbarClosed, setDemoSnackbarClosed] = React.useState(false);
 
@@ -42,7 +33,7 @@ const Master = () => {
 
   return (
     <>
-      <AppBar className={classes.appBar}>
+      <AppBar>
         <React.Suspense fallback={<div style={{height: 64}} />}>
           <Toolbar />
         </React.Suspense>

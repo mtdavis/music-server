@@ -9,7 +9,6 @@ import {
   MenuItem,
   TextField,
 } from '@mui/material';
-import {makeStyles} from '@mui/styles';
 import ShuffleVariantIcon from 'mdi-material-ui/ShuffleVariant';
 
 import {useStores} from 'stores';
@@ -45,25 +44,8 @@ const NON_ROCK = [
   'Trip Hop',
 ];
 
-const useStyles = makeStyles(() => ({
-  page: {
-    display: 'flex',
-    justifyContent: 'center',
-    height: '100%',
-    alignItems: 'center',
-  },
-  paper: {
-    width: 200,
-  },
-  actions: {
-    display: 'flex',
-    justifyContent: 'center',
-  },
-}));
-
 const ShufflePage = (): React.ReactElement => {
   const {musicStore} = useStores();
-  const classes = useStyles();
   const [duration, setDuration] = React.useState(30);
   const [genres, setGenres] = React.useState(['*']);
 
@@ -72,8 +54,15 @@ const ShufflePage = (): React.ReactElement => {
   };
 
   return (
-    <div className={classes.page}>
-      <Card className={classes.paper}>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        height: '100%',
+        alignItems: 'center',
+      }}
+    >
+      <Card sx={{width: 200}}>
         <CardContent>
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -108,7 +97,7 @@ const ShufflePage = (): React.ReactElement => {
 
         <Divider />
 
-        <CardActions className={classes.actions}>
+        <CardActions sx={{display: 'flex', justifyContent: 'center'}}>
           <Button color='primary' onClick={onShuffle} startIcon={<ShuffleVariantIcon />}>
             Play Shuffle
           </Button>

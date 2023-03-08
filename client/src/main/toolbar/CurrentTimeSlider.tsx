@@ -11,12 +11,6 @@ import PlayerState from 'lib/PlayerState';
 import CurrentTimeLabel from './CurrentTimeLabel';
 
 const useStyles = makeStyles(() => ({
-  wrapper: {
-    display: 'flex',
-    flex: 1,
-    alignItems: 'center',
-    marginLeft: 24,
-  },
   rail: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
@@ -36,7 +30,7 @@ enum DragState {
 
 const CurrentTimeSlider = () => {
   const {musicStore} = useStores();
-  const {wrapper, ...classes} = useStyles();
+  const classes = useStyles();
 
   const [dragging, setDragging] = React.useState(DragState.NO);
   const [draggingValue, setDraggingValue] = React.useState(0);
@@ -86,7 +80,7 @@ const CurrentTimeSlider = () => {
   };
 
   return (
-    <div className={wrapper}>
+    <>
       <Slider
         classes={classes}
         min={0}
@@ -96,10 +90,14 @@ const CurrentTimeSlider = () => {
         onChange={onSliderChange}
         onChangeCommitted={onSliderChangeCommitted}
         size='small'
+        sx={{
+          marginLeft: 2,
+          marginRight: 2,
+        }}
       />
 
       <CurrentTimeLabel enabled={playing} seconds={seconds} />
-    </div>
+    </>
   );
 };
 

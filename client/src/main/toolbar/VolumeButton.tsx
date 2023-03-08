@@ -1,8 +1,7 @@
 import React from 'react';
 import {observer} from 'mobx-react-lite';
 import {Popover, Slider} from '@mui/material';
-import {makeStyles} from '@mui/styles';
-import {Theme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 import VolumeMuteIcon from '@mui/icons-material/VolumeMute';
 import VolumeDownIcon from '@mui/icons-material/VolumeDown';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
@@ -10,17 +9,8 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import AppBarIconButton from './AppBarIconButton';
 import {useStores} from 'stores';
 
-const useStyles = makeStyles((theme: Theme) => ({
-  root: {
-    display: 'flex',
-    height: 150,
-    padding: `${theme.spacing(3)} ${theme.spacing(1)}`,
-    overflow: 'hidden',
-  },
-}));
-
 const VolumeButton = () => {
-  const classes = useStyles();
+  const theme = useTheme();
   const {musicStore} = useStores();
   const buttonRef = React.useRef(null);
 
@@ -66,7 +56,14 @@ const VolumeButton = () => {
         transformOrigin={{horizontal: 'center', vertical: 'top'}}
         anchorOrigin={{horizontal: 'center', vertical: 'bottom'}}
       >
-        <div className={classes.root}>
+        <div
+          style={{
+            display: 'flex',
+            height: 150,
+            padding: `${theme.spacing(3)} ${theme.spacing(1)}`,
+            overflow: 'hidden',
+          }}
+        >
           <Slider
             max={1}
             step={.01}

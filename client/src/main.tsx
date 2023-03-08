@@ -14,6 +14,8 @@ import Master from './main/Master';
 import 'react-virtualized/styles.css';
 import './style/main.css';
 
+const baseTheme = createTheme();
+
 const muiTheme = createTheme({
   palette: {
     primary: {
@@ -23,6 +25,9 @@ const muiTheme = createTheme({
       main: colors.deepOrange['400'],
     },
     contrastThreshold: 3,
+  },
+  zIndex: {
+    appBar: baseTheme.zIndex.drawer + 1,
   },
 });
 

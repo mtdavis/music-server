@@ -4,7 +4,7 @@ import {Route, Routes} from 'react-router';
 
 const Title = (): React.ReactElement => {
   const renderTitle = React.useCallback((title: string) => (
-    <Typography variant="h6" color="inherit">
+    <Typography variant="h6" color="inherit" sx={{whiteSpace: 'nowrap'}}>
       {title}
     </Typography>
   ), []);

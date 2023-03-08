@@ -1,26 +1,11 @@
 import React from 'react';
 import {observer} from 'mobx-react-lite';
-import classNames from 'classnames';
 import {
   TableCell,
   TableSortLabel,
 } from '@mui/material';
-import {makeStyles} from '@mui/styles';
 import {SortStore} from './SortStore';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-
-const useStyles = makeStyles(() => ({
-  flexContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    boxSizing: 'border-box' as const,
-  },
-  tableCell: {
-    fontSize: '0.8rem',
-    lineHeight: 1.43,
-    maxHeight: 50,
-  },
-}));
 
 interface Props<R extends RowData> {
   column: ColumnConfig<R>;
@@ -33,19 +18,23 @@ function VTableHeader<R extends RowData>({
   flexBasis,
   sortStore,
 }: Props<R>): React.ReactElement {
-  const classes = useStyles();
-  const topSortSpec = sortStore.topSortSpec;
+  const {topSortSpec} = sortStore;
 
   return (
     <TableCell
       component="div"
-      className={classNames(classes.tableCell, classes.flexContainer)}
       variant="head"
       sx={{
+        alignItems: 'center',
         backgroundColor: 'background.paper',
+        boxSizing: 'border-box' as const,
+        display: 'flex',
         flexBasis,
         flexGrow: column.fixedWidth ? 0 : 1,
         flexShrink: column.fixedWidth ? 0 : 1,
+        fontSize: '0.8rem',
+        lineHeight: 1.43,
+        maxHeight: 50,
         userSelect: 'none',
         width: column.fixedWidth,
       }}

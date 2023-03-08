@@ -24,10 +24,6 @@ import {useStores} from 'stores';
 import LinkMenuItem from './LinkMenuItem';
 
 const useStyles = makeStyles((theme: Theme) => ({
-  list: {
-    width: 250,
-    marginTop: 64,
-  },
   open: {
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
@@ -58,7 +54,7 @@ const LeftNav = () => {
         paper: uiStore.drawerOpen ? classes.open : classes.closed
       }}
     >
-      <List className={classes.list}>
+      <List sx={{width: 250, marginTop: 8}}>
         <LinkMenuItem to='/' Icon={PlaylistPlayIcon}>
           Now Playing
         </LinkMenuItem>
