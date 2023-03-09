@@ -51,6 +51,7 @@ export default class StatsStore {
       albumFilterText: observable,
       state: observable,
       loadStats: action,
+      setAlbumFilterText: action,
       filteredAlbumsOverTime: computed,
     });
   }
@@ -76,5 +77,9 @@ export default class StatsStore {
         this.albumFilterText !== '' &&
         !album.id.toLowerCase().includes(this.albumFilterText.toLowerCase())
     }));
+  }
+
+  setAlbumFilterText(newAlbumFilterText: string): void {
+    this.albumFilterText = newAlbumFilterText;
   }
 }

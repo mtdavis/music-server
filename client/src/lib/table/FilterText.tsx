@@ -25,6 +25,7 @@ function FilterText<R extends RowData>({
       error={!filterStore.filterTextValid}
       onChange={onChange}
       onKeyUp={onChange}
+      variant='standard'
     />
   );
 }

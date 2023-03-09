@@ -10,21 +10,15 @@ import {
   Tabs,
   Tab,
   TextField,
-  Typography,
 } from '@mui/material';
-import * as Colors from '@mui/material/colors';
-import {Theme, useTheme} from '@mui/material/styles';
+import {Theme} from '@mui/material/styles';
 import {makeStyles} from '@mui/styles';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import {
-  ResponsiveAreaBump,
-  ResponsiveBump,
-} from '@nivo/bump';
-import {
-  Point,
-  ResponsiveLine,
-} from '@nivo/line';
 
+import AreaBumpChart from 'lib/chart/AreaBumpChart';
+import BumpChart from 'lib/chart/BumpChart';
+import LineChart from 'lib/chart/LineChart';
+import ListensByYearTooltip from 'lib/chart/ListensByYearTooltip';
 import {useStores} from 'stores';
 import {StatsState} from 'stores/StatsStore';
 
@@ -50,201 +44,11 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-const COLORS = [
-  Colors.red[700],
-  Colors.orange[700],
-  Colors.green[700],
-  Colors.blue[700],
-  Colors.deepPurple[700],
-  Colors.pink[300],
-  Colors.amber[300],
-  Colors.lightGreen[300],
-  Colors.lightBlue[300],
-  Colors.purple[300],
-];
-
-interface BumpTooltipProps {
-  serie: {
-    id: string,
-    color: string,
-  };
-}
-
-const BumpTooltip = ({
-  serie
-}: BumpTooltipProps) => {
-  const theme = useTheme();
-
-  return (
-    <Paper style={{padding: theme.spacing(1)}}>
-      <Typography>
-        <span style={{display: 'inline-block', width: '.75em', height: '.75em', backgroundColor: serie.color}} />
-        {' '}
-        {serie.id}
-      </Typography>
-    </Paper>
-  );
-};
-
-const GenresOverTime = observer(() => {
-  const {statsStore} = useStores();
-  const theme = useTheme();
-
-  return (
-    <ResponsiveAreaBump
-      data={toJS(statsStore.genresOverTime)}
-      margin={{top: 32, right: 120, bottom: 40, left: 40}}
-      spacing={16}
-
-      colors={COLORS}
-      inactiveBorderWidth={1}
-      inactiveBorderOpacity={0.15}
-      endLabelTextColor={{'from':'color'}}
-
-      axisTop={null}
-      axisBottom={{
-        tickSize: 0,
-      }}
-
-      tooltip={BumpTooltip}
-
-      theme={{
-        fontFamily: theme.typography.fontFamily,
-        fontSize: 12,
-      }}
-    />
-  );
-});
-
-const ArtistsOverTime = observer(() => {
-  const {statsStore} = useStores();
-  const theme = useTheme();
-
-  return (
-    <ResponsiveBump
-      data={toJS(statsStore.artistsOverTime)}
-      margin={{top: 32, right: 200, bottom: 40, left: 40}}
-
-      colors={COLORS}
-
-      axisTop={null}
-      axisBottom={{
-        tickSize: 0,
-      }}
-      axisLeft={{
-        tickSize: 0,
-      }}
-
-      tooltip={BumpTooltip}
-
-      theme={{
-        fontFamily: theme.typography.fontFamily,
-        fontSize: 12,
-      }}
-    />
-  );
-});
-
-const AlbumsOverTime = observer(() => {
-  const {statsStore} = useStores();
-  const theme = useTheme();
-
-  return (
-    <ResponsiveBump
-      data={toJS(statsStore.filteredAlbumsOverTime)}
-      margin={{top: 32, right: 200, bottom: 40, left: 40}}
-
-      colors={COLORS}
-
-      axisTop={null}
-      axisBottom={{
-        tickSize: 0,
-      }}
-      axisLeft={{
-        tickSize: 0,
-      }}
-
-      tooltip={BumpTooltip}
-
-      theme={{
-        fontFamily: theme.typography.fontFamily,
-        fontSize: 12,
-      }}
-    />
-  );
-});
-
-interface LineTooltipProps {
-  point: Point;
-}
-
-const ListensByYearTooltip = ({
-  point
-}: LineTooltipProps) => {
-  const theme = useTheme();
-
-  return (
-    <Paper style={{padding: theme.spacing(1)}}>
-      <Typography>
-        <strong>{point.data.xFormatted}:</strong>{' '}
-        {point.data.y.toLocaleString()} hours
-      </Typography>
-    </Paper>
-  );
-};
-
-const ListensByYear = observer(() => {
-  const {statsStore} = useStores();
-  const theme = useTheme();
-
-  return (
-    <ResponsiveLine
-      data={toJS(statsStore.listensByYear)}
-      margin={{top: 32, right: 48, bottom: 48, left: 48}}
-
-      colors={[Colors.lightBlue['600']]}
-      enableArea
-
-      xScale={{
-        type: 'time',
-        format: '%Y-%m-%d',
-        useUTC: false,
-        precision: 'year',
-      }}
-      xFormat="time:%Y"
-
-      axisBottom={{
-        tickSize: 0,
-        tickValues: 'every 5 years',
-        format: '%Y',
-        legend: 'Year',
-        legendPosition: 'middle',
-        legendOffset: 40
-      }}
-      axisLeft={{
-        tickSize: 0,
-        legend: 'Hours Listened',
-        legendPosition: 'middle',
-        legendOffset: -40
-      }}
-
-      enableCrosshair={false}
-      tooltip={ListensByYearTooltip}
-      useMesh={true}
-
-      theme={{
-        fontFamily: theme.typography.fontFamily,
-        fontSize: 12,
-      }}
-    />
-  );
-});
-
 const AlbumFilter = observer(() => {
   const {statsStore} = useStores();
 
   const onChange = (event: TextFieldChangeEvent) => {
-    statsStore.albumFilterText = (event.target as HTMLInputElement).value;
+    statsStore.setAlbumFilterText((event.target as HTMLInputElement).value);
   };
 
   return (
@@ -255,6 +59,7 @@ const AlbumFilter = observer(() => {
       onChange={onChange}
       onKeyUp={onChange}
       size='small'
+      variant='standard'
     />
   );
 });
@@ -278,20 +83,6 @@ const StatsPage = (): React.ReactElement => {
     );
   }
 
-  const SelectedTabComponent = {
-    0: GenresOverTime,
-    1: ArtistsOverTime,
-    2: AlbumsOverTime,
-    3: ListensByYear,
-  }[selectedTab] as React.ComponentType;
-
-  const filter = {
-    0: null,
-    1: null,
-    2: <AlbumFilter />,
-    3: null,
-  }[selectedTab] as React.ReactNode;
-
   return (
     <Paper className={classes.paper}>
       <Grid container direction='column'>
@@ -310,9 +101,11 @@ const StatsPage = (): React.ReactElement => {
                 <Tab label='Listens By Year' />
               </Tabs>
             </Grid>
-            <Grid item>
-              {filter}
-            </Grid>
+            {selectedTab === 2 && (
+              <Grid item>
+                <AlbumFilter />
+              </Grid>
+            )}
             <Grid item>
               <IconButton onClick={statsStore.loadStats}>
                 <RefreshIcon />
@@ -327,7 +120,21 @@ const StatsPage = (): React.ReactElement => {
 
         <Grid item>
           <div className={classes.chartWrapper}>
-            <SelectedTabComponent />
+            {selectedTab === 0 && (
+              <AreaBumpChart data={toJS(statsStore.genresOverTime)} />
+            )}
+            {selectedTab === 1 && (
+              <BumpChart data={toJS(statsStore.artistsOverTime)} />
+            )}
+            {selectedTab === 2 && (
+              <BumpChart data={toJS(statsStore.filteredAlbumsOverTime)} />
+            )}
+            {selectedTab === 3 && (
+              <LineChart
+                data={toJS(statsStore.listensByYear)}
+                tooltip={ListensByYearTooltip}
+              />
+            )}
           </div>
         </Grid>
       </Grid>
