@@ -1,5 +1,5 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
+
 import {
   Paper,
   Table,
@@ -8,15 +8,16 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import {TableComponents, TableVirtuoso} from 'react-virtuoso';
+import Notice from 'lib/Notice';
+import { observer } from 'mobx-react-lite';
+import { ItemProps, TableComponents, TableVirtuoso } from 'react-virtuoso';
+import { useStores } from 'stores';
 
-import VTableSizer from './VTableSizer';
-import VTableCell, {renderValue} from './VTableCell';
+import { calculateColumnWidths, renderValue } from './util';
+import VTableCell from './VTableCell';
 import VTableHeader from './VTableHeader';
 import VTableRow from './VTableRow';
-import Notice from 'lib/Notice';
-import {calculateColumnWidths} from './util';
-import {useStores} from 'stores';
+import VTableSizer from './VTableSizer';
 
 export interface Props<R extends RowData> {
   id: string;
@@ -29,15 +30,17 @@ export interface Props<R extends RowData> {
   onRowCtrlClick?: (row: R) => void;
   placeholderText: string;
   initialSortSpecs?: SortSpec<R>[];
-  icons?: {[key: string]: React.ReactElement};
+  icons?: { [key: string]: React.ReactElement };
 }
 
 const VirtuosoTableComponents: TableComponents<RowData> = {
   Scroller: React.forwardRef<HTMLDivElement>((props, ref) => (
+    // eslint-disable-next-line react/jsx-props-no-spreading
     <TableContainer component={Paper} {...props} ref={ref} />
   )),
   Table: (props) => (
     <Table
+      // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
       component='div'
       sx={{
@@ -48,6 +51,7 @@ const VirtuosoTableComponents: TableComponents<RowData> = {
   ),
   TableHead: React.forwardRef<HTMLTableSectionElement>((props, ref) => (
     <TableHead
+      // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
       ref={ref}
       component='div'
@@ -59,6 +63,7 @@ const VirtuosoTableComponents: TableComponents<RowData> = {
   )),
   TableBody: React.forwardRef<HTMLTableSectionElement>((props, ref) => (
     <TableBody
+      // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
       ref={ref}
       component='div'
@@ -70,7 +75,7 @@ const VirtuosoTableComponents: TableComponents<RowData> = {
   )),
 };
 
-function VTable<R extends RowData>({
+const VTable = <R extends RowData>({
   id,
   columns,
   rows,
@@ -82,8 +87,8 @@ function VTable<R extends RowData>({
   placeholderText,
   initialSortSpecs = [],
   icons = {},
-}: Props<R>): React.ReactElement {
-  const {sortStoreMap} = useStores();
+}: Props<R>): React.ReactElement => {
+  const { sortStoreMap } = useStores();
   const sortStore = sortStoreMap.get(id, rows, columns, initialSortSpecs);
 
   const [listHeight, setListHeight] = React.useState<number>(100);
@@ -92,20 +97,37 @@ function VTable<R extends RowData>({
     sortStore.setBaseRows(rows);
   }, [rows, rows.length]);
 
-  const sortedRows = sortStore.sortedRows;
-  const visibleRows = sortedRows.filter(row => !hiddenRowIds.has(row.id));
+  const { sortedRows } = sortStore;
+  const visibleRows = sortedRows.filter((row) => !hiddenRowIds.has(row.id));
 
   const columnWidths = calculateColumnWidths(sortedRows, columns);
 
-  if(loading || rows.length !== sortedRows.length) {
+  const EmptyPlaceholder = React.useCallback(() => (
+    <Notice elevation={0}>{placeholderText}</Notice>
+  ), [placeholderText]);
+
+  const FillerRow = React.useCallback(({ height }: { height: number }) => (
+    <div style={{ height }} />
+  ), []);
+
+  const TableRowComponent = React.useCallback((props: ItemProps<R>) => (
+    <VTableRow
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...props}
+      onRowClick={onRowClick}
+      onRowCtrlClick={onRowCtrlClick}
+    />
+  ), [onRowClick, onRowCtrlClick]);
+
+  if (loading || rows.length !== sortedRows.length) {
     return (
       <Notice loading>Loading...</Notice>
     );
   }
 
-  const fixedHeaderContent = showHeader ?
-    () => (
-      <TableRow component='div' sx={{display: 'flex', width: '100%'}}>
+  const fixedHeaderContent = showHeader
+    ? () => (
+      <TableRow component='div' sx={{ display: 'flex', width: '100%' }}>
         {columns.map((column) => (
           <VTableHeader
             key={String(column.key)}
@@ -139,17 +161,9 @@ function VTable<R extends RowData>({
         data={visibleRows}
         components={{
           ...VirtuosoTableComponents,
-          EmptyPlaceholder: () => (
-            <Notice elevation={0}>{placeholderText}</Notice>
-          ),
-          FillerRow: ({height}) => <div style={{height}} />,
-          TableRow: (props) => (
-            <VTableRow
-              {...props}
-              onRowClick={onRowClick}
-              onRowCtrlClick={onRowCtrlClick}
-            />
-          ),
+          EmptyPlaceholder,
+          FillerRow,
+          TableRow: TableRowComponent,
         }}
         fixedHeaderContent={fixedHeaderContent}
         itemContent={rowContent}
@@ -158,6 +172,6 @@ function VTable<R extends RowData>({
       />
     </VTableSizer>
   );
-}
+};
 
 export default observer(VTable);

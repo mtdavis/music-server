@@ -1,4 +1,5 @@
 import React from 'react';
+
 import useBoundingClientRect from 'hooks/useBoundingClientRect';
 
 interface Props {
@@ -12,20 +13,18 @@ const VTableSizer = ({
   children,
   listHeight,
   showHeader,
-  rowCount
+  rowCount,
 }: Props): React.ReactElement => {
   const ref = React.useRef(null);
-  const {y} = useBoundingClientRect(ref) ?? {y: 0};
+  const { y } = useBoundingClientRect(ref) ?? { y: 0 };
 
   let minHeight;
 
   if (rowCount > 0) {
     minHeight = listHeight;
-  }
-  else if (showHeader) {
+  } else if (showHeader) {
     minHeight = 100;
-  }
-  else {
+  } else {
     minHeight = 50;
   }
 

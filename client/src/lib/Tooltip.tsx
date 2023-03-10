@@ -1,5 +1,7 @@
 import React from 'react';
-import {TooltipProps} from '@mui/material';
+
+import { TooltipProps } from '@mui/material';
+
 const MUITooltip = React.lazy(() => import('@mui/material/Tooltip'));
 
 const Tooltip = ({
@@ -7,7 +9,10 @@ const Tooltip = ({
   ...rest
 }: TooltipProps): React.ReactElement => (
   <React.Suspense fallback={children}>
-    <MUITooltip {...rest}>
+    <MUITooltip
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...rest}
+    >
       {children}
     </MUITooltip>
   </React.Suspense>

@@ -1,19 +1,21 @@
-import {SVGAttributes} from 'react';
-import {useSpring, animated, to} from '@react-spring/web';
-import {useMotionConfig} from '@nivo/core';
-import {BumpDatum, BumpPoint} from '@nivo/bump';
-import type {BumpSerieExtraProps} from '../util';
+import React, { SVGAttributes } from 'react';
 
-const pointStyle: SVGAttributes<SVGCircleElement>['style'] = {pointerEvents: 'none'};
+import { BumpDatum, BumpPoint } from '@nivo/bump';
+import { useMotionConfig } from '@nivo/core';
+import { useSpring, animated, to } from '@react-spring/web';
+
+import type { BumpSerieExtraProps } from '../util';
+
+const pointStyle: SVGAttributes<SVGCircleElement>['style'] = { pointerEvents: 'none' };
 
 interface PointProps {
   point: BumpPoint<BumpDatum, BumpSerieExtraProps>
 }
 
-export const Point = ({
+const Point = ({
   point,
 }: PointProps) => {
-  const {animate, config: springConfig} = useMotionConfig();
+  const { animate, config: springConfig } = useMotionConfig();
 
   const animatedProps = useSpring<{
     x: number
@@ -40,7 +42,7 @@ export const Point = ({
       data-testid={`point.${point.serie.id}.${point.data.x}`}
       cx={animatedProps.x}
       cy={animatedProps.y}
-      r={to(animatedProps.radius, v => Math.max(v, 0))}
+      r={to(animatedProps.radius, (v) => Math.max(v, 0))}
       fill={animatedProps.color}
       strokeWidth={animatedProps.borderWidth}
       stroke={point.borderColor}
@@ -48,3 +50,5 @@ export const Point = ({
     />
   );
 };
+
+export default Point;

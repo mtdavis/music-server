@@ -1,23 +1,27 @@
+import { get, put } from 'lib/util';
 import {
   action,
   IObservableArray,
   makeObservable,
   observable,
 } from 'mobx';
-import {computedFn} from 'mobx-utils';
-import {get, put} from 'lib/util';
+import { computedFn } from 'mobx-utils';
 
 export default class DbStore {
   albumsLoading = true;
+
   albums: IObservableArray<Album> = observable.array([]);
 
   tracksLoading = true;
+
   tracks: IObservableArray<Track> = observable.array([]);
 
   playlistsLoading = true;
+
   playlists: IObservableArray<Playlist> = observable.array([]);
 
   scanning = false;
+
   scanResult = '';
 
   constructor() {
@@ -82,7 +86,7 @@ export default class DbStore {
   incrementPlayCount(trackId: number, timestamp: number): void {
     const track = this.tracks.find((t) => t.id === trackId);
 
-    if(!track) {
+    if (!track) {
       throw Error(`Could not find track with ID ${trackId}`);
     }
 
@@ -90,7 +94,7 @@ export default class DbStore {
     track.last_play = timestamp;
 
     const albumId = track.album_id;
-    if(albumId) {
+    if (albumId) {
       let albumLastPlay = track.last_play;
       let albumPlayCount = track.play_count;
 
@@ -101,7 +105,7 @@ export default class DbStore {
 
       const album = this.albums.find((a) => a.id === albumId);
 
-      if(!album) {
+      if (!album) {
         throw Error(`Could not find album with ID ${albumId}`);
       }
 
@@ -113,13 +117,13 @@ export default class DbStore {
   getAlbumTracks(albumId: number): Array<Track> {
     const result: Array<Track> = this.tracks.filter((t) => t.album_id === albumId);
     result.sort((first, second) => {
-      if(first.track_number === null && second.track_number === null) {
+      if (first.track_number === null && second.track_number === null) {
         return 0;
       }
-      else if(first.track_number === null) {
+      if (first.track_number === null) {
         return -1;
       }
-      else if(second.track_number === null) {
+      if (second.track_number === null) {
         return 1;
       }
 
@@ -129,7 +133,7 @@ export default class DbStore {
   }
 
   scan({
-    dryRun
+    dryRun,
   }: {
     dryRun: boolean
   }): void {
@@ -138,12 +142,12 @@ export default class DbStore {
 
     put({
       url: '/api/scan/',
-      data: {dry_run: dryRun},
+      data: { dry_run: dryRun },
       onSuccess: action((result: string) => {
         this.scanning = false;
         this.scanResult = result;
 
-        if(!dryRun) {
+        if (!dryRun) {
           this.fetchAlbums();
           this.fetchTracks();
         }
@@ -154,7 +158,7 @@ export default class DbStore {
   editAlbum(albumId: number, starred: boolean): void {
     put({
       url: `/api/albums/${albumId}`,
-      data: {starred},
+      data: { starred },
       onSuccess: action((result: Album) => {
         const albumIndex = this.albums.findIndex((a) => a.id === albumId);
         this.albums[albumIndex].starred = result.starred;
@@ -163,8 +167,6 @@ export default class DbStore {
   }
 
   getTrackOneForAlbum = computedFn((albumId: number): Track => (
-    this.tracks.filter((track) =>
-      track.album_id === albumId && track.track_number === 1
-    )[0]
+    this.tracks.filter((track) => track.album_id === albumId && track.track_number === 1)[0]
   ));
 }

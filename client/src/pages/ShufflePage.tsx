@@ -1,4 +1,5 @@
 import React from 'react';
+
 import {
   Button,
   Card,
@@ -10,8 +11,7 @@ import {
   TextField,
 } from '@mui/material';
 import ShuffleVariantIcon from 'mdi-material-ui/ShuffleVariant';
-
-import {useStores} from 'stores';
+import { useStores } from 'stores';
 
 const ROCK_ETC = [
   'Blues Rock',
@@ -45,7 +45,7 @@ const NON_ROCK = [
 ];
 
 const ShufflePage = (): React.ReactElement => {
-  const {musicStore} = useStores();
+  const { musicStore } = useStores();
   const [duration, setDuration] = React.useState(30);
   const [genres, setGenres] = React.useState(['*']);
 
@@ -62,7 +62,7 @@ const ShufflePage = (): React.ReactElement => {
         alignItems: 'center',
       }}
     >
-      <Card sx={{width: 200}}>
+      <Card sx={{ width: 200 }}>
         <CardContent>
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -71,7 +71,7 @@ const ShufflePage = (): React.ReactElement => {
                 fullWidth
                 label='Duration'
                 value={duration}
-                onChange={event => setDuration(Number(event.target.value))}
+                onChange={(event) => setDuration(Number(event.target.value))}
               >
                 <MenuItem value={30}>30 minutes</MenuItem>
                 <MenuItem value={60}>60 minutes</MenuItem>
@@ -85,7 +85,7 @@ const ShufflePage = (): React.ReactElement => {
                 fullWidth
                 label='Genre'
                 value={JSON.stringify(genres)}
-                onChange={event => setGenres(JSON.parse(event.target.value))}
+                onChange={(event) => setGenres(JSON.parse(event.target.value))}
               >
                 <MenuItem value={JSON.stringify(['*'])}>Any</MenuItem>
                 <MenuItem value={JSON.stringify(ROCK_ETC)}>Rock, etc.</MenuItem>
@@ -97,7 +97,7 @@ const ShufflePage = (): React.ReactElement => {
 
         <Divider />
 
-        <CardActions sx={{display: 'flex', justifyContent: 'center'}}>
+        <CardActions sx={{ display: 'flex', justifyContent: 'center' }}>
           <Button color='primary' onClick={onShuffle} startIcon={<ShuffleVariantIcon />}>
             Play Shuffle
           </Button>

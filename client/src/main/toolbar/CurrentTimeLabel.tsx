@@ -1,7 +1,7 @@
 import React from 'react';
-import {Typography} from '@mui/material';
 
-import {secondsToTimeString} from 'lib/util';
+import { Typography } from '@mui/material';
+import { secondsToTimeString } from 'lib/util';
 
 interface Props {
   enabled: boolean;
@@ -14,14 +14,14 @@ const CurrentTimeLabel = ({
 }: Props): React.ReactElement => {
   let timeString = secondsToTimeString(seconds);
   // strip off decimal
-  if(timeString.indexOf(".") > -1) {
-    timeString = timeString.split(".")[0];
+  if (timeString.indexOf('.') > -1) {
+    [timeString] = timeString.split('.');
   }
 
   return (
     <Typography
-      variant="h6"
-      color="inherit"
+      variant='h6'
+      color='inherit'
       sx={{
         color: enabled ? 'primary.contrastText' : 'text.disabled',
       }}

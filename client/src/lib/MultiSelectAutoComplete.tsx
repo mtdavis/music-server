@@ -1,4 +1,5 @@
 import React from 'react';
+
 import {
   Autocomplete,
   Chip,
@@ -11,7 +12,7 @@ type Item = string | number | null;
 type WrappedItem = {
   label: string,
   value: Item,
-}
+};
 
 interface Props {
   hintText: string;
@@ -38,7 +39,7 @@ const MultiSelectAutoComplete = ({
   const wrapOptions = React.useMemo(() => {
     const reordered = options.slice();
 
-    if(reordered.includes(null)) {
+    if (reordered.includes(null)) {
       reordered.splice(reordered.indexOf(null), 1); // remove null
       reordered.splice(0, 0, null);
     }
@@ -57,12 +58,14 @@ const MultiSelectAutoComplete = ({
           value={wrapSelectedItems}
           onChange={onAutocompleteChange}
           isOptionEqualToValue={(a, b) => a.value === b.value}
+          // eslint-disable-next-line react/jsx-props-no-spreading
           renderInput={(params) => <TextField {...params} placeholder={hintText} />}
           renderTags={(tagValue, getTagProps) => (
             tagValue.map((option, index) => (
               <Chip
                 label={option.label || '(None)'}
-                {...getTagProps({index})}
+                // eslint-disable-next-line react/jsx-props-no-spreading
+                {...getTagProps({ index })}
               />
             ))
           )}

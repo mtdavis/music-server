@@ -1,4 +1,5 @@
 import React from 'react';
+
 import {
   CircularProgress,
   Grid,
@@ -15,15 +16,15 @@ interface Props {
 const Notice = ({
   children,
   elevation,
-  loading=false
+  loading = false,
 }: Props): React.ReactElement => (
-  <Paper sx={{padding: 2}} elevation={elevation}>
+  <Paper sx={{ padding: 2 }} elevation={elevation}>
     <Grid container direction='row' spacing={2} alignItems='center'>
-      {loading &&
-        <Grid item>
-          <CircularProgress disableShrink />
-        </Grid>
-      }
+      {loading && (
+      <Grid item>
+        <CircularProgress disableShrink />
+      </Grid>
+      )}
 
       <Grid item>
         <Typography variant='body2'>

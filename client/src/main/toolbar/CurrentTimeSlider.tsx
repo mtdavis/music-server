@@ -1,13 +1,14 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
+
 import {
   colors,
   Slider,
 } from '@mui/material';
-import {makeStyles} from '@mui/styles';
-
-import {useStores} from 'stores';
+import { makeStyles } from '@mui/styles';
 import PlayerState from 'lib/PlayerState';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
+
 import CurrentTimeLabel from './CurrentTimeLabel';
 
 const useStyles = makeStyles(() => ({
@@ -29,7 +30,7 @@ enum DragState {
 }
 
 const CurrentTimeSlider = () => {
-  const {musicStore} = useStores();
+  const { musicStore } = useStores();
   const classes = useStyles();
 
   const [dragging, setDragging] = React.useState(DragState.NO);
@@ -41,13 +42,12 @@ const CurrentTimeSlider = () => {
   let sliderMax = 1;
   let sliderDisabled = true;
 
-  if(playing && musicStore.currentTrack !== null) {
+  if (playing && musicStore.currentTrack !== null) {
     const currentTrackDuration = musicStore.currentTrack.duration;
 
-    if(dragging === DragState.NO) {
+    if (dragging === DragState.NO) {
       seconds = musicStore.currentTrackPosition;
-    }
-    else {
+    } else {
       seconds = draggingValue;
     }
 
@@ -56,12 +56,11 @@ const CurrentTimeSlider = () => {
   }
 
   const onSliderChange = (event: Event, value: number | number[]) => {
-    if(dragging === DragState.NO) {
+    if (dragging === DragState.NO) {
       // dragging just started.
       setDragging(DragState.YES);
       setDraggingValue(musicStore.currentTrackPosition);
-    }
-    else if(dragging === DragState.YES) {
+    } else if (dragging === DragState.YES) {
       // mid-drag.
       setDraggingValue(value as number);
     }

@@ -1,15 +1,16 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
-import {createBrowserRouter, RouterProvider} from 'react-router-dom';
-import {colors} from '@mui/material';
+
+import { colors } from '@mui/material';
 import {
   createTheme,
   StyledEngineProvider,
   ThemeProvider,
 } from '@mui/material/styles';
+import ReactDOM from 'react-dom/client';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-import {StoreProvider} from './stores';
 import Master from './main/Master';
+import { StoreProvider } from './stores';
 
 import 'react-virtualized/styles.css';
 import './style/main.css';

@@ -1,15 +1,16 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
+
 import {
   Grid,
   Paper,
   Typography,
 } from '@mui/material';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
 
-import {useStores} from 'stores';
 import FilterSelect from './FilterSelect';
 import FilterText from './FilterText';
-import VTable, {Props as BaseVTableProps} from './VTable';
+import VTable, { Props as BaseVTableProps } from './VTable';
 
 type VTableProps<R extends RowData> = Omit<BaseVTableProps<R>, 'id' | 'rows' | 'columns' | 'hiddenRowIds'>;
 
@@ -21,14 +22,14 @@ interface Props<R extends RowData> {
   VTableProps: VTableProps<R>;
 }
 
-function FilteredTable<R extends RowData>({
+const FilteredTable = <R extends RowData>({
   id,
   rows,
   filterKeys,
   columns,
   VTableProps,
-}: Props<R>): React.ReactElement {
-  const {filterStoreMap} = useStores();
+}: Props<R>): React.ReactElement => {
+  const { filterStoreMap } = useStores();
   const filterStore = filterStoreMap.get(id, rows, columns, filterKeys);
 
   React.useEffect(() => {
@@ -39,21 +40,21 @@ function FilteredTable<R extends RowData>({
 
   const selectWidth = (filterKeys.length <= 4 ? 12 / filterKeys.length : 4) as (1 | 2 | 3 | 4);
 
-  filterKeys.forEach(filterKey => {
+  filterKeys.forEach((filterKey) => {
     selectElems.push(
       <Grid item xs={12} md={selectWidth} key={filterKey}>
         <FilterSelect
           filterStore={filterStore}
           filterKey={filterKey}
         />
-      </Grid>
+      </Grid>,
     );
   });
 
   const numRows = rows.length - filterStore.hiddenRowIds.size;
 
   const filterBox = (
-    <Paper sx={{padding: 2}}>
+    <Paper sx={{ padding: 2 }}>
       <Grid container spacing={2}>
         {selectElems.length > 0 && (
           <Grid item xs={12}>
@@ -65,12 +66,15 @@ function FilteredTable<R extends RowData>({
 
         <Grid item xs={12}>
           <Grid container spacing={2} alignItems='center'>
-            <Grid item sx={{flex: 1}}>
+            <Grid item sx={{ flex: 1 }}>
               <FilterText filterStore={filterStore} />
             </Grid>
             <Grid item>
               <Typography variant='body2'>
-                {numRows} item{numRows === 1 ? '' : 's'}
+                {numRows}
+                {' '}
+                item
+                {numRows === 1 ? '' : 's'}
               </Typography>
             </Grid>
           </Grid>
@@ -87,6 +91,7 @@ function FilteredTable<R extends RowData>({
 
       <Grid item>
         <VTable
+          // eslint-disable-next-line react/jsx-props-no-spreading
           {...VTableProps}
           id={id}
           rows={rows}
@@ -96,6 +101,6 @@ function FilteredTable<R extends RowData>({
       </Grid>
     </Grid>
   );
-}
+};
 
 export default observer(FilteredTable);

@@ -1,25 +1,18 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
 
 import AlbumList from 'lib/AlbumList';
-import {useStores} from 'stores';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
 
 const NeverPlayedPage = () => {
-  const {dbStore} = useStores();
+  const { dbStore } = useStores();
 
-  const albumsNeverPlayed = [];
-
-  for(let i = 0; i < dbStore.albums.length; i++) {
-    const album = dbStore.albums[i];
-    if(album.play_count === 0) {
-      albumsNeverPlayed.push(album);
-    }
-  }
+  const albumsNeverPlayed = dbStore.albums.filter((album) => album.play_count === 0);
 
   const initialSortSpecs = [
-    {columnKey: 'album'},
-    {columnKey: 'year'},
-    {columnKey: 'album_artist'}
+    { columnKey: 'album' },
+    { columnKey: 'year' },
+    { columnKey: 'album_artist' },
   ];
 
   return (

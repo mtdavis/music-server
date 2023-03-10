@@ -1,3 +1,5 @@
+import { BumpSerie } from '@nivo/bump';
+import { get } from 'lib/util';
 import {
   action,
   computed,
@@ -5,15 +7,13 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import {get} from 'lib/util';
-import {BumpSerie} from '@nivo/bump';
 
 interface Point {
   x: number;
   y: number;
 }
 
-type BumpStats = BumpSerie<Point, { hidden: boolean }>
+type BumpStats = BumpSerie<Point, { hidden: boolean }>;
 
 interface LineStats {
   id: string;
@@ -36,10 +36,15 @@ export enum StatsState {
 
 export default class StatsStore {
   genresOverTime: IObservableArray<BumpStats> = observable.array([]);
+
   artistsOverTime: IObservableArray<BumpStats> = observable.array([]);
+
   albumsOverTime: IObservableArray<BumpStats> = observable.array([]);
+
   listensByYear: IObservableArray<LineStats> = observable.array([]);
+
   albumFilterText = '';
+
   state = StatsState.NOT_LOADED;
 
   constructor() {
@@ -71,11 +76,11 @@ export default class StatsStore {
   };
 
   get filteredAlbumsOverTime(): BumpStats[] {
-    return this.albumsOverTime.map(album => ({
+    return this.albumsOverTime.map((album) => ({
       ...album,
       hidden:
-        this.albumFilterText !== '' &&
-        !album.id.toLowerCase().includes(this.albumFilterText.toLowerCase())
+        this.albumFilterText !== ''
+        && !album.id.toLowerCase().includes(this.albumFilterText.toLowerCase()),
     }));
   }
 

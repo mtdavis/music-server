@@ -1,12 +1,12 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
+
 import {
   Grid,
   Paper,
 } from '@mui/material';
-
 import Playlist from 'lib/Playlist';
-import {useStores} from 'stores';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
 
 interface AlbumArtProps {
   url: string;
@@ -21,30 +21,31 @@ const AlbumArt = ({
   };
 
   return (
-    <Paper square={true} style={paperStyle}>
+    <Paper square style={paperStyle}>
       <img
         src={url}
-        style={{width: '100%'}}
+        style={{ width: '100%' }}
+        alt='cover'
       />
     </Paper>
   );
 };
 
 const HomePage = () => {
-  const {musicStore} = useStores();
-  const albumArtUrl = musicStore.albumArtUrl;
+  const { musicStore } = useStores();
+  const { albumArtUrl } = musicStore;
 
   return (
-    <Grid container spacing={2} style={{minHeight: '100%'}}>
+    <Grid container spacing={2} style={{ minHeight: '100%' }}>
       <Grid item xs={12} sm={12} md={albumArtUrl ? 5 : 12} lg={albumArtUrl ? 6 : 12}>
         <Playlist />
       </Grid>
 
-      {albumArtUrl &&
+      {albumArtUrl && (
         <Grid item xs={12} sm={12} md={7} lg={6}>
           <AlbumArt url={albumArtUrl} />
         </Grid>
-      }
+      )}
     </Grid>
   );
 };

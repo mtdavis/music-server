@@ -1,5 +1,6 @@
 import React from 'react';
-import {colors, TableRow} from '@mui/material';
+
+import { colors, TableRow } from '@mui/material';
 
 interface TableRowProps<R extends RowData> {
   item: R,
@@ -14,17 +15,17 @@ const VTableRow = <R extends RowData>({
   ...props
 }: TableRowProps<R>) => {
   const handleClick = (event: React.MouseEvent) => {
-    if((event.ctrlKey || event.metaKey) && onRowCtrlClick) {
+    if ((event.ctrlKey || event.metaKey) && onRowCtrlClick) {
       event.preventDefault();
       onRowCtrlClick(item);
-    }
-    else if(onRowClick) {
+    } else if (onRowClick) {
       onRowClick(item);
     }
   };
 
   return (
     <TableRow
+      // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
       component='div'
       sx={{

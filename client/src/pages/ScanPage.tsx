@@ -1,5 +1,7 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
+
+import CreateIcon from '@mui/icons-material/Create';
+import SearchIcon from '@mui/icons-material/Search';
 import {
   Button,
   Card,
@@ -9,11 +11,9 @@ import {
   Divider,
   Typography,
 } from '@mui/material';
-import {makeStyles} from '@mui/styles';
-import CreateIcon from '@mui/icons-material/Create';
-import SearchIcon from '@mui/icons-material/Search';
-
-import {useStores} from 'stores';
+import { makeStyles } from '@mui/styles';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
 
 const useStyles = makeStyles(() => ({
   page: {
@@ -50,29 +50,30 @@ const useStyles = makeStyles(() => ({
 }));
 
 const ScanPage = (): React.ReactElement => {
-  const {dbStore} = useStores();
+  const { dbStore } = useStores();
   const classes = useStyles();
 
   const onScan = () => {
-    dbStore.scan({dryRun: false});
+    dbStore.scan({ dryRun: false });
   };
 
   const onDryRun = () => {
-    dbStore.scan({dryRun: true});
+    dbStore.scan({ dryRun: true });
   };
 
   return (
     <div className={classes.page}>
       <Card className={classes.card}>
         <CardContent className={classes.cardContent}>
-          {dbStore.scanning ?
+          {dbStore.scanning ? (
             <div className={classes.spinner}>
               <CircularProgress />
-            </div> :
+            </div>
+          ) : (
             <Typography className={classes.scanResult}>
               {dbStore.scanResult}
             </Typography>
-          }
+          )}
         </CardContent>
 
         <Divider />

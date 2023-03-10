@@ -1,11 +1,13 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
+
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import {
   TableCell,
   TableSortLabel,
 } from '@mui/material';
-import {SortStore} from './SortStore';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { observer } from 'mobx-react-lite';
+
+import { SortStore } from './SortStore';
 
 interface Props<R extends RowData> {
   column: ColumnConfig<R>;
@@ -13,17 +15,17 @@ interface Props<R extends RowData> {
   sortStore: SortStore<R>;
 }
 
-function VTableHeader<R extends RowData>({
+const VTableHeader = <R extends RowData>({
   column,
   flexBasis,
   sortStore,
-}: Props<R>): React.ReactElement {
-  const {topSortSpec} = sortStore;
+}: Props<R>): React.ReactElement => {
+  const { topSortSpec } = sortStore;
 
   return (
     <TableCell
-      component="div"
-      variant="head"
+      component='div'
+      variant='head'
       sx={{
         alignItems: 'center',
         backgroundColor: 'background.paper',
@@ -50,6 +52,6 @@ function VTableHeader<R extends RowData>({
       </TableSortLabel>
     </TableCell>
   );
-}
+};
 
 export default observer(VTableHeader);

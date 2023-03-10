@@ -1,11 +1,13 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
+
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
+
+import FilteredTable from './table/FilteredTable';
 import {
   secondsToTimeString,
   unixTimestampToDateString,
 } from './util';
-import FilteredTable from './table/FilteredTable';
-import {useStores} from 'stores';
 
 interface Props {
   id: string,
@@ -16,29 +18,29 @@ interface Props {
 
 const COLUMNS = [
   {
-    key: "title",
-    label: "Title"
+    key: 'title',
+    label: 'Title',
   },
   {
-    key: "tracks",
-    label: "Tracks",
+    key: 'tracks',
+    label: 'Tracks',
     align: 'right' as const,
   },
   {
-    key: "duration",
-    label: "Duration",
+    key: 'duration',
+    label: 'Duration',
     renderer: secondsToTimeString,
     align: 'right' as const,
     wrap: false,
   },
   {
-    key: "play_count",
-    label: "Play Count",
+    key: 'play_count',
+    label: 'Play Count',
     align: 'right' as const,
   },
   {
-    key: "last_play",
-    label: "Last Play",
+    key: 'last_play',
+    label: 'Last Play',
     renderer: unixTimestampToDateString,
     align: 'right' as const,
     wrap: false,
@@ -50,7 +52,7 @@ const PlaylistList = ({
   rows,
   ...props
 }: Props) => {
-  const {musicStore} = useStores();
+  const { musicStore } = useStores();
 
   const onPlaylistClick = (playlist: Playlist): void => {
     musicStore.playPlaylist(playlist);

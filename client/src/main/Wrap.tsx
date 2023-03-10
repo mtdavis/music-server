@@ -1,5 +1,6 @@
 import React from 'react';
-import {CircularProgress} from '@mui/material';
+
+import { CircularProgress } from '@mui/material';
 
 import LeftNav from './leftnav/LeftNav';
 
@@ -22,7 +23,7 @@ const Loader = () => (
 );
 
 const Wrap = ({
-  children
+  children,
 }: Props): React.ReactElement => (
   <div
     style={{

@@ -1,10 +1,11 @@
 import React from 'react';
-import {Typography} from '@mui/material';
-import {Route, Routes} from 'react-router';
+
+import { Typography } from '@mui/material';
+import { Route, Routes } from 'react-router';
 
 const Title = (): React.ReactElement => {
   const renderTitle = React.useCallback((title: string) => (
-    <Typography variant="h6" color="inherit" sx={{whiteSpace: 'nowrap'}}>
+    <Typography variant='h6' color='inherit' sx={{ whiteSpace: 'nowrap' }}>
       {title}
     </Typography>
   ), []);

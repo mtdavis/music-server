@@ -1,7 +1,9 @@
 import * as React from 'react';
-import type {Router} from '@remix-run/router';
-import StoreContext from './StoreContext';
+
+import type { Router } from '@remix-run/router';
+
 import RootStore from './RootStore';
+import StoreContext from './StoreContext';
 
 interface Props {
   children: React.ReactNode;
@@ -12,7 +14,7 @@ const StoreProvider = ({
   children,
   router,
 }: Props): React.ReactElement => {
-  const rootStore = new RootStore(router);
+  const rootStore = React.useMemo(() => new RootStore(router), []);
 
   return (
     <StoreContext.Provider value={rootStore}>{children}</StoreContext.Provider>

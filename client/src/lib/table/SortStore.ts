@@ -1,3 +1,5 @@
+import equal from 'fast-deep-equal';
+import { compare } from 'lib/util';
 import {
   action,
   autorun,
@@ -8,20 +10,18 @@ import {
   observable,
   runInAction,
 } from 'mobx';
-import equal from 'fast-deep-equal';
 
-import {compare} from 'lib/util';
 import SortOrder from './SortOrder';
 
 function getRowComparator<R extends RowData>(
-  sortSpec: SortSpec<R>
+  sortSpec: SortSpec<R>,
 ): (rowA: R, rowB: R) => number {
   const {
     columnKey,
     order = SortOrder.Ascending,
   } = sortSpec;
 
-  return function(rowA: R, rowB: R) {
+  return (rowA: R, rowB: R) => {
     const valA = rowA[columnKey];
     const valB = rowB[columnKey];
     return compare(valA, valB) * order;
@@ -30,8 +30,11 @@ function getRowComparator<R extends RowData>(
 
 export class SortStore<R extends RowData> {
   baseRows: IObservableArray<R> = observable.array([]);
+
   columns: IObservableArray<ColumnConfig<R>> = observable.array([]);
+
   sortSpecs: IObservableArray<SortSpec<R>> = observable.array([]);
+
   sortedRows: IObservableArray<R> = observable.array([]);
 
   constructor(baseRows: R[], columns: ColumnConfig<R>[], initialSortSpecs: SortSpec<R>[]) {
@@ -52,7 +55,7 @@ export class SortStore<R extends RowData> {
   }
 
   setBaseRows(baseRows: R[]): void {
-    if(!equal(this.baseRows, baseRows)) {
+    if (!equal(this.baseRows, baseRows)) {
       this.baseRows.replace(baseRows);
     }
   }
@@ -62,27 +65,26 @@ export class SortStore<R extends RowData> {
 
     // check if newSortColumnKey is already in sortSpecs
     const existingIndex = newSortSpecs.findIndex(
-      spec => spec.columnKey === newSortColumnKey);
+      (spec) => spec.columnKey === newSortColumnKey,
+    );
 
-    if(existingIndex === -1) {
+    if (existingIndex === -1) {
       // does not exist, so add it to the top position.
-      newSortSpecs.push({columnKey: newSortColumnKey});
-    }
-    else if(existingIndex === newSortSpecs.length - 1) {
+      newSortSpecs.push({ columnKey: newSortColumnKey });
+    } else if (existingIndex === newSortSpecs.length - 1) {
       // exists in top position, so flip its order.
-      const sortSpec = Object.assign({}, newSortSpecs[existingIndex]);
+      const sortSpec = { ...newSortSpecs[existingIndex] };
       newSortSpecs.splice(existingIndex, 1);
 
       const order = sortSpec.order || SortOrder.Ascending;
       sortSpec.order = (-order) as SortOrder;
       newSortSpecs.push(sortSpec);
-    }
-    else {
+    } else {
       // exists in some other position,
       // so remove it and re-add to the top position.
       newSortSpecs.splice(existingIndex, 1);
 
-      newSortSpecs.push({columnKey: newSortColumnKey});
+      newSortSpecs.push({ columnKey: newSortColumnKey });
     }
 
     this.sortSpecs.replace(newSortSpecs);
@@ -91,10 +93,10 @@ export class SortStore<R extends RowData> {
   sortRows = (): void => {
     let sortedRows = this.baseRows.slice();
 
-    for(const sortSpec of this.sortSpecs) {
+    this.sortSpecs.forEach((sortSpec) => {
       const comparator = getRowComparator(sortSpec);
       sortedRows = sortedRows.sort(comparator);
-    }
+    });
 
     runInAction(() => {
       this.sortedRows.replace(sortedRows);
@@ -102,7 +104,7 @@ export class SortStore<R extends RowData> {
   };
 
   get topSortSpec(): SortSpec<R> | null {
-    if(this.sortSpecs.length === 0) {
+    if (this.sortSpecs.length === 0) {
       return null;
     }
 
@@ -125,9 +127,9 @@ export class SortStoreMap {
     tag: string,
     baseRows: R[],
     columns: ColumnConfig<R>[],
-    initialSortSpecs: SortSpec<R>[]
+    initialSortSpecs: SortSpec<R>[],
   ): SortStore<R> {
-    if(this.sortStores.has(tag)) {
+    if (this.sortStores.has(tag)) {
       return this.sortStores.get(tag) as SortStore<R>;
     }
 

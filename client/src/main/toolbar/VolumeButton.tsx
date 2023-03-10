@@ -1,30 +1,29 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
-import {Popover, Slider} from '@mui/material';
-import {useTheme} from '@mui/material/styles';
-import VolumeMuteIcon from '@mui/icons-material/VolumeMute';
+
 import VolumeDownIcon from '@mui/icons-material/VolumeDown';
+import VolumeMuteIcon from '@mui/icons-material/VolumeMute';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import { Popover, Slider } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
 
 import AppBarIconButton from './AppBarIconButton';
-import {useStores} from 'stores';
 
 const VolumeButton = () => {
   const theme = useTheme();
-  const {musicStore} = useStores();
+  const { musicStore } = useStores();
   const buttonRef = React.useRef(null);
 
-  const [volume, setVolume] = React.useState(.5);
+  const [volume, setVolume] = React.useState(0.5);
   const [volumePopoverVisible, setVolumePopoverVisible] = React.useState(false);
 
   let icon;
-  if(volume < .01) {
+  if (volume < 0.01) {
     icon = VolumeMuteIcon;
-  }
-  else if(volume < .5) {
+  } else if (volume < 0.5) {
     icon = VolumeDownIcon;
-  }
-  else {
+  } else {
     icon = VolumeUpIcon;
   }
 
@@ -46,15 +45,16 @@ const VolumeButton = () => {
       <div ref={buttonRef}>
         <AppBarIconButton
           Icon={icon}
-          onClick={toggleVolumePopover} />
+          onClick={toggleVolumePopover}
+        />
       </div>
 
       <Popover
         open={volumePopoverVisible}
         onClose={handleRequestClose}
         anchorEl={buttonRef.current}
-        transformOrigin={{horizontal: 'center', vertical: 'top'}}
-        anchorOrigin={{horizontal: 'center', vertical: 'bottom'}}
+        transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
       >
         <div
           style={{
@@ -66,7 +66,7 @@ const VolumeButton = () => {
         >
           <Slider
             max={1}
-            step={.01}
+            step={0.01}
             orientation='vertical'
             value={volume}
             onChange={onVolumeChange}

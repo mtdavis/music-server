@@ -1,6 +1,7 @@
 import React from 'react';
-import {IconButton} from '@mui/material';
-import {IconButtonProps} from '@mui/material/IconButton';
+
+import { IconButton } from '@mui/material';
+import { IconButtonProps } from '@mui/material/IconButton';
 
 interface Props extends IconButtonProps {
   Icon: React.ComponentType;
@@ -8,9 +9,11 @@ interface Props extends IconButtonProps {
 
 const AppBarIconButton = ({
   Icon,
-  ...props
+  disabled,
+  className,
+  onClick,
 }: Props): React.ReactElement => (
-  <IconButton color='inherit' {...props}>
+  <IconButton color='inherit' disabled={disabled} className={className} onClick={onClick}>
     <Icon />
   </IconButton>
 );

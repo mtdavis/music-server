@@ -1,6 +1,6 @@
 import React from 'react';
-import {toJS} from 'mobx';
-import {observer} from 'mobx-react-lite';
+
+import RefreshIcon from '@mui/icons-material/Refresh';
 import {
   CircularProgress,
   Divider,
@@ -11,16 +11,16 @@ import {
   Tab,
   TextField,
 } from '@mui/material';
-import {Theme} from '@mui/material/styles';
-import {makeStyles} from '@mui/styles';
-import RefreshIcon from '@mui/icons-material/Refresh';
-
+import { Theme } from '@mui/material/styles';
+import { makeStyles } from '@mui/styles';
 import AreaBumpChart from 'lib/chart/AreaBumpChart';
 import BumpChart from 'lib/chart/BumpChart';
 import LineChart from 'lib/chart/LineChart';
 import ListensByYearTooltip from 'lib/chart/ListensByYearTooltip';
-import {useStores} from 'stores';
-import {StatsState} from 'stores/StatsStore';
+import { toJS } from 'mobx';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
+import { StatsState } from 'stores/StatsStore';
 
 const useStyles = makeStyles((theme: Theme) => ({
   paper: {
@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 const AlbumFilter = observer(() => {
-  const {statsStore} = useStores();
+  const { statsStore } = useStores();
 
   const onChange = (event: TextFieldChangeEvent) => {
     statsStore.setAlbumFilterText((event.target as HTMLInputElement).value);
@@ -55,7 +55,7 @@ const AlbumFilter = observer(() => {
     <TextField
       fullWidth
       value={statsStore.albumFilterText}
-      placeholder="Filter..."
+      placeholder='Filter...'
       onChange={onChange}
       onKeyUp={onChange}
       size='small'
@@ -65,17 +65,17 @@ const AlbumFilter = observer(() => {
 });
 
 const StatsPage = (): React.ReactElement => {
-  const {statsStore} = useStores();
+  const { statsStore } = useStores();
   const classes = useStyles();
   const [selectedTab, setSelectedTab] = React.useState(0);
 
   React.useEffect(() => {
-    if(statsStore.state === StatsState.NOT_LOADED) {
+    if (statsStore.state === StatsState.NOT_LOADED) {
       statsStore.loadStats();
     }
   }, [statsStore]);
 
-  if(statsStore.state === StatsState.NOT_LOADED) {
+  if (statsStore.state === StatsState.NOT_LOADED) {
     return (
       <div className={classes.paper}>
         <CircularProgress disableShrink />
@@ -88,7 +88,7 @@ const StatsPage = (): React.ReactElement => {
       <Grid container direction='column'>
         <Grid item>
           <Grid container direction='row' spacing={1} alignItems='center'>
-            <Grid item style={{flex: 1}}>
+            <Grid item style={{ flex: 1 }}>
               <Tabs
                 value={selectedTab}
                 textColor='primary'

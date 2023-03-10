@@ -1,14 +1,16 @@
 import React from 'react';
-import {Route, Routes} from 'react-router';
-import {observer} from 'mobx-react-lite';
+
 import {
   AppBar,
   Snackbar,
 } from '@mui/material';
-
-import {useStores} from 'stores';
 import ScrobbleState from 'lib/ScrobbleState';
+import { observer } from 'mobx-react-lite';
+import { Route, Routes } from 'react-router';
+import { useStores } from 'stores';
+
 import Wrap from './Wrap';
+
 const Toolbar = React.lazy(() => import('./toolbar/Toolbar'));
 
 const HomePage = React.lazy(() => import('pages/HomePage'));
@@ -24,7 +26,7 @@ const ScanPage = React.lazy(() => import('pages/ScanPage'));
 const StatsPage = React.lazy(() => import('pages/StatsPage'));
 
 const Master = () => {
-  const {musicStore, scrobbleStore} = useStores();
+  const { musicStore, scrobbleStore } = useStores();
   const [demoSnackbarClosed, setDemoSnackbarClosed] = React.useState(false);
 
   const onDemoSnackbarClose = () => {
@@ -34,7 +36,7 @@ const Master = () => {
   return (
     <>
       <AppBar>
-        <React.Suspense fallback={<div style={{height: 64}} />}>
+        <React.Suspense fallback={<div style={{ height: 64 }} />}>
           <Toolbar />
         </React.Suspense>
       </AppBar>
@@ -53,19 +55,22 @@ const Master = () => {
         <Route path='/statistics' element={<Wrap><StatsPage /></Wrap>} />
       </Routes>
 
-      <Snackbar open={scrobbleStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED}
-        message='Scrobble failed.' />
+      <Snackbar
+        open={scrobbleStore.scrobbleState === ScrobbleState.SCROBBLE_FAILED}
+        message='Scrobble failed.'
+      />
 
       <Snackbar
         open={musicStore.demoMode && !demoSnackbarClosed}
         autoHideDuration={10000}
         onClose={onDemoSnackbarClose}
-        message={
+        message={(
           <span>
-            This is a demo instance that uses public-domain music.<br/>
+            This is a demo instance that uses public-domain music.
+            <br />
             A few features are disabled, e.g., scrobbling to last.fm.
           </span>
-        }
+        )}
       />
     </>
   );

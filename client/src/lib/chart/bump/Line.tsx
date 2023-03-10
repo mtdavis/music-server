@@ -1,7 +1,11 @@
-import {useSpring, animated} from '@react-spring/web';
-import {Line as D3Line} from 'd3-shape';
-import {useAnimatedPath, useMotionConfig} from '@nivo/core';
-import {BumpCommonProps, BumpComputedSerie, BumpDatum, BumpSerieExtraProps, useBumpSerieHandlers} from '@nivo/bump';
+import React from 'react';
+
+import {
+  BumpCommonProps, BumpComputedSerie, BumpDatum, BumpSerieExtraProps, useBumpSerieHandlers,
+} from '@nivo/bump';
+import { useAnimatedPath, useMotionConfig } from '@nivo/core';
+import { useSpring, animated } from '@react-spring/web';
+import { Line as D3Line } from 'd3-shape';
 
 interface LineProps<Datum extends BumpDatum, ExtraProps extends BumpSerieExtraProps> {
   serie: BumpComputedSerie<Datum, ExtraProps>
@@ -16,7 +20,7 @@ interface LineProps<Datum extends BumpDatum, ExtraProps extends BumpSerieExtraPr
   tooltip: BumpCommonProps<Datum, ExtraProps>['tooltip']
 }
 
-export const Line = <Datum extends BumpDatum, ExtraProps extends BumpSerieExtraProps>({
+const Line = <Datum extends BumpDatum, ExtraProps extends BumpSerieExtraProps>({
   serie,
   lineGenerator,
   yStep,
@@ -39,7 +43,7 @@ export const Line = <Datum extends BumpDatum, ExtraProps extends BumpSerieExtraP
     tooltip,
   });
 
-  const {animate, config: springConfig} = useMotionConfig();
+  const { animate, config: springConfig } = useMotionConfig();
 
   const linePath = lineGenerator(serie.linePoints) || '';
 
@@ -60,23 +64,23 @@ export const Line = <Datum extends BumpDatum, ExtraProps extends BumpSerieExtraP
     <>
       <animated.path
         data-testid={`line.${serie.id}`}
-        fill="none"
+        fill='none'
         d={animatedPath}
         stroke={animatedProps.color}
         strokeWidth={animatedProps.lineWidth}
-        strokeLinecap="round"
+        strokeLinecap='round'
         strokeOpacity={animatedProps.opacity}
-        style={{pointerEvents: 'none'}}
+        style={{ pointerEvents: 'none' }}
       />
       {isInteractive && (
         <path
           data-testid={`line.${serie.id}.interactive`}
-          fill="none"
-          stroke="red"
+          fill='none'
+          stroke='red'
           strokeOpacity={0}
           strokeWidth={yStep}
           d={linePath}
-          strokeLinecap="butt"
+          strokeLinecap='butt'
           onMouseEnter={handlers.onMouseEnter}
           onMouseMove={handlers.onMouseMove}
           onMouseLeave={handlers.onMouseLeave}
@@ -86,3 +90,5 @@ export const Line = <Datum extends BumpDatum, ExtraProps extends BumpSerieExtraP
     </>
   );
 };
+
+export default Line;
