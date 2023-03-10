@@ -61,19 +61,15 @@ export default class StatsStore {
     });
   }
 
-  loadStats: () => void = () => {
-    get({
-      url: '/api/stats/',
-      onSuccess: action((stats: Stats) => {
-        this.genresOverTime.replace(stats.genres_over_time);
-        this.artistsOverTime.replace(stats.artists_over_time);
-        this.albumsOverTime.replace(stats.albums_over_time);
-        this.listensByYear.replace(stats.listens_by_year);
+  async loadStats(): Promise<void> {
+    const stats = await get<Stats>('/api/stats/');
+    this.genresOverTime.replace(stats.genres_over_time);
+    this.artistsOverTime.replace(stats.artists_over_time);
+    this.albumsOverTime.replace(stats.albums_over_time);
+    this.listensByYear.replace(stats.listens_by_year);
 
-        this.state = StatsState.LOADED;
-      }),
-    });
-  };
+    this.state = StatsState.LOADED;
+  }
 
   get filteredAlbumsOverTime(): BumpStats[] {
     return this.albumsOverTime.map((album) => ({

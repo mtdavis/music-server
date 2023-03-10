@@ -47,40 +47,27 @@ export default class DbStore {
     this.fetchPlaylists();
   }
 
-  fetchAlbums(): void {
+  async fetchAlbums(): Promise<void> {
     this.albumsLoading = true;
-
-    get({
-      url: '/api/albums/',
-      onSuccess: action((albums: Album[]) => {
-        this.albums.replace(albums);
-        this.albumsLoading = false;
-      }),
-    });
+    const albums = await get<Album[]>('/api/albums/');
+    this.albums.replace(albums);
+    this.albumsLoading = false;
   }
 
-  fetchTracks(): void {
+  async fetchTracks(): Promise<void> {
     this.tracksLoading = true;
 
-    get({
-      url: '/api/tracks/',
-      onSuccess: action((tracks: Track[]) => {
-        this.tracks.replace(tracks);
-        this.tracksLoading = false;
-      }),
-    });
+    const tracks = await get<Track[]>('/api/tracks/');
+    this.tracks.replace(tracks);
+    this.tracksLoading = false;
   }
 
-  fetchPlaylists(): void {
+  async fetchPlaylists(): Promise<void> {
     this.playlistsLoading = true;
 
-    get({
-      url: '/api/playlists/',
-      onSuccess: action((playlists: Playlist[]) => {
-        this.playlists.replace(playlists);
-        this.playlistsLoading = false;
-      }),
-    });
+    const playlists = await get<Playlist[]>('/api/playlists/');
+    this.playlists.replace(playlists);
+    this.playlistsLoading = false;
   }
 
   incrementPlayCount(trackId: number, timestamp: number): void {
@@ -132,38 +119,28 @@ export default class DbStore {
     return result;
   }
 
-  scan({
+  async scan({
     dryRun,
   }: {
     dryRun: boolean
-  }): void {
+  }): Promise<void> {
     this.scanning = true;
     this.scanResult = '';
 
-    put({
-      url: '/api/scan/',
-      data: { dry_run: dryRun },
-      onSuccess: action((result: string) => {
-        this.scanning = false;
-        this.scanResult = result;
+    const result = await put<string>('/api/scan/', { dry_run: dryRun });
+    this.scanning = false;
+    this.scanResult = result;
 
-        if (!dryRun) {
-          this.fetchAlbums();
-          this.fetchTracks();
-        }
-      }),
-    });
+    if (!dryRun) {
+      this.fetchAlbums();
+      this.fetchTracks();
+    }
   }
 
-  editAlbum(albumId: number, starred: boolean): void {
-    put({
-      url: `/api/albums/${albumId}`,
-      data: { starred },
-      onSuccess: action((result: Album) => {
-        const albumIndex = this.albums.findIndex((a) => a.id === albumId);
-        this.albums[albumIndex].starred = result.starred;
-      }),
-    });
+  async editAlbum(albumId: number, starred: boolean): Promise<void> {
+    const result = await put<Album>(`/api/albums/${albumId}`, { starred });
+    const albumIndex = this.albums.findIndex((a) => a.id === albumId);
+    this.albums[albumIndex].starred = result.starred;
   }
 
   getTrackOneForAlbum = computedFn((albumId: number): Track => (

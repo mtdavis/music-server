@@ -136,16 +136,12 @@ export default class MusicStore {
     }
   }
 
-  playPlaylist(playlist: Playlist): void {
-    get({
-      url: `/api/playlists/${playlist.id}/tracks`,
-      onSuccess: (tracks: Track[]) => {
-        this.stopPlayback();
-        this.setPlaylist(tracks);
-        this.playOrPausePlayback();
-        this.router.navigate('/app');
-      },
-    });
+  async playPlaylist(playlist: Playlist): Promise<void> {
+    const tracks = await get<Track[]>(`/api/playlists/${playlist.id}/tracks`);
+    this.stopPlayback();
+    this.setPlaylist(tracks);
+    this.playOrPausePlayback();
+    this.router.navigate('/app');
   }
 
   playTrack(track: Track): void {
@@ -164,45 +160,41 @@ export default class MusicStore {
     this.api.addTrack(`/stream/${path}`);
   }
 
-  playShuffle(minutes: number, genres: string[]): void {
-    get({
-      url: '/api/shuffle/',
-      onSuccess: (allTracks: Track[]) => {
-        if (!this.api) {
-          throw Error('Gapless5 instance is not initialized');
-        }
+  async playShuffle(minutes: number, genres: string[]): Promise<void> {
+    const allTracks = await get<Track[]>('/api/shuffle/');
+    if (!this.api) {
+      throw Error('Gapless5 instance is not initialized');
+    }
 
-        const tracks = allTracks.filter(
-          (track) => genres.includes('*') || genres.includes(track.genre),
-        );
+    const tracks = allTracks.filter(
+      (track) => genres.includes('*') || genres.includes(track.genre),
+    );
 
-        // tracks are assumed to be ordered by last_play
-        const weights: { [trackId: number]: number } = {};
-        for (let i = 0; i < tracks.length; i += 1) {
-          weights[i] = 1.0 / (i + 1);
-        }
+    // tracks are assumed to be ordered by last_play
+    const weights: { [trackId: number]: number } = {};
+    for (let i = 0; i < tracks.length; i += 1) {
+      weights[i] = 1.0 / (i + 1);
+    }
 
-        const tracksToEnqueue = [];
-        const secondsToFill = minutes * 60;
-        let enqueuedSeconds = 0;
+    const tracksToEnqueue = [];
+    const secondsToFill = minutes * 60;
+    let enqueuedSeconds = 0;
 
-        while (enqueuedSeconds < secondsToFill && tracks.length > 0) {
-          const index: number = weighted.select(weights);
-          if (tracks[index]) {
-            const track = tracks[index];
-            delete tracks[index];
-            delete weights[index];
-            tracksToEnqueue.push(track);
-            enqueuedSeconds += track.duration;
-          }
-        }
+    while (enqueuedSeconds < secondsToFill && tracks.length > 0) {
+      const index: number = weighted.select(weights);
+      if (tracks[index]) {
+        const track = tracks[index];
+        delete tracks[index];
+        delete weights[index];
+        tracksToEnqueue.push(track);
+        enqueuedSeconds += track.duration;
+      }
+    }
 
-        this.stopPlayback();
-        this.setPlaylist(tracksToEnqueue);
-        this.playOrPausePlayback();
-        this.router.navigate('/app');
-      },
-    });
+    this.stopPlayback();
+    this.setPlaylist(tracksToEnqueue);
+    this.playOrPausePlayback();
+    this.router.navigate('/app');
   }
 
   initializePlayer(): void {

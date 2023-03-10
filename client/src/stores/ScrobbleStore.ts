@@ -84,14 +84,12 @@ export default class ScrobbleStore {
 
     if (trackToScrobble.duration * 1000 > nowPlayingDelayMs) {
       // submit the now-playing update in 5 seconds if it's still playing.
-      this.nowPlayingTimer = pauseable.setTimeout(() => {
+      this.nowPlayingTimer = pauseable.setTimeout(async () => {
         if (
           trackToScrobble.id === this.musicStore.currentTrackId
           && this.musicStore.playerState !== PlayerState.STOPPED
         ) {
-          put({
-            url: `/api/tracks/${trackToScrobble.id}/submit-now-playing`,
-          });
+          await put(`/api/tracks/${trackToScrobble.id}/submit-now-playing`);
         }
 
         this.nowPlayingTimer = null;
@@ -100,25 +98,19 @@ export default class ScrobbleStore {
 
     // submit the play in (duration / 2) seconds if it's still playing.
     const playDelayMs = (trackToScrobble.duration / 2.0) * 1000;
-    this.playTimer = pauseable.setTimeout(() => {
+    this.playTimer = pauseable.setTimeout(async () => {
       if (
         trackToScrobble.id === this.musicStore.currentTrackId
         && this.musicStore.playerState !== PlayerState.STOPPED
       ) {
         this.dbStore.incrementPlayCount(trackToScrobble.id, trackStartedPlaying);
 
-        put({
-          url: `/api/tracks/${trackToScrobble.id}/submit-play`,
-          data: {
-            timestamp: trackStartedPlaying,
-          },
-          onSuccess: action(() => {
-            this.scrobbleState = ScrobbleState.TRACK_SCROBBLED;
-          }),
-          onError: action(() => {
-            this.scrobbleState = ScrobbleState.SCROBBLE_FAILED;
-          }),
-        });
+        try {
+          await put(`/api/tracks/${trackToScrobble.id}/submit-play`, { timestamp: trackStartedPlaying });
+          this.scrobbleState = ScrobbleState.TRACK_SCROBBLED;
+        } catch (error: any) {
+          this.scrobbleState = ScrobbleState.SCROBBLE_FAILED;
+        }
       }
 
       this.playTimer = null;

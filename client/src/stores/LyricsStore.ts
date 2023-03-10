@@ -5,7 +5,6 @@ import {
   autorun,
   makeObservable,
   observable,
-  runInAction,
 } from 'mobx';
 
 import MusicStore from './MusicStore';
@@ -38,9 +37,10 @@ export default class LyricsStore {
       url: observable,
       lyricsVisible: observable,
       setLyricsVisible: action,
+      update: action,
     });
 
-    autorun(() => {
+    autorun(async () => {
       if (!this.lyricsVisible) {
         return;
       }
@@ -49,31 +49,27 @@ export default class LyricsStore {
         const nowPlayingId = this.musicStore.currentTrack.id;
 
         if (nowPlayingId !== this.lyricsTrackId) {
-          runInAction(() => {
-            this.lyrics = null;
-            this.lyricsState = LyricsState.LOADING;
-            this.lyricsTrackId = nowPlayingId;
+          this.update({
+            lyricsState: LyricsState.LOADING,
+            lyricsTrackId: nowPlayingId,
           });
 
-          get({
-            url: `/api/tracks/${nowPlayingId}/lyrics`,
-            onSuccess: action((result: GetResult) => {
-              this.lyrics = result.lyrics;
-              this.url = result.url;
-              this.lyricsState = LyricsState.SUCCESSFUL;
-            }),
-            onError: action(() => {
-              this.lyrics = null;
-              this.url = null;
-              this.lyricsState = LyricsState.FAILED;
-            }),
-          });
+          try {
+            const result = await get<GetResult>(`/api/tracks/${nowPlayingId}/lyrics`);
+            this.update({
+              ...result,
+              lyricsState: LyricsState.SUCCESSFUL,
+              lyricsTrackId: nowPlayingId,
+            });
+          } catch (error: any) {
+            this.update({
+              lyricsState: LyricsState.FAILED,
+            });
+          }
         }
       } else {
-        runInAction(() => {
-          this.lyrics = null;
-          this.lyricsState = LyricsState.NO_TRACK;
-          this.lyricsTrackId = null;
+        this.update({
+          lyricsState: LyricsState.NO_TRACK,
         });
       }
     });
@@ -81,5 +77,22 @@ export default class LyricsStore {
 
   setLyricsVisible(visible: boolean): void {
     this.lyricsVisible = visible;
+  }
+
+  update({
+    lyricsState,
+    lyrics = null,
+    url = null,
+    lyricsTrackId = null,
+  }: {
+    lyricsState: LyricsState,
+    lyrics?: string | null,
+    url?: string | null,
+    lyricsTrackId?: number | null,
+  }): void {
+    this.lyricsState = lyricsState;
+    this.lyrics = lyrics;
+    this.url = url;
+    this.lyricsTrackId = lyricsTrackId;
   }
 }

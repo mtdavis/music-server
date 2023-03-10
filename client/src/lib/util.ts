@@ -1,51 +1,30 @@
-interface GetParams<T> {
-  url: string;
-  onSuccess: (json: T) => void;
-  onError?: (error: string) => void;
+export async function get<T>(url: string): Promise<T> {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
 }
 
-export function get<T>({
-  url,
-  onSuccess,
-  // eslint-disable-next-line no-console
-  onError = (error: string) => { console.error(error); },
-}: GetParams<T>): void {
-  fetch(url).then((response) => {
-    if (!response.ok) {
-      throw new Error(`${response.status} ${response.statusText}`);
-    }
-
-    return response.json();
-  }).then(onSuccess).catch(onError);
-}
-
-interface PutParams<T> {
-  url: string;
-  data?: { [key: string]: number | string | boolean | null };
-  onSuccess?: (json: T) => void;
-  onError?: (error: string) => void;
-}
-
-export function put<T>({
-  url,
-  data,
-  onSuccess = () => {},
-  // eslint-disable-next-line no-console
-  onError = (error: string) => { console.error(error); },
-}: PutParams<T>): void {
-  fetch(url, {
+export async function put<T>(
+  url: string,
+  data?: { [key: string]: number | string | boolean | null },
+): Promise<T> {
+  const response = await fetch(url, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
     body: data === undefined ? undefined : JSON.stringify(data),
-  }).then((response) => {
-    if (!response.ok) {
-      throw new Error(`${response.status} ${response.statusText}`);
-    }
+  });
 
-    return response.json();
-  }).then(onSuccess).catch(onError);
+  if (!response.ok) {
+    throw new Error(`${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
 }
 
 export function secondsToTimeString(epochSeconds: number): string {
