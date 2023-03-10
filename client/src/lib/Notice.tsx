@@ -21,9 +21,9 @@ const Notice = ({
   <Paper sx={{ padding: 2 }} elevation={elevation}>
     <Grid container direction='row' spacing={2} alignItems='center'>
       {loading && (
-      <Grid item>
-        <CircularProgress disableShrink />
-      </Grid>
+        <Grid item>
+          <CircularProgress disableShrink />
+        </Grid>
       )}
 
       <Grid item>
