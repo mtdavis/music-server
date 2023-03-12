@@ -5,7 +5,13 @@ import jsep, {
   Literal,
   UnaryExpression,
 } from 'jsep';
-import { compare } from 'lib/util';
+import { renderAlbumStar } from 'lib/AlbumStar';
+import {
+  compare,
+  secondsToTimeString,
+  unixTimestampToDateString,
+  unixTimestampToYear,
+} from 'lib/util';
 import splitargs from 'splitargs';
 
 jsep.addBinaryOp(':', 10);
@@ -21,11 +27,21 @@ function rowContainsText<R extends RowData>(
 
   columns.forEach((column) => {
     const cellValue = rowData[column.key];
-    const rendered = column.renderer ? column.renderer(cellValue, rowData) : cellValue;
-    const renderedString = String(rendered === null ? '' : rendered).toLowerCase();
+    if (cellValue === null) {
+      return;
+    }
+
+    let rendered: string;
+    if (column.type === 'year' && typeof cellValue === 'number') {
+      rendered = String(unixTimestampToYear(cellValue));
+    } else if (column.type === undefined || column.type === 'plain') {
+      rendered = String(cellValue).toLowerCase();
+    } else {
+      return;
+    }
 
     textChunks.forEach((chunk) => {
-      if (renderedString.includes(chunk)) {
+      if (rendered.includes(chunk)) {
         foundChunks.add(chunk);
       }
     });
@@ -121,38 +137,44 @@ export function getUniqueValues<R extends RowData>(
   return result;
 }
 
-export function renderIcon(
-  value: string,
-): string {
-  return value;
-}
-
-export function renderValue<R extends RowData>(
-  value: RowDataValue,
+export function renderValue<V extends RowDataValue, R extends RowData>(
+  value: V,
   rowData: R,
   column: ColumnConfig<R>,
   icons?: { [key: string]: React.ReactNode },
 ): number | string | React.ReactNode {
-  let renderedValue: number | string | React.ReactNode;
-
   if (value === null) {
-    renderedValue = '';
-  } else if (column.renderer === renderIcon && icons && icons[value]) {
-    renderedValue = icons[value];
-  } else if (column.renderer) {
-    renderedValue = column.renderer(value, rowData);
-  } else {
-    renderedValue = value;
+    return '';
   }
 
-  return renderedValue;
+  if (column.type === 'icon' && icons && typeof value === 'string' && icons[value]) {
+    return icons[value];
+  }
+
+  if (column.type === 'star' && typeof value === 'boolean') {
+    return renderAlbumStar(value, rowData.id);
+  }
+
+  if (column.type === 'year' && typeof value === 'number') {
+    return unixTimestampToYear(value);
+  }
+
+  if (column.type === 'date' && typeof value === 'number') {
+    return unixTimestampToDateString(value);
+  }
+
+  if (column.type === 'duration' && typeof value === 'number') {
+    return secondsToTimeString(value);
+  }
+
+  return String(value);
 }
 
 export function getRowArrayIds(array: RowData[]): number[] {
   return array.map((item) => item.id);
 }
 
-type ColumnWidthMap<R extends RowData> = { [Property in keyof R]: string };
+type ColumnWidthMap<R extends RowData> = { [Property in keyof R]: number };
 
 export function calculateColumnWidths<R extends RowData>(
   rows: R[],
@@ -178,7 +200,7 @@ export function calculateColumnWidths<R extends RowData>(
   const result: ColumnWidthMap<R> = {} as ColumnWidthMap<R>;
 
   columns.forEach((column) => {
-    result[column.key] = `${(lengths[column.key] / sum) * 100}%`;
+    result[column.key] = (lengths[column.key] / sum) * 100;
   });
 
   return result;

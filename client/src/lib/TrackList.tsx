@@ -5,10 +5,6 @@ import { observer } from 'mobx-react-lite';
 import { useStores } from 'stores';
 
 import FilteredTable from './table/FilteredTable';
-import {
-  secondsToTimeString,
-  unixTimestampToDateString,
-} from './util';
 
 interface Props {
   id: string,
@@ -43,7 +39,7 @@ const COLUMNS = [
   {
     key: 'duration',
     label: 'Duration',
-    renderer: secondsToTimeString,
+    type: 'duration' as const,
     align: 'right' as const,
     wrap: false,
   },
@@ -55,7 +51,7 @@ const COLUMNS = [
   {
     key: 'last_play',
     label: 'Last Play',
-    renderer: unixTimestampToDateString,
+    type: 'date' as const,
     align: 'right' as const,
     wrap: false,
   },

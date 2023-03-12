@@ -61,7 +61,7 @@ export default class LyricsStore {
               lyricsState: LyricsState.SUCCESSFUL,
               lyricsTrackId: nowPlayingId,
             });
-          } catch (error: any) {
+          } catch (error) {
             this.update({
               lyricsState: LyricsState.FAILED,
             });

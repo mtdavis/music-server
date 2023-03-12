@@ -4,13 +4,7 @@ import { Snackbar } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useStores } from 'stores';
 
-import renderAlbumStar from './renderAlbumStar';
 import FilteredTable from './table/FilteredTable';
-import {
-  secondsToTimeString,
-  unixTimestampToDateString,
-  unixTimestampToYear,
-} from './util';
 
 interface Props {
   id: string;
@@ -23,7 +17,7 @@ const COLUMNS = [
   {
     key: 'starred',
     label: '',
-    renderer: renderAlbumStar,
+    type: 'star' as const,
     fixedWidth: 68,
   },
   {
@@ -37,7 +31,7 @@ const COLUMNS = [
   {
     key: 'release_date',
     label: 'Year',
-    renderer: unixTimestampToYear,
+    type: 'year' as const,
     align: 'right' as const,
   },
   {
@@ -48,7 +42,7 @@ const COLUMNS = [
   {
     key: 'duration',
     label: 'Duration',
-    renderer: secondsToTimeString,
+    type: 'duration' as const,
     align: 'right' as const,
     wrap: false,
   },
@@ -60,7 +54,7 @@ const COLUMNS = [
   {
     key: 'last_play',
     label: 'Last Play',
-    renderer: unixTimestampToDateString,
+    type: 'date' as const,
     align: 'right' as const,
     wrap: false,
   },

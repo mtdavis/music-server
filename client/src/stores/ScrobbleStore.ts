@@ -108,7 +108,7 @@ export default class ScrobbleStore {
         try {
           await put(`/api/tracks/${trackToScrobble.id}/submit-play`, { timestamp: trackStartedPlaying });
           this.scrobbleState = ScrobbleState.TRACK_SCROBBLED;
-        } catch (error: any) {
+        } catch (error) {
           this.scrobbleState = ScrobbleState.SCROBBLE_FAILED;
         }
       }

@@ -7,7 +7,7 @@ import {
   TextField,
 } from '@mui/material';
 
-type Item = string | number | null;
+type Item = string | number | boolean | null;
 
 type WrappedItem = {
   label: string,

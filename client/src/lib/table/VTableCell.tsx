@@ -7,7 +7,7 @@ import {
 interface Props<R extends RowData> {
   children: React.ReactNode;
   column: ColumnConfig<R>;
-  flexBasis?: string | number,
+  flexBasis?: number,
 }
 
 const VTableCell = <R extends RowData>({
@@ -19,13 +19,14 @@ const VTableCell = <R extends RowData>({
     component='div'
     sx={{
       alignItems: 'center',
-      boxSizing: 'border-box' as const,
       display: 'flex',
-      flexBasis,
+      flexBasis: `${flexBasis}%`,
       flexGrow: column.fixedWidth ? 0 : 1,
       flexShrink: column.fixedWidth ? 0 : 1,
       fontSize: '0.8rem',
-      maxHeight: 50,
+      height: 50,
+      paddingBottom: 0,
+      paddingTop: 0,
       whiteSpace: 'normal',
       width: column.fixedWidth,
     }}

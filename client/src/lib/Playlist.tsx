@@ -8,9 +8,7 @@ import { observer } from 'mobx-react-lite';
 import { useStores } from 'stores';
 
 import PlayerState from './PlayerState';
-import { renderIcon } from './table/util';
 import VTable from './table/VTable';
-import { secondsToTimeString } from './util';
 
 interface PlaylistItem extends RowData {
   icon: string;
@@ -21,7 +19,7 @@ interface PlaylistItem extends RowData {
 const COLUMNS = [
   {
     key: 'icon',
-    renderer: renderIcon,
+    type: 'icon' as const,
     fixedWidth: 48,
   },
   {
@@ -29,7 +27,7 @@ const COLUMNS = [
   },
   {
     key: 'duration',
-    renderer: secondsToTimeString,
+    type: 'duration' as const,
     align: 'right' as const,
   },
 ];

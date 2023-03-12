@@ -39,8 +39,8 @@ const AlbumStar = observer(({
   );
 });
 
-const renderAlbumStar = (starred: boolean, rowData: Album): React.ReactNode => (
-  <AlbumStar albumId={rowData.id} starred={starred} />
-);
+export default AlbumStar;
 
-export default renderAlbumStar;
+export const renderAlbumStar = (starred: boolean, albumId: number): React.ReactNode => (
+  <AlbumStar albumId={albumId} starred={starred} />
+);

@@ -77,7 +77,7 @@ declare module 'react-lazy-load' {
 type NullableString = string | null;
 type NullableNumber = number | null;
 
-type RowDataValue = NullableNumber | NullableString;
+type RowDataValue = number | NullableNumber | string | NullableString | boolean;
 
 interface RowData {
   id: number;
@@ -95,6 +95,7 @@ declare interface Album extends RowData {
   release_date: number;
   last_play: NullableNumber;
   play_count: number;
+  starred: boolean;
   /* eslint-enable camelcase */
 }
 
@@ -130,8 +131,7 @@ declare interface ColumnConfig<T extends RowData> {
   key: keyof T;
   label?: string;
   align?: 'left' | 'right';
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  renderer?: (value: any, rowData: T) => (string | number | React.ReactNode);
+  type?: 'plain' | 'icon' | 'star' | 'year' | 'date' | 'duration',
   wrap?: boolean;
   fixedWidth?: number;
 }

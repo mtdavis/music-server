@@ -11,7 +11,7 @@ import { SortStore } from './SortStore';
 
 interface Props<R extends RowData> {
   column: ColumnConfig<R>;
-  flexBasis?: string | number,
+  flexBasis?: number,
   sortStore: SortStore<R>;
 }
 
@@ -29,14 +29,15 @@ const VTableHeader = <R extends RowData>({
       sx={{
         alignItems: 'center',
         backgroundColor: 'background.paper',
-        boxSizing: 'border-box' as const,
         display: 'flex',
-        flexBasis,
+        flexBasis: `${flexBasis}%`,
         flexGrow: column.fixedWidth ? 0 : 1,
         flexShrink: column.fixedWidth ? 0 : 1,
         fontSize: '0.8rem',
+        height: 50,
         lineHeight: 1.43,
-        maxHeight: 50,
+        paddingBottom: 0,
+        paddingTop: 0,
         userSelect: 'none',
         width: column.fixedWidth,
       }}
