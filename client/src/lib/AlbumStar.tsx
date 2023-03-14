@@ -1,13 +1,13 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
+
+import StarIcon from '@mui/icons-material/Star';
+import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import {
   colors,
   IconButton,
-} from '@material-ui/core';
-import StarIcon from '@material-ui/icons/Star';
-import StarOutlineIcon from '@material-ui/icons/StarOutline';
-
-import {useStores} from 'stores';
+} from '@mui/material';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
 
 interface StarProps {
   albumId: number;
@@ -18,13 +18,13 @@ const AlbumStar = observer(({
   albumId,
   starred,
 }: StarProps) => {
-  const {dbStore} = useStores();
+  const { dbStore } = useStores();
 
   return (
     <IconButton
       style={{
         padding: 6,
-        color: starred ? colors.amber[500] : undefined
+        color: starred ? colors.amber[500] : undefined,
       }}
       color={starred ? undefined : 'default'}
       onClick={(event) => {
@@ -32,14 +32,15 @@ const AlbumStar = observer(({
         event.stopPropagation();
       }}
     >
-      {starred ?
-        <StarIcon /> :
-        <StarOutlineIcon />
-      }
+      {starred
+        ? <StarIcon />
+        : <StarOutlineIcon />}
     </IconButton>
   );
 });
 
-export const renderAlbumStar = (starred: boolean, rowData: Album): React.ReactNode => (
-  <AlbumStar albumId={rowData.id} starred={starred} />
+export default AlbumStar;
+
+export const renderAlbumStar = (starred: boolean, albumId: number): React.ReactNode => (
+  <AlbumStar albumId={albumId} starred={starred} />
 );

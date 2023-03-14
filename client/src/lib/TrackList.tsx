@@ -1,13 +1,10 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
-import {Snackbar} from '@material-ui/core';
 
-import {
-  secondsToTimeString,
-  unixTimestampToDateString,
-} from './util';
+import { Snackbar } from '@mui/material';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
+
 import FilteredTable from './table/FilteredTable';
-import {useStores} from 'stores';
 
 interface Props {
   id: string,
@@ -18,46 +15,46 @@ interface Props {
 
 const COLUMNS = [
   {
-    key: "artist",
-    label: "Artist",
+    key: 'artist',
+    label: 'Artist',
   },
   {
-    key: "album",
-    label: "Album",
+    key: 'album',
+    label: 'Album',
   },
   {
-    key: "title",
-    label: "Title",
+    key: 'title',
+    label: 'Title',
   },
   {
-    key: "track_number",
-    label: "#",
+    key: 'track_number',
+    label: '#',
     align: 'right' as const,
   },
   {
-    key: "year",
-    label: "Year",
+    key: 'year',
+    label: 'Year',
     align: 'right' as const,
   },
   {
-    key: "duration",
-    label: "Duration",
-    renderer: secondsToTimeString,
+    key: 'duration',
+    label: 'Duration',
+    type: 'duration' as const,
+    align: 'right' as const,
+    wrap: false,
+  },
+  {
+    key: 'play_count',
+    label: 'Play Count',
+    align: 'right' as const,
+  },
+  {
+    key: 'last_play',
+    label: 'Last Play',
+    type: 'date' as const,
     align: 'right' as const,
     wrap: false,
   },
-  {
-    key: "play_count",
-    label: "Play Count",
-    align: 'right' as const,
-  },
-  {
-    key: "last_play",
-    label: "Last Play",
-    renderer: unixTimestampToDateString,
-    align: 'right' as const,
-    wrap: false,
-  }
 ];
 
 const TrackList = ({
@@ -65,7 +62,7 @@ const TrackList = ({
   rows,
   ...props
 }: Props) => {
-  const {musicStore} = useStores();
+  const { musicStore } = useStores();
   const [enqueueSnackbarOpen, setEnqueueSnackbarOpen] = React.useState(false);
 
   const onTrackClick = (track: Track): void => {
@@ -97,7 +94,7 @@ const TrackList = ({
       />
 
       <Snackbar
-        message="Track enqueued."
+        message='Track enqueued.'
         open={enqueueSnackbarOpen}
       />
     </>

@@ -1,47 +1,38 @@
 import React from 'react';
+
 import {
   CircularProgress,
   Grid,
   Paper,
   Typography,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
-import {Theme} from '@material-ui/core/styles';
-
-const useStyles = makeStyles((theme: Theme) => ({
-  notice: {
-    padding: theme.spacing(2),
-  },
-}));
+} from '@mui/material';
 
 interface Props {
   children: React.ReactNode;
+  elevation?: number,
   loading?: boolean;
 }
 
 const Notice = ({
   children,
-  loading=false
-}: Props): React.ReactElement => {
-  const classes = useStyles();
-
-  return (
-    <Paper className={classes.notice}>
-      <Grid container direction='row' spacing={2} alignItems='center'>
-        {loading &&
-          <Grid item>
-            <CircularProgress disableShrink />
-          </Grid>
-        }
-
+  elevation,
+  loading = false,
+}: Props): React.ReactElement => (
+  <Paper sx={{ padding: 2 }} elevation={elevation}>
+    <Grid container direction='row' spacing={2} alignItems='center'>
+      {loading && (
         <Grid item>
-          <Typography variant='body2'>
-            {children}
-          </Typography>
+          <CircularProgress disableShrink />
         </Grid>
+      )}
+
+      <Grid item>
+        <Typography variant='body2'>
+          {children}
+        </Typography>
       </Grid>
-    </Paper>
-  );
-};
+    </Grid>
+  </Paper>
+);
 
 export default Notice;

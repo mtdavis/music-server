@@ -1,13 +1,12 @@
+import LyricsState from 'lib/LyricsState';
+import { get } from 'lib/util';
 import {
   action,
   autorun,
   makeObservable,
   observable,
-  runInAction,
 } from 'mobx';
 
-import {get} from 'lib/util';
-import LyricsState from 'lib/LyricsState';
 import MusicStore from './MusicStore';
 
 interface GetResult {
@@ -17,10 +16,15 @@ interface GetResult {
 
 export default class LyricsStore {
   lyricsState = LyricsState.NO_TRACK;
+
   lyricsTrackId: number | null = null;
+
   lyrics: string | null = null;
+
   url: string | null = null;
+
   lyricsVisible = false;
+
   musicStore: MusicStore;
 
   constructor(musicStore: MusicStore) {
@@ -33,43 +37,39 @@ export default class LyricsStore {
       url: observable,
       lyricsVisible: observable,
       setLyricsVisible: action,
+      update: action,
     });
 
-    autorun(() => {
-      if(!this.lyricsVisible) {
+    autorun(async () => {
+      if (!this.lyricsVisible) {
         return;
       }
 
-      if(this.musicStore.currentTrack) {
+      if (this.musicStore.currentTrack) {
         const nowPlayingId = this.musicStore.currentTrack.id;
 
-        if(nowPlayingId !== this.lyricsTrackId) {
-          runInAction(() => {
-            this.lyrics = null;
-            this.lyricsState = LyricsState.LOADING;
-            this.lyricsTrackId = nowPlayingId;
+        if (nowPlayingId !== this.lyricsTrackId) {
+          this.update({
+            lyricsState: LyricsState.LOADING,
+            lyricsTrackId: nowPlayingId,
           });
 
-          get({
-            url: `/api/tracks/${nowPlayingId}/lyrics`,
-            onSuccess: action((result: GetResult) => {
-              this.lyrics = result.lyrics;
-              this.url = result.url;
-              this.lyricsState = LyricsState.SUCCESSFUL;
-            }),
-            onError: action((_error: string) => {
-              this.lyrics = null;
-              this.url = null;
-              this.lyricsState = LyricsState.FAILED;
-            }),
-          });
+          try {
+            const result = await get<GetResult>(`/api/tracks/${nowPlayingId}/lyrics`);
+            this.update({
+              ...result,
+              lyricsState: LyricsState.SUCCESSFUL,
+              lyricsTrackId: nowPlayingId,
+            });
+          } catch (error) {
+            this.update({
+              lyricsState: LyricsState.FAILED,
+            });
+          }
         }
-      }
-      else {
-        runInAction(() => {
-          this.lyrics = null;
-          this.lyricsState = LyricsState.NO_TRACK;
-          this.lyricsTrackId = null;
+      } else {
+        this.update({
+          lyricsState: LyricsState.NO_TRACK,
         });
       }
     });
@@ -77,5 +77,22 @@ export default class LyricsStore {
 
   setLyricsVisible(visible: boolean): void {
     this.lyricsVisible = visible;
+  }
+
+  update({
+    lyricsState,
+    lyrics = null,
+    url = null,
+    lyricsTrackId = null,
+  }: {
+    lyricsState: LyricsState,
+    lyrics?: string | null,
+    url?: string | null,
+    lyricsTrackId?: number | null,
+  }): void {
+    this.lyricsState = lyricsState;
+    this.lyrics = lyrics;
+    this.url = url;
+    this.lyricsTrackId = lyricsTrackId;
   }
 }

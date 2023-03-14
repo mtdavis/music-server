@@ -1,13 +1,13 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
 
 import PlaylistList from 'lib/PlaylistList';
-import {useStores} from 'stores';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
 
 const PlaylistsPage = () => {
-  const {dbStore} = useStores();
+  const { dbStore } = useStores();
   const initialSortSpecs = [
-    {columnKey: 'title'}
+    { columnKey: 'title' },
   ];
 
   return (

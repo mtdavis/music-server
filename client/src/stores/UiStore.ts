@@ -18,13 +18,13 @@ export default class UiStore {
 
   openDrawer: () => void = () => {
     this.drawerOpen = true;
-  }
+  };
 
   closeDrawer: () => void = () => {
     this.drawerOpen = false;
-  }
+  };
 
   toggleDrawer: () => void = () => {
     this.drawerOpen = !this.drawerOpen;
-  }
+  };
 }

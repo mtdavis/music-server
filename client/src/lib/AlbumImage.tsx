@@ -1,27 +1,12 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
+
 import {
   Grid,
   Paper,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
+} from '@mui/material';
+import { observer } from 'mobx-react-lite';
 import LazyLoad from 'react-lazy-load';
-
-import {useStores} from 'stores';
-
-const useStyles = makeStyles(() => ({
-  albumPaper: {
-    lineHeight: 0,
-    transition: 'all 450ms cubic-bezier(0.23, 1, 0.32, 1)',
-    '&:hover': {
-      transform: 'scale(1.05)',
-    },
-  },
-  albumImage: {
-    width: '100%',
-    cursor: 'pointer',
-  },
-}));
+import { useStores } from 'stores';
 
 interface Props {
   album: Album;
@@ -32,8 +17,7 @@ const AlbumImage = ({
   album,
   trackId,
 }: Props) => {
-  const classes = useStyles();
-  const {musicStore} = useStores();
+  const { musicStore } = useStores();
 
   const [placeholderHeight, setPlaceholderHeight] = React.useState<number | undefined>(250);
   const [opacity, setOpacity] = React.useState(0);
@@ -58,20 +42,34 @@ const AlbumImage = ({
 
   return (
     <Grid item xs={6} sm={4} md={3} lg={2}>
-      <Paper
-        style={{opacity: opacity}}
-        square={true}
-        className={classes.albumPaper}
-        onMouseOver={onMouseOver}
-        onMouseOut={onMouseOut}
-        elevation={hover ? 4 : 2}
-      >
-        <LazyLoad height={placeholderHeight} offset={1000} debounce={false}>
-          <img src={`/art/${trackId}`}
-            className={classes.albumImage}
-            onClick={onClick} onLoad={onLoad}/>
-        </LazyLoad>
-      </Paper>
+      <button onClick={onClick} type='button' style={{ border: 0, padding: 0 }}>
+        <Paper
+          sx={{
+            opacity,
+            lineHeight: 0,
+            transition: 'all 450ms cubic-bezier(0.23, 1, 0.32, 1)',
+            '&:hover': {
+              transform: 'scale(1.05)',
+            },
+          }}
+          square
+          onMouseOver={onMouseOver}
+          onMouseOut={onMouseOut}
+          elevation={hover ? 4 : 2}
+        >
+          <LazyLoad height={placeholderHeight} offset={1000} debounce={false}>
+            <img
+              alt='cover'
+              src={`/art/${trackId}`}
+              style={{
+                width: '100%',
+                cursor: 'pointer',
+              }}
+              onLoad={onLoad}
+            />
+          </LazyLoad>
+        </Paper>
+      </button>
     </Grid>
   );
 };

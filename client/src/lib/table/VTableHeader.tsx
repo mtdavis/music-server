@@ -1,60 +1,58 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
-import classNames from 'classnames';
+
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import {
   TableCell,
   TableSortLabel,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
-import {SortStore} from './SortStore';
-import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
+} from '@mui/material';
+import { observer } from 'mobx-react-lite';
 
-const useStyles = makeStyles(() => ({
-  flexContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    boxSizing: 'border-box' as const,
-  },
-  tableCell: {
-    flex: 1,
-    fontSize: '0.8rem',
-    lineHeight: 1.43,
-  },
-}));
+import { SortStore } from './SortStore';
 
 interface Props<R extends RowData> {
   column: ColumnConfig<R>;
-  headerHeight: number;
+  flexBasis?: number,
   sortStore: SortStore<R>;
 }
 
-function VTableHeader<R extends RowData>({
+const VTableHeader = <R extends RowData>({
   column,
-  headerHeight,
+  flexBasis,
   sortStore,
-}: Props<R>): React.ReactElement {
-  const classes = useStyles();
-  const topSortSpec = sortStore.topSortSpec;
+}: Props<R>): React.ReactElement => {
+  const { topSortSpec } = sortStore;
 
   return (
     <TableCell
-      component="div"
-      className={classNames(classes.tableCell, classes.flexContainer)}
-      onClick={() => sortStore.setSortColumnKey(column.key)}
-      variant="head"
-      style={{height: headerHeight, userSelect: 'none'}}
+      component='div'
+      variant='head'
+      sx={{
+        alignItems: 'center',
+        backgroundColor: 'background.paper',
+        display: 'flex',
+        flexBasis: `${flexBasis}%`,
+        flexGrow: column.fixedWidth ? 0 : 1,
+        flexShrink: column.fixedWidth ? 0 : 1,
+        fontSize: '0.8rem',
+        height: 50,
+        lineHeight: 1.43,
+        paddingBottom: 0,
+        paddingTop: 0,
+        userSelect: 'none',
+        width: column.fixedWidth,
+      }}
       align={column.align}
-      size="small"
     >
       <TableSortLabel
         active={topSortSpec !== null && topSortSpec.columnKey === column.key}
         direction={topSortSpec !== null && topSortSpec.order === 1 ? 'desc' : 'asc'}
         IconComponent={KeyboardArrowUpIcon}
+        onClick={() => sortStore.setSortColumnKey(column.key)}
       >
         {column.label}
       </TableSortLabel>
     </TableCell>
   );
-}
+};
 
 export default observer(VTableHeader);

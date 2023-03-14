@@ -1,18 +1,18 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
+
 import {
   SvgIcon,
   ListItem,
   ListItemIcon,
   ListItemText,
-} from '@material-ui/core';
+} from '@mui/material';
 import {
-  makeStyles
-} from '@material-ui/styles';
-import {useHistory, useLocation} from "react-router-dom";
-
+  makeStyles,
+} from '@mui/styles';
 import Tooltip from 'lib/Tooltip';
-import {useStores} from 'stores';
+import { observer } from 'mobx-react-lite';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useStores } from 'stores';
 
 const useStyles = makeStyles(() => ({
   tooltipPlacementRight: {
@@ -33,13 +33,13 @@ const LinkMenuItem = ({
   children,
 }: Props) => {
   const classes = useStyles();
-  const {uiStore} = useStores();
-  const history = useHistory();
+  const { uiStore } = useStores();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const onClick = () => {
-    if(location.pathname !== to) {
-      history.push(to);
+    if (location.pathname !== to) {
+      navigate(to);
     }
   };
 

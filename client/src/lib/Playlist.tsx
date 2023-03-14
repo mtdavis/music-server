@@ -1,15 +1,14 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
-import MusicCircleIcon from 'mdi-material-ui/MusicCircleOutline';
-import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
-import PauseCircleFilledIcon from '@material-ui/icons/PauseCircleFilled';
-import StopCircle from 'mdi-material-ui/StopCircle';
 
-import VTable from './table/VTable';
-import {renderIcon} from './table/util';
+import PauseCircleFilledIcon from '@mui/icons-material/PauseCircleFilled';
+import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
+import MusicCircleIcon from 'mdi-material-ui/MusicCircleOutline';
+import StopCircle from 'mdi-material-ui/StopCircle';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
+
 import PlayerState from './PlayerState';
-import {secondsToTimeString} from './util';
-import {useStores} from 'stores';
+import VTable from './table/VTable';
 
 interface PlaylistItem extends RowData {
   icon: string;
@@ -20,46 +19,45 @@ interface PlaylistItem extends RowData {
 const COLUMNS = [
   {
     key: 'icon',
-    renderer: renderIcon,
-    maxWidth: 48,
+    type: 'icon' as const,
+    fixedWidth: 48,
   },
   {
     key: 'text',
   },
   {
     key: 'duration',
-    renderer: secondsToTimeString,
+    type: 'duration' as const,
     align: 'right' as const,
-  }
+  },
 ];
 
 const Playlist = () => {
-  const {musicStore} = useStores();
+  const { musicStore } = useStores();
 
   // check whether all artists are equal.
   let allArtistsEqual = true;
   let artist = null;
-  for(let i = 0; i < musicStore.playlist.length; i++) {
-    if(artist === null) {
+  for (let i = 0; i < musicStore.playlist.length; i += 1) {
+    if (artist === null) {
       artist = musicStore.playlist[i].artist;
-    }
-    else if(artist !== musicStore.playlist[i].artist) {
+    } else if (artist !== musicStore.playlist[i].artist) {
       allArtistsEqual = false;
     }
   }
 
-  const playlistItems = musicStore.playlist.map(function(track, index) {
+  const playlistItems = musicStore.playlist.map((track, index) => {
     const icon = track === musicStore.currentTrack ? musicStore.playerState : 'default';
 
-    const text = allArtistsEqual ?
-      `${index + 1}. ${track.title}` :
-      `${index + 1}. ${track.artist} - ${track.title}`;
+    const text = allArtistsEqual
+      ? `${index + 1}. ${track.title}`
+      : `${index + 1}. ${track.artist} - ${track.title}`;
 
     return {
       id: index,
-      icon: icon,
-      text: text,
-      duration: track.duration
+      icon,
+      text,
+      duration: track.duration,
     };
   });
 

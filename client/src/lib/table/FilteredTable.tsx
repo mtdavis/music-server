@@ -1,41 +1,16 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
+
 import {
   Grid,
-  IconButton,
   Paper,
   Typography,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
-import CancelIcon from '@material-ui/icons/Cancel';
+} from '@mui/material';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
 
-import Tooltip from 'lib/Tooltip';
-import {useStores} from 'stores';
 import FilterSelect from './FilterSelect';
 import FilterText from './FilterText';
-import VTable, {Props as BaseVTableProps} from './VTable';
-
-const useStyles = makeStyles(() => ({
-  clearButton: {
-    marginLeft: 16,
-  },
-  itemCount: {
-    marginLeft: 16,
-    textAlign: 'right' as const,
-  },
-  filterBox: {
-    padding: 16,
-  },
-  wrapper: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    height: '100%',
-  },
-  tableWrapper: {
-    flex: 1,
-    marginTop: 16,
-  },
-}));
+import VTable, { Props as BaseVTableProps } from './VTable';
 
 type VTableProps<R extends RowData> = Omit<BaseVTableProps<R>, 'id' | 'rows' | 'columns' | 'hiddenRowIds'>;
 
@@ -47,15 +22,14 @@ interface Props<R extends RowData> {
   VTableProps: VTableProps<R>;
 }
 
-function FilteredTable<R extends RowData>({
+const FilteredTable = <R extends RowData>({
   id,
   rows,
   filterKeys,
   columns,
   VTableProps,
-}: Props<R>): React.ReactElement {
-  const classes = useStyles();
-  const {filterStoreMap} = useStores();
+}: Props<R>): React.ReactElement => {
+  const { filterStoreMap } = useStores();
   const filterStore = filterStoreMap.get(id, rows, columns, filterKeys);
 
   React.useEffect(() => {
@@ -66,74 +40,67 @@ function FilteredTable<R extends RowData>({
 
   const selectWidth = (filterKeys.length <= 4 ? 12 / filterKeys.length : 4) as (1 | 2 | 3 | 4);
 
-  filterKeys.forEach(filterKey => {
+  filterKeys.forEach((filterKey) => {
     selectElems.push(
       <Grid item xs={12} md={selectWidth} key={filterKey}>
         <FilterSelect
           filterStore={filterStore}
           filterKey={filterKey}
         />
-      </Grid>
+      </Grid>,
     );
   });
 
   const numRows = rows.length - filterStore.hiddenRowIds.size;
 
   const filterBox = (
-    <Paper className={classes.filterBox}>
+    <Paper sx={{ padding: 2 }}>
       <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <div style={{display: 'flex', alignItems: 'start'}}>
-            <div style={{flex: 1}}>
-              <Grid container spacing={2}>
-                {selectElems}
-              </Grid>
-            </div>
-            {filterStore.hasFilters &&
-              <Tooltip title='Clear Filters'>
-                <IconButton
-                  color='secondary'
-                  className={classes.clearButton}
-                  onClick={filterStore.clearFilters}
-                >
-                  <CancelIcon />
-                </IconButton>
-              </Tooltip>
-            }
-          </div>
-        </Grid>
+        {selectElems.length > 0 && (
+          <Grid item xs={12}>
+            <Grid container spacing={2}>
+              {selectElems}
+            </Grid>
+          </Grid>
+        )}
 
         <Grid item xs={12}>
-          <div style={{display: 'flex', alignItems: 'end'}}>
-            <div style={{flex: 1}}>
+          <Grid container spacing={2} alignItems='center'>
+            <Grid item sx={{ flex: 1 }}>
               <FilterText filterStore={filterStore} />
-            </div>
-            {numRows > 0 &&
-              <Typography variant='body2' className={classes.itemCount}>
-                {numRows} item{numRows === 1 ? '' : 's'}
+            </Grid>
+            <Grid item>
+              <Typography variant='body2'>
+                {numRows}
+                {' '}
+                item
+                {numRows === 1 ? '' : 's'}
               </Typography>
-            }
-          </div>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
     </Paper>
   );
 
   return (
-    <div className={classes.wrapper}>
-      {filterBox}
+    <Grid container direction='column' spacing={2}>
+      <Grid item>
+        {filterBox}
+      </Grid>
 
-      <div className={classes.tableWrapper}>
+      <Grid item>
         <VTable
+          // eslint-disable-next-line react/jsx-props-no-spreading
           {...VTableProps}
           id={id}
           rows={rows}
           columns={columns}
           hiddenRowIds={filterStore.hiddenRowIds}
         />
-      </div>
-    </div>
+      </Grid>
+    </Grid>
   );
-}
+};
 
 export default observer(FilteredTable);

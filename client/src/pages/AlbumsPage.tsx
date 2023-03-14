@@ -1,15 +1,15 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
 
 import AlbumList from 'lib/AlbumList';
-import {useStores} from 'stores';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
 
 const AlbumsPage = () => {
-  const {dbStore} = useStores();
+  const { dbStore } = useStores();
 
   const initialSortSpecs = [
-    {columnKey: 'album'},
-    {columnKey: 'album_artist'}
+    { columnKey: 'album' },
+    { columnKey: 'album_artist' },
   ];
 
   return (

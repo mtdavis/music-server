@@ -1,33 +1,29 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
+
+import AlbumIcon from '@mui/icons-material/Album';
+import CancelIcon from '@mui/icons-material/Cancel';
+import MessageOutlinedIcon from '@mui/icons-material/MessageOutlined';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
+import QueueMusicIcon from '@mui/icons-material/QueueMusic';
+import SearchIcon from '@mui/icons-material/Search';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import {
   Divider,
   Drawer,
   List,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
-import {Theme} from '@material-ui/core/styles';
-
-import AlbumIcon from '@material-ui/icons/Album';
-import CancelIcon from '@material-ui/icons/Cancel';
-import MessageOutlinedIcon from '@material-ui/icons/MessageOutlined';
-import MusicNoteIcon from '@material-ui/icons/MusicNote';
-import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
-import QueueMusicIcon from '@material-ui/icons/QueueMusic';
-import ShuffleVariantIcon from 'mdi-material-ui/ShuffleVariant';
+} from '@mui/material';
+import { Theme } from '@mui/material/styles';
+import { makeStyles } from '@mui/styles';
 import HeartCircleIcon from 'mdi-material-ui/HeartCircle';
-import WatchLaterIcon from '@material-ui/icons/WatchLater';
-import SearchIcon from '@material-ui/icons/Search';
-import TimelineIcon from '@material-ui/icons/Timeline';
+import ShuffleVariantIcon from 'mdi-material-ui/ShuffleVariant';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
 
-import {useStores} from 'stores';
 import LinkMenuItem from './LinkMenuItem';
 
 const useStyles = makeStyles((theme: Theme) => ({
-  list: {
-    width: 250,
-    marginTop: 64,
-  },
   open: {
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
@@ -48,17 +44,17 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const LeftNav = () => {
   const classes = useStyles();
-  const {musicStore, uiStore} = useStores();
+  const { musicStore, uiStore } = useStores();
 
   return (
     <Drawer
       variant='permanent'
       className={uiStore.drawerOpen ? classes.open : classes.closed}
       classes={{
-        paper: uiStore.drawerOpen ? classes.open : classes.closed
+        paper: uiStore.drawerOpen ? classes.open : classes.closed,
       }}
     >
-      <List className={classes.list}>
+      <List sx={{ width: 250, marginTop: 8 }}>
         <LinkMenuItem to='/' Icon={PlaylistPlayIcon}>
           Now Playing
         </LinkMenuItem>
@@ -84,24 +80,23 @@ const LeftNav = () => {
         <LinkMenuItem to='/tracks' Icon={MusicNoteIcon}>
           All Tracks
         </LinkMenuItem>
-        {
-          musicStore.demoMode ? null :
-            <>
-              <LinkMenuItem to='/playlists' Icon={QueueMusicIcon}>
-                Playlists
-              </LinkMenuItem>
-              <LinkMenuItem to='/shuffle' Icon={ShuffleVariantIcon}>
-                Shuffle
-              </LinkMenuItem>
-              <Divider />
-              <LinkMenuItem to='/scan' Icon={SearchIcon}>
-                Scan
-              </LinkMenuItem>
-              <LinkMenuItem to='/statistics' Icon={TimelineIcon}>
-                Statistics
-              </LinkMenuItem>
-            </>
-        }
+        {musicStore.demoMode ? null : (
+          <>
+            <LinkMenuItem to='/playlists' Icon={QueueMusicIcon}>
+              Playlists
+            </LinkMenuItem>
+            <LinkMenuItem to='/shuffle' Icon={ShuffleVariantIcon}>
+              Shuffle
+            </LinkMenuItem>
+            <Divider />
+            <LinkMenuItem to='/scan' Icon={SearchIcon}>
+              Scan
+            </LinkMenuItem>
+            <LinkMenuItem to='/statistics' Icon={TimelineIcon}>
+              Statistics
+            </LinkMenuItem>
+          </>
+        )}
       </List>
     </Drawer>
   );

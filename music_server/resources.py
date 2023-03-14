@@ -5,6 +5,7 @@ import eyed3
 from flask import (
     Blueprint,
     current_app,
+    redirect,
     render_template_string,
     Response,
     send_from_directory,
@@ -20,6 +21,12 @@ resources_blueprint = Blueprint('resources', __name__)
 
 @resources_blueprint.route('/')
 def handle_root():
+    return redirect('/app', code=302)
+
+
+@resources_blueprint.route('/app', defaults={'path': None}, strict_slashes=False)
+@resources_blueprint.route('/app/<path:path>', strict_slashes=False)
+def handle_app(path: str):
     with open('./client/dist/index.html') as template:
         return render_template_string(
             template.read(),

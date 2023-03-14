@@ -1,12 +1,11 @@
-declare const __DEMO_MODE__: boolean;
-
 declare module 'pauseable' {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   export class timer {
     pause(): void;
     resume(): void;
     clear(): void;
   }
-  export function setTimeout(fn: () => void, ms: number): timer
+  export function setTimeout(fn: () => void, ms: number): timer;
 }
 
 declare module 'nosleep.js' {
@@ -78,7 +77,7 @@ declare module 'react-lazy-load' {
 type NullableString = string | null;
 type NullableNumber = number | null;
 
-type RowDataValue = NullableNumber | NullableString;
+type RowDataValue = number | NullableNumber | string | NullableString | boolean;
 
 interface RowData {
   id: number;
@@ -96,6 +95,7 @@ declare interface Album extends RowData {
   release_date: number;
   last_play: NullableNumber;
   play_count: number;
+  starred: boolean;
   /* eslint-enable camelcase */
 }
 
@@ -130,11 +130,10 @@ declare interface Playlist extends RowData {
 declare interface ColumnConfig<T extends RowData> {
   key: keyof T;
   label?: string;
-  align?: "left" | "right";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  renderer?: (value: any, rowData: T) => (string | number | React.ReactNode);
+  align?: 'left' | 'right';
+  type?: 'plain' | 'icon' | 'star' | 'year' | 'date' | 'duration',
   wrap?: boolean;
-  maxWidth?: number;
+  fixedWidth?: number;
 }
 
 declare interface SortSpec<R extends RowData> {

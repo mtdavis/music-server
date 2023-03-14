@@ -10,18 +10,23 @@ import {
   runInAction,
 } from 'mobx';
 
-import {getUniqueValues, rowPassesFilter} from './util';
+import { getUniqueValues, rowPassesFilter } from './util';
 
 export class FilterStore<R extends RowData> {
-
   baseRows: IObservableArray<R> = observable.array([]);
+
   columns: IObservableArray<ColumnConfig<R>> = observable.array([]);
+
   filterKeys: IObservableArray<keyof R> = observable.array([]);
 
   availableOptions: ObservableMap<keyof R, RowDataValue[]> = observable.map({});
+
   selectedItems: ObservableMap<keyof R, RowDataValue[]> = observable.map({});
+
   filterText = '';
+
   filterTextValid = true;
+
   hiddenRowIds: ObservableSet<number> = observable.set([]);
 
   constructor(baseRows: R[], columns: ColumnConfig<R>[], filterKeys: (keyof R)[]) {
@@ -29,12 +34,12 @@ export class FilterStore<R extends RowData> {
     this.columns.replace(columns);
     this.filterKeys.replace(filterKeys);
 
-    for(const filterKey of filterKeys) {
+    this.filterKeys.forEach((filterKey) => {
       this.selectedItems.set(filterKey, []);
 
       // will be populated in the autorun
       this.availableOptions.set(filterKey, []);
-    }
+    });
 
     makeObservable(this, {
       baseRows: observable,
@@ -46,18 +51,22 @@ export class FilterStore<R extends RowData> {
       filterTextValid: observable,
       hiddenRowIds: observable,
       setBaseRows: action,
+      setFilterText: action,
       setSelectedItems: action,
-      clearFilters: action,
       hasFilters: computed,
     });
 
     autorun(this.runFilter, {
-      delay: 200
+      delay: 200,
     });
   }
 
   setBaseRows(baseRows: R[]): void {
     this.baseRows.replace(baseRows);
+  }
+
+  setFilterText(filterText: string): void {
+    this.filterText = filterText;
   }
 
   getSelectedItems(filterKey: keyof R): RowDataValue[] {
@@ -69,13 +78,14 @@ export class FilterStore<R extends RowData> {
   }
 
   get hasFilters(): boolean {
-    if(this.filterText) {
+    if (this.filterText) {
       return true;
     }
 
-    for(const filterKey of this.filterKeys) {
+    for (let i = 0; i < this.filterKeys.length; i += 1) {
+      const filterKey = this.filterKeys[i];
       const selectedItems = this.selectedItems.get(filterKey);
-      if(selectedItems && selectedItems.length > 0) {
+      if (selectedItems && selectedItems.length > 0) {
         return true;
       }
     }
@@ -83,49 +93,34 @@ export class FilterStore<R extends RowData> {
     return false;
   }
 
-  clearFilters = (): void => {
-    this.filterText = '';
-    this.filterTextValid = true;
-
-    for(const filterKey of this.filterKeys) {
-      this.selectedItems.set(filterKey, []);
-    }
-  }
-
   runFilter = (): void => {
     const newAvailableOptions = new Map();
     let filteredRows = this.baseRows.slice();
 
-    this.filterKeys.forEach(filterKey => {
+    this.filterKeys.forEach((filterKey) => {
       const selectedItemsForKey = this.selectedItems.get(filterKey) || [];
 
-      const options = getUniqueValues(filteredRows, filterKey).filter(
-        val => !selectedItemsForKey.includes(val));
+      const options = getUniqueValues(filteredRows, filterKey);
       newAvailableOptions.set(filterKey, options);
 
-      if(selectedItemsForKey.length > 0) {
-        filteredRows = filteredRows.filter(rowData =>
-          selectedItemsForKey.includes(rowData[filterKey])
-        );
+      if (selectedItemsForKey.length > 0) {
+        filteredRows = filteredRows.filter((rowData) => selectedItemsForKey.includes(rowData[filterKey]));
       }
     });
 
     let newFilterTextValid = true;
     try {
-      filteredRows = filteredRows.filter(rowData =>
-        rowPassesFilter(rowData, this.filterText, this.columns)
-      );
-    }
-    catch(ex) {
+      filteredRows = filteredRows.filter((rowData) => rowPassesFilter(rowData, this.filterText, this.columns));
+    } catch (ex) {
       newFilterTextValid = false;
     }
 
     const hiddenRowIds = new Set<number>();
-    this.baseRows.forEach(row => {
+    this.baseRows.forEach((row) => {
       hiddenRowIds.add(row.id);
     });
 
-    filteredRows.forEach(row => {
+    filteredRows.forEach((row) => {
       hiddenRowIds.delete(row.id);
     });
 
@@ -133,11 +128,11 @@ export class FilterStore<R extends RowData> {
       this.availableOptions.replace(newAvailableOptions);
       this.filterTextValid = newFilterTextValid;
 
-      if(newFilterTextValid) {
+      if (newFilterTextValid) {
         this.hiddenRowIds.replace(hiddenRowIds);
       }
     });
-  }
+  };
 }
 
 export class FilterStoreMap {
@@ -155,9 +150,9 @@ export class FilterStoreMap {
     tag: string,
     baseRows: R[],
     columns: ColumnConfig<R>[],
-    filterKeys: (keyof R)[]
+    filterKeys: (keyof R)[],
   ): FilterStore<R> {
-    if(this.filterStores.has(tag)) {
+    if (this.filterStores.has(tag)) {
       return this.filterStores.get(tag) as FilterStore<R>;
     }
 

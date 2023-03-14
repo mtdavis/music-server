@@ -1,4 +1,5 @@
 import React from 'react';
+
 import {
   Button,
   Card,
@@ -8,11 +9,9 @@ import {
   Grid,
   MenuItem,
   TextField,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
+} from '@mui/material';
 import ShuffleVariantIcon from 'mdi-material-ui/ShuffleVariant';
-
-import {useStores} from 'stores';
+import { useStores } from 'stores';
 
 const ROCK_ETC = [
   'Blues Rock',
@@ -45,25 +44,8 @@ const NON_ROCK = [
   'Trip Hop',
 ];
 
-const useStyles = makeStyles(() => ({
-  page: {
-    display: 'flex',
-    justifyContent: 'center',
-    height: '100%',
-    alignItems: 'center',
-  },
-  paper: {
-    width: 200,
-  },
-  actions: {
-    display: 'flex',
-    justifyContent: 'center',
-  },
-}));
-
 const ShufflePage = (): React.ReactElement => {
-  const {musicStore} = useStores();
-  const classes = useStyles();
+  const { musicStore } = useStores();
   const [duration, setDuration] = React.useState(30);
   const [genres, setGenres] = React.useState(['*']);
 
@@ -72,8 +54,15 @@ const ShufflePage = (): React.ReactElement => {
   };
 
   return (
-    <div className={classes.page}>
-      <Card className={classes.paper}>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        height: '100%',
+        alignItems: 'center',
+      }}
+    >
+      <Card sx={{ width: 200 }}>
         <CardContent>
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -82,7 +71,7 @@ const ShufflePage = (): React.ReactElement => {
                 fullWidth
                 label='Duration'
                 value={duration}
-                onChange={event => setDuration(Number(event.target.value))}
+                onChange={(event) => setDuration(Number(event.target.value))}
               >
                 <MenuItem value={30}>30 minutes</MenuItem>
                 <MenuItem value={60}>60 minutes</MenuItem>
@@ -96,7 +85,7 @@ const ShufflePage = (): React.ReactElement => {
                 fullWidth
                 label='Genre'
                 value={JSON.stringify(genres)}
-                onChange={event => setGenres(JSON.parse(event.target.value))}
+                onChange={(event) => setGenres(JSON.parse(event.target.value))}
               >
                 <MenuItem value={JSON.stringify(['*'])}>Any</MenuItem>
                 <MenuItem value={JSON.stringify(ROCK_ETC)}>Rock, etc.</MenuItem>
@@ -108,7 +97,7 @@ const ShufflePage = (): React.ReactElement => {
 
         <Divider />
 
-        <CardActions className={classes.actions}>
+        <CardActions sx={{ display: 'flex', justifyContent: 'center' }}>
           <Button color='primary' onClick={onShuffle} startIcon={<ShuffleVariantIcon />}>
             Play Shuffle
           </Button>

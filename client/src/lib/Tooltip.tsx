@@ -1,20 +1,21 @@
 import React from 'react';
-const muiTooltipPromise = import('@material-ui/core/Tooltip');
-import {TooltipProps} from '@material-ui/core';
+
+import { TooltipProps } from '@mui/material';
+
+const MUITooltip = React.lazy(() => import('@mui/material/Tooltip'));
 
 const Tooltip = ({
   children,
   ...rest
-}: TooltipProps): React.ReactElement => {
-  const MUITooltip = React.lazy(() => muiTooltipPromise);
-  // return <MUITooltip>{children}</MUITooltip>
-  return (
-    <React.Suspense fallback={children}>
-      <MUITooltip {...rest}>
-        {children}
-      </MUITooltip>
-    </React.Suspense>
-  );
-};
+}: TooltipProps): React.ReactElement => (
+  <React.Suspense fallback={children}>
+    <MUITooltip
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...rest}
+    >
+      {children}
+    </MUITooltip>
+  </React.Suspense>
+);
 
 export default Tooltip;

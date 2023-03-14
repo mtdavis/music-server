@@ -1,22 +1,17 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
+
 import {
   colors,
   Slider,
-} from '@material-ui/core';
-import {makeStyles} from '@material-ui/styles';
-
-import {useStores} from 'stores';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import PlayerState from 'lib/PlayerState';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
+
 import CurrentTimeLabel from './CurrentTimeLabel';
 
 const useStyles = makeStyles(() => ({
-  wrapper: {
-    display: 'flex',
-    flex: 1,
-    alignItems: 'center',
-    marginLeft: 24,
-  },
   rail: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
@@ -35,8 +30,8 @@ enum DragState {
 }
 
 const CurrentTimeSlider = () => {
-  const {musicStore} = useStores();
-  const {wrapper, ...classes} = useStyles();
+  const { musicStore } = useStores();
+  const classes = useStyles();
 
   const [dragging, setDragging] = React.useState(DragState.NO);
   const [draggingValue, setDraggingValue] = React.useState(0);
@@ -47,13 +42,12 @@ const CurrentTimeSlider = () => {
   let sliderMax = 1;
   let sliderDisabled = true;
 
-  if(playing && musicStore.currentTrack !== null) {
+  if (playing && musicStore.currentTrack !== null) {
     const currentTrackDuration = musicStore.currentTrack.duration;
 
-    if(dragging === DragState.NO) {
+    if (dragging === DragState.NO) {
       seconds = musicStore.currentTrackPosition;
-    }
-    else {
+    } else {
       seconds = draggingValue;
     }
 
@@ -61,13 +55,12 @@ const CurrentTimeSlider = () => {
     sliderDisabled = false;
   }
 
-  const onSliderChange = (event: React.ChangeEvent<unknown>, value: number | number[]) => {
-    if(dragging === DragState.NO) {
+  const onSliderChange = (event: Event, value: number | number[]) => {
+    if (dragging === DragState.NO) {
       // dragging just started.
       setDragging(DragState.YES);
       setDraggingValue(musicStore.currentTrackPosition);
-    }
-    else if(dragging === DragState.YES) {
+    } else if (dragging === DragState.YES) {
       // mid-drag.
       setDraggingValue(value as number);
     }
@@ -86,7 +79,7 @@ const CurrentTimeSlider = () => {
   };
 
   return (
-    <div className={wrapper}>
+    <>
       <Slider
         classes={classes}
         min={0}
@@ -95,10 +88,15 @@ const CurrentTimeSlider = () => {
         disabled={sliderDisabled}
         onChange={onSliderChange}
         onChangeCommitted={onSliderChangeCommitted}
+        size='small'
+        sx={{
+          marginLeft: 2,
+          marginRight: 2,
+        }}
       />
 
       <CurrentTimeLabel enabled={playing} seconds={seconds} />
-    </div>
+    </>
   );
 };
 

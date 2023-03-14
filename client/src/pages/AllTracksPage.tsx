@@ -1,17 +1,17 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
 
 import TrackList from 'lib/TrackList';
-import {useStores} from 'stores';
+import { observer } from 'mobx-react-lite';
+import { useStores } from 'stores';
 
 const AllTracksPage = () => {
-  const {dbStore} = useStores();
+  const { dbStore } = useStores();
 
   const initialSortSpecs = [
-    {columnKey: 'title'},
-    {columnKey: 'track_number'},
-    {columnKey: 'album'},
-    {columnKey: 'artist'},
+    { columnKey: 'title' },
+    { columnKey: 'track_number' },
+    { columnKey: 'album' },
+    { columnKey: 'artist' },
   ];
 
   return (

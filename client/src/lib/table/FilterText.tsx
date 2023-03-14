@@ -1,32 +1,34 @@
 import React from 'react';
-import {observer} from 'mobx-react-lite';
+
 import {
   TextField,
-} from '@material-ui/core';
+} from '@mui/material';
+import { observer } from 'mobx-react-lite';
 
-import {FilterStore} from './FilterStore';
+import { FilterStore } from './FilterStore';
 
 interface Props<R extends RowData> {
   filterStore: FilterStore<R>;
 }
 
-function FilterText<R extends RowData>({
+const FilterText = <R extends RowData>({
   filterStore,
-}: Props<R>): React.ReactElement {
+}: Props<R>): React.ReactElement => {
   const onChange = (event: TextFieldChangeEvent) => {
-    filterStore.filterText = (event.target as HTMLInputElement).value;
+    filterStore.setFilterText((event.target as HTMLInputElement).value);
   };
 
   return (
     <TextField
       fullWidth
       value={filterStore.filterText}
-      placeholder="Text or query..."
+      placeholder='Text or query...'
       error={!filterStore.filterTextValid}
       onChange={onChange}
       onKeyUp={onChange}
+      variant='standard'
     />
   );
-}
+};
 
 export default observer(FilterText);

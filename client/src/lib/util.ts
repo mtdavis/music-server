@@ -1,49 +1,30 @@
-interface GetParams<T> {
-  url: string;
-  onSuccess: (json: T) => void;
-  onError?: (error: string) => void;
+export async function get<T>(url: string): Promise<T> {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
 }
 
-export function get<T>({
-  url,
-  onSuccess,
-  onError = (error: string) => { console.error(error); },
-}: GetParams<T>): void {
-  fetch(url).then(response => {
-    if(!response.ok) {
-      throw new Error(`${response.status} ${response.statusText}`);
-    }
-
-    return response.json();
-  }).then(onSuccess).catch(onError);
-}
-
-interface PutParams<T> {
-  url: string;
-  data?: {[key: string]: number | string | boolean | null};
-  onSuccess?: (json: T) => void;
-  onError?: (error: string) => void;
-}
-
-export function put<T>({
-  url,
-  data,
-  onSuccess = (_json: T) => {},
-  onError = (error: string) => { console.error(error); },
-}: PutParams<T>): void {
-  fetch(url, {
+export async function put<T>(
+  url: string,
+  data?: { [key: string]: number | string | boolean | null },
+): Promise<T> {
+  const response = await fetch(url, {
     method: 'PUT',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
     body: data === undefined ? undefined : JSON.stringify(data),
-  }).then(response => {
-    if(!response.ok) {
-      throw new Error(`${response.status} ${response.statusText}`);
-    }
+  });
 
-    return response.json();
-  }).then(onSuccess).catch(onError);
+  if (!response.ok) {
+    throw new Error(`${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
 }
 
 export function secondsToTimeString(epochSeconds: number): string {
@@ -51,16 +32,15 @@ export function secondsToTimeString(epochSeconds: number): string {
   const minutes = Math.floor((epochSeconds - (hours * 3600)) / 60);
   const seconds = epochSeconds - (hours * 3600) - (minutes * 60);
 
-  const ss = seconds < 10 ? "0" + seconds : String(seconds);
+  const ss = seconds < 10 ? `0${seconds}` : String(seconds);
 
-  if(hours > 0) {
-    const mm = minutes < 10 ? "0" + minutes : String(minutes);
+  if (hours > 0) {
+    const mm = minutes < 10 ? `0${minutes}` : String(minutes);
 
-    return hours + ':' + mm + ':' + ss;
+    return `${hours}:${mm}:${ss}`;
   }
 
-
-  return minutes + ':' + ss;
+  return `${minutes}:${ss}`;
 }
 
 export function unixTimestampToDateString(timestamp: number): string {
@@ -74,11 +54,11 @@ export function unixTimestampToYear(timestamp: number): number {
 }
 
 function cleanString(str: string): string {
-  str = str.toLowerCase();
-  if(str.startsWith('the ')) {
-    str = str.substring(4);
+  let result = str.toLowerCase();
+  if (result.startsWith('the ')) {
+    result = result.substring(4);
   }
-  return str;
+  return result;
 }
 
 function compareNumbers(valA: number, valB: number): number {
@@ -86,31 +66,29 @@ function compareNumbers(valA: number, valB: number): number {
 }
 
 function compareStrings(valA: string, valB: string): number {
-  valA = cleanString(valA);
-  valB = cleanString(valB);
+  const cleanValA = cleanString(valA);
+  const cleanValB = cleanString(valB);
 
-  if(valA < valB) {
+  if (cleanValA < cleanValB) {
     return -1;
   }
-  else if(valA === valB) {
+  if (cleanValA === cleanValB) {
     return 0;
   }
-  else {
-    return 1;
-  }
+
+  return 1;
 }
 
 export function compare<T extends RowDataValue>(valA: T, valB: T): number {
-  if(valA === null) {
+  if (valA === null) {
     return valB === null ? 0 : -1;
   }
-  else if(valB === null) {
+  if (valB === null) {
     return 1;
   }
-  else if(typeof valA === 'number' && typeof valB === 'number') {
+  if (typeof valA === 'number' && typeof valB === 'number') {
     return compareNumbers(valA, valB);
   }
-  else {
-    return compareStrings(String(valA), String(valB));
-  }
+
+  return compareStrings(String(valA), String(valB));
 }
